@@ -29,3 +29,7 @@ export interface IKakaoUserInformation {
     gender: string
   }
 }
+
+export interface IKakaoUserInfoRequest {
+  accessToken: string
+}

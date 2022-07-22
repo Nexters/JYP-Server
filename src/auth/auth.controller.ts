@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service'
-import { KakaoInformationDTO } from './auth.dto/authValidation';
+import { KakaoInformationResponseDTO, KakaoInformationRequestDTO } from './auth.dto/authValidation';
 import { ApiBody, ApiOperation } from '@nestjs/swagger';
 
 @Controller('auth')
@@ -10,7 +10,6 @@ export class AuthController {
   // @UseGuards(AuthGuard)
   @Get('/:id')
   getTest(@Param('id') testId: number): string {
-    console.info('id: ', testId);
     return this.authService.authTest();
   }
 
@@ -19,15 +18,10 @@ export class AuthController {
     return await this.authService.getAuthToken();
   }
 
-  @Get('/callback')
-  async callbackAuthCode(@Query() authReuqestQuery): Promise<string> {
-    return await this.authService.kakaoLogin(authReuqestQuery);
-  }
-
-  @ApiBody({ type: KakaoInformationDTO })
+  @ApiBody({ type: KakaoInformationRequestDTO })
   @ApiOperation({summary: '카카오 정보 RETURN'})
   @Get('/kakao/userinfo')
-  async getKakaoUserInfo(@Query() requestQueryString: string): Promise<KakaoInformationDTO> {
+  async getKakaoUserInfo(@Query() requestQueryString: KakaoInformationRequestDTO): Promise<KakaoInformationResponseDTO> {
     return await this.authService.getKakaoUserInformation(requestQueryString['accessToken']);
   }
 }
