@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom, map } from 'rxjs';
-import { IKakaoUserInformation } from './auth.dto';
+import { IKakaoUserInformation } from './auth.dto/interface';
+import { KakaoInformationDTO } from './auth.dto/authValidation';
 
 const REST_API_KEY = process.env.DEV_KAKAO_REST_API_KEY;
 const REDIRECT_URI = process.env.DEV_KAKAO_REDIRECT_URI;
@@ -26,7 +27,7 @@ export class AuthService {
     return 'test';
   }
 
-  public async getKakaoUserInformation(accessToken: string): Promise<IKakaoUserInformation> {
+  public async getKakaoUserInformation(accessToken: string): Promise<KakaoInformationDTO> {
     try {
       const response: object = await firstValueFrom(this.httpService.get('https://kapi.kakao.com/v2/user/me', {
         method: 'GET',

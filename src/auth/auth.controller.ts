@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service'
-import { AuthGuard } from './auth.guard';
+import { KakaoInformationDTO } from './auth.dto/authValidation';
+import { ApiBody, ApiOperation } from '@nestjs/swagger';
 
 @Controller('auth')
 export class AuthController {
@@ -23,8 +24,10 @@ export class AuthController {
     return await this.authService.kakaoLogin(authReuqestQuery);
   }
 
+  @ApiBody({ type: KakaoInformationDTO })
+  @ApiOperation({summary: '카카오 정보 RETURN'})
   @Get('/kakao/userinfo')
-  async getKakaoUserInfo(@Query() requestQueryString: string): Promise<any> {
+  async getKakaoUserInfo(@Query() requestQueryString: string): Promise<KakaoInformationDTO> {
     return await this.authService.getKakaoUserInformation(requestQueryString['accessToken']);
   }
 }
