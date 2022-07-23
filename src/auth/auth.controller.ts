@@ -9,8 +9,8 @@ export class AuthController {
 
   // @UseGuards(AuthGuard)
   @Get('/:id')
-  getTest(@Param('id') testId: number): string {
-    return this.authService.authTest();
+  async getTest(@Param('id') testId: number): Promise<string> {
+    return await this.authService.authTest();
   }
 
   @Get('/kakao')
