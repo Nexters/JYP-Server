@@ -1,4 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
+export interface IKakaoLoginRequest {
+  accessToken: string
+}
 
 export interface IKakaoUserInformation {
   id: number,

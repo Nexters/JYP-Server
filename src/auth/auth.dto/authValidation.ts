@@ -1,16 +1,30 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IKakaoUserInformation, IKakaoUserInfoRequest } from './interface';
+import { IKakaoUserInformation, IKakaoUserInfoRequest, IKakaoLoginRequest } from './interface';
 import { IsString, Length } from 'class-validator';
 
-export class KakaoInformationRequestDTO implements IKakaoUserInfoRequest{
+export class KakaoLoginRequestDTO implements IKakaoLoginRequest {
   @ApiProperty({
     example: 'auth/kakao/userinfo/액세스토큰',
     description: '카카오 Access Token 전달',
     required: true
   })
-
   @Length(50,60)
   @IsString()
+  public accessToken: string
+}
+
+export class KakaoLoginResponseDTO {
+  @ApiProperty({
+    example: 'auth/kakao/userinfo/액세스토큰',
+    description: '카카오 Access Token 전달',
+    required: true
+  })
+  @Length(50,60)
+  @IsString()
+  public accessToken: string
+}
+
+export class KakaoInformationRequestDTO implements IKakaoUserInfoRequest{
   public accessToken: string
 }
 
