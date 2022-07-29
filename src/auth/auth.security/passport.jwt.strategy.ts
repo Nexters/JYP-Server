@@ -14,6 +14,8 @@ export class JwtStrategy extends PassportStrategy(Strategy){
     })
   }
 
+
+  // TODO: 해당 카카오 유저가 있는지 확인
   async validate(payload: KakaoInformationRequestDTO, done: VerifiedCallback): Promise<any> {
     const user = await this.authService.tokenValidateUser(payload);
     if (!user) {

@@ -27,10 +27,11 @@ export class AuthService {
       method: 'GET',
       headers: { 'Authorization': `Bearer ${accessToken}` },
     }).pipe(map(response => [response.data, response.status]))))[0];
-    return this.jwtService.sign({payLoad: response});
+    return this.jwtService.sign({payLoad: response.id});
   }
 
   public async getKakaoUserInformation(accessToken: string): Promise<KakaoInformationResponseDTO> {
+    // const token = this.jwtService.decode(accessToken)
     try {
       const response: KakaoInformationResponseDTO = (await firstValueFrom(this.httpService.get('https://kapi.kakao.com/v2/user/me', {
         method: 'GET',
