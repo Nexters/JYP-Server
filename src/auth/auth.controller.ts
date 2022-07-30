@@ -29,13 +29,4 @@ export class AuthController {
   async getKakaoUserInfo(@Req() req: Request, @Res() res: Response): Promise<any> {
     return await this.authService.getKakaoUserInformation(req.headers.authorization);
   }
-
-
-
-  // @Get('/auth')
-  // @UseGuards(AuthGuard)
-  // async test(@Query() requestQueryString: Kakao): Promise<any> {
-  //   const user: any = req['user'];
-  //   return '1234';
-  // }
 }
