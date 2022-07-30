@@ -9,12 +9,6 @@ import { Request, Response } from 'express';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  // @UseGuards(AuthGuard)
-  // @Get('/:id')
-  // async getTest(@Param('id') testId: number): Promise<string> {
-  //   return await this.authService.authTest();
-  // }
-
   @Get('/kakao')
   async requestAuthCode(): Promise<object> {
     return await this.authService.getAuthToken();

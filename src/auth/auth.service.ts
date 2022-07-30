@@ -11,10 +11,6 @@ const REDIRECT_URI = process.env.DEV_KAKAO_REDIRECT_URI;
 export class AuthService {
   constructor(private readonly httpService: HttpService, private readonly jwtService: JwtService) {}
 
-  public async authTest(): Promise<string> {
-    return 'testeq';
-  }
-
   // TODO: 사용하지 않음
   public async getAuthToken(): Promise<object> {
     return await firstValueFrom(this.httpService.get(`https://kauth.kakao.com/oauth/authorize?client_id=${REST_API_KEY}&redirect_uri=${REDIRECT_URI}&response_type=code`, {
