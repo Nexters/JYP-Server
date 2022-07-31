@@ -57,3 +57,4 @@ export class KakaoInformationResponseDTO implements KakaoUserInformation {
     gender: string
   }
 }
+

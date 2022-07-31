@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom, map } from 'rxjs';
-import { KakaoInformationResponseDTO, KakaoLoginRequestDTO } from './auth.dto/authValidation';
+import { KakaoInformationResponseDTO, KakaoLoginRequestDTO } from './dto/authValidation';
 import { JwtService } from '@nestjs/jwt'
 
 const REST_API_KEY = process.env.DEV_KAKAO_REST_API_KEY;

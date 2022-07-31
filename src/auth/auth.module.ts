@@ -5,7 +5,7 @@ import { HttpModule } from '@nestjs/axios';
 import { PassportModule } from '@nestjs/passport';
 import { APP_PIPE } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
-import { JwtStrategy } from './auth.security/passport.jwt.strategy';
+import { JwtStrategy } from './security/passport.jwt.strategy';
 
 @Module({
   imports: [HttpModule,
