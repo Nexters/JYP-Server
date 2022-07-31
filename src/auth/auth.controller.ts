@@ -18,7 +18,7 @@ export class AuthController {
   @ApiOperation({summary: '카카오 로그인'})
   @Post('/kakao/login')
   async kakaoLogin(@Body() requestBody: string): Promise<string> {
-    return await this.authService.kakaoValidateUser({accessToken: requestBody['accessToken']});
+    return await this.authService.validateKakaoUser({accessToken: requestBody['accessToken']});
   }
 
   @ApiBody({ type: KakaoInformationRequestDTO })

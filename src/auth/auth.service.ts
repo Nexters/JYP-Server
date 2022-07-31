@@ -18,7 +18,7 @@ export class AuthService {
     }).pipe(map(response => [response.data, response.status])));
   }
 
-  public async kakaoValidateUser({accessToken}: KakaoLoginRequestDTO): Promise<string> {
+  public async validateKakaoUser({accessToken}: KakaoLoginRequestDTO): Promise<string> {
     const response: KakaoInformationResponseDTO = (await firstValueFrom(this.httpService.get('https://kapi.kakao.com/v2/user/me', {
       method: 'GET',
       headers: { 'Authorization': `Bearer ${accessToken}` },
