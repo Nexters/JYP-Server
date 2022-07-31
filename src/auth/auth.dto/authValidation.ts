@@ -19,7 +19,6 @@ export class KakaoLoginResponseDTO {
     description: '카카오 Access Token 전달',
     required: true
   })
-  @Length(50,60)
   @IsString()
   public accessToken: string
 }
