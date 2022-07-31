@@ -1,8 +1,8 @@
-export interface IKakaoLoginRequest {
+export interface KakaoLoginRequest {
   accessToken: string
 }
 
-export interface IKakaoUserInformation {
+export interface KakaoUserInformation {
   id: number,
   connected_at: string,
   properties: {
@@ -32,6 +32,6 @@ export interface IKakaoUserInformation {
   }
 }
 
-export interface IKakaoUserInfoRequest {
+export interface KakaoUserInfoRequest {
   accessToken: string
 }

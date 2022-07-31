@@ -23,6 +23,7 @@ export class AuthService {
       method: 'GET',
       headers: { 'Authorization': `Bearer ${accessToken}` },
     }).pipe(map(response => [response.data, response.status]))))[0];
+    console.info(response);
     return this.jwtService.sign({payLoad: response.id});
   }
 
