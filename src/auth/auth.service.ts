@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom, map } from 'rxjs';
 import { KakaoInformationResponseDTO, KakaoLoginRequestDTO } from './dto/authValidation';
@@ -9,7 +9,7 @@ const REDIRECT_URI = process.env.DEV_KAKAO_REDIRECT_URI;
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly httpService: HttpService, private readonly jwtService: JwtService) {}
+  constructor(private readonly httpService: HttpService, private readonly jwtService: JwtService ) {}
 
   // TODO: 사용하지 않음
   public async getAuthToken(): Promise<object> {
@@ -19,29 +19,36 @@ export class AuthService {
   }
 
   public async validateKakaoUser({accessToken}: KakaoLoginRequestDTO): Promise<object> {
-    const response: KakaoInformationResponseDTO = (await firstValueFrom(this.httpService.get('https://kapi.kakao.com/v2/user/me', {
-      method: 'GET',
-      headers: { 'Authorization': `Bearer ${accessToken}` },
-    }).pipe(map(response => [response.data, response.status]))))[0];
+    try {
+      const response: KakaoInformationResponseDTO = (await firstValueFrom(this.httpService.get('https://kapi.kakao.com/v2/user/me', {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${accessToken}` },
+      }).pipe(map(response => [response.data, response.status]))))[0];
 
-    /*
-    *   User 컬렉션에 `response.id` 존재하는지 확인
-    * */
-    const user = true;
+        /*
+        *   User 컬렉션에 `response.id` 존재하는지 확인
+        * */
+      const user = true;
 
-    // TODO: 응답 포맷 정의해야 함
-    // TODO: 최초 로그인이 아니라면?
-    if (user) {
-      return {
-        token: this.jwtService.sign({payLoad: response.id}),
-        data: {}
+      // TODO: 응답 포맷 정의해야 함
+      // TODO: 최초 로그인이 아니라면?
+      if (user) {
+        return {
+          token: this.jwtService.sign({payLoad: response.id}),
+          data: {}
+        }
+      } else {     // TODO: 최초 로그인이라면?
+        return {
+          token: this.jwtService.sign({payLoad: response.id}),
+          data: response
+        }
       }
-    } else {     // TODO: 최초 로그인이라면?
-      return {
-        token: this.jwtService.sign({payLoad: response.id}),
-        data: response
-      }
+    } catch {
+      throw new HttpException('토큰 똑바로 주십쇼', HttpStatus.UNAUTHORIZED);
     }
+
+
+
   }
 
   public async getKakaoUserInformation(accessToken: string): Promise<KakaoInformationResponseDTO> {
