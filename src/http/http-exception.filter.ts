@@ -25,16 +25,15 @@ export class HttpExceptionFilter implements ExceptionFilter {
   }
 }
 
+// TODO: Error Filter 정의 필요
 @Catch(Error)
 export class ErrorFilter implements ExceptionFilter {
   catch(error: Error, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    const request = ctx.getRequest<Request>();
 
-    console.log("에러다잉~");
     response.status(401).json({
-      message: error.message
-    })
+      message: error.message,
+    });
   }
 }

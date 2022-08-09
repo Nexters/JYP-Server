@@ -1,9 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom, map } from 'rxjs';
-import {
-  KakaoLoginRequestDTO, KakaoLoginResponseDTO,
-} from './dto/auth.dto';
+import { KakaoLoginRequestDTO, KakaoLoginResponseDTO } from './dto/auth.dto';
 import { JwtService } from '@nestjs/jwt';
 
 @Injectable()

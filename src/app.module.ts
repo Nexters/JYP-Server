@@ -19,8 +19,8 @@ import { ErrorFilter } from './http/http-exception.filter';
     },
     {
       provide: APP_FILTER,
-      useClass: ErrorFilter
-    }
+      useClass: ErrorFilter,
+    },
   ],
 })
 export class AppModule {}

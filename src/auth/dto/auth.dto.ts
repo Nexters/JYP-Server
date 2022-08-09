@@ -2,8 +2,9 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   KakaoUserInformation,
   KakaoUserInfoRequest,
-  KakaoLoginRequest, KakaoLoginResponse,
-} from './interface';
+  KakaoLoginRequest,
+  KakaoLoginResponse,
+} from './auth.interface';
 import { IsString, Length } from 'class-validator';
 
 export class KakaoLoginRequestDTO implements KakaoLoginRequest {
@@ -17,7 +18,7 @@ export class KakaoLoginRequestDTO implements KakaoLoginRequest {
   public accessToken: string;
 }
 
-export class KakaoLoginResponseDTO implements KakaoLoginResponse{
+export class KakaoLoginResponseDTO implements KakaoLoginResponse {
   @ApiProperty({
     example: 'auth/kakao/userinfo/액세스토큰',
     description: '카카오 Access Token 전달',
