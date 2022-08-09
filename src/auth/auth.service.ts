@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom, map } from 'rxjs';
 import {
-  KakaoLoginRequestDTO,
+  KakaoLoginRequestDTO, KakaoLoginResponseDTO,
 } from './dto/authValidation';
 import { JwtService } from '@nestjs/jwt';
 
@@ -15,7 +15,7 @@ export class AuthService {
 
   public async validateKakaoUser({
     accessToken,
-  }: KakaoLoginRequestDTO): Promise<object> {
+  }: KakaoLoginRequestDTO): Promise<KakaoLoginResponseDTO> {
     try {
       const response = (
         await firstValueFrom(

@@ -2,6 +2,10 @@ export interface KakaoLoginRequest {
   accessToken: string;
 }
 
+export interface KakaoLoginResponse {
+  token: string;
+}
+
 export interface KakaoUserInformation {
   id: number;
   connected_at?: string;
