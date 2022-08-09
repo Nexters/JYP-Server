@@ -27,9 +27,13 @@ jobs:
           push: true
           tags: fuzzysound/journeypiki:latest
       -
+        name: Set time
+        run: |
+          echo "$(date +"%Y%m%d%H%M%S")" >> ${NOW}
+      -
         name: Build and push (tag latest)
         uses: docker/build-push-action@v3
         with:
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: fuzzysound/journeypiki:$(date +%s)
+          tags: fuzzysound/journeypiki:${NOW}
