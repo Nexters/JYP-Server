@@ -8,17 +8,22 @@ import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './security/passport.jwt.strategy';
 
 @Module({
-  imports: [HttpModule,
-  JwtModule.register({
-    secret: `${process.env.JWT_SECRET_KEY}`,
-    signOptions: {expiresIn: '300s'}
-  }),
-    PassportModule
+  imports: [
+    HttpModule,
+    JwtModule.register({
+      secret: `${process.env.JWT_SECRET_KEY}`,
+      signOptions: { expiresIn: '300s' },
+    }),
+    PassportModule,
   ],
-  providers: [AuthService, {
-    provide: APP_PIPE,
-    useClass: ValidationPipe
-  }, JwtStrategy],
-  controllers: [AuthController]
+  providers: [
+    AuthService,
+    {
+      provide: APP_PIPE,
+      useClass: ValidationPipe,
+    },
+    JwtStrategy,
+  ],
+  controllers: [AuthController],
 })
 export class AuthModule {}

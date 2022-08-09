@@ -1,18 +1,7 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Req,
-  Res,
-  UseFilters,
-  UseGuards,
-} from '@nestjs/common';
-import { AuthService } from './auth.service'
-import { KakaoInformationResponseDTO, KakaoInformationRequestDTO } from './dto/authValidation';
+import { Body, Controller, Get, Post, UseFilters } from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { KakaoInformationRequestDTO } from './dto/authValidation';
 import { ApiBody, ApiOperation } from '@nestjs/swagger';
-import { AuthGuard } from './security/auth.guard';
-import { Request, Response } from 'express';
 import { HttpExceptionFilter } from '../http/http-exception.filter';
 
 @Controller('auth')
@@ -24,21 +13,29 @@ export class AuthController {
     return await this.authService.getAuthToken();
   }
 
-  @ApiBody({type: KakaoInformationRequestDTO})
-  @ApiOperation({summary: '카카오 로그인'})
+  @ApiBody({ type: KakaoInformationRequestDTO })
+  @ApiOperation({ summary: '카카오 로그인' })
   @UseFilters(new HttpExceptionFilter())
   @Post('/kakao/login')
   async kakaoLogin(@Body() requestBody: string): Promise<object> {
-    return await this.authService.validateKakaoUser({accessToken: requestBody['accessToken']});
+    return await this.authService.validateKakaoUser({
+      accessToken: requestBody['accessToken'],
+    });
   }
 
-  @ApiBody({ type: KakaoInformationRequestDTO })
-  @ApiOperation({summary: '카카오 정보 RETURN'})
-  @UseGuards(AuthGuard)
-  @UseFilters(new HttpExceptionFilter())
-  @Get('/kakao/userinfo')
-  // TODO: 사용자 정보를 받으려면 카카오 엑세스 토큰 필요
-  async getKakaoUserInfo(@Req() req: Request, @Res() res: Response): Promise<any> {
-    return await this.authService.getKakaoUserInformation(req.headers.authorization);
-  }
+  // @ApiBody({ type: KakaoInformationRequestDTO })
+  // @ApiOperation({ summary: '카카오 정보 RETURN' })
+  // @UseGuards(AuthGuard)
+  // @UseFilters(new HttpExceptionFilter())
+  // @UseInterceptors(new TransformInterceptor())
+  // @Get('/kakao/userinfo')
+  // async getKakaoUserInfo(
+  //   @Req() req: Request,
+  //   @Res() res: Response,
+  // ): Promise<any> {
+  //   console.info(req.headers.authorization);
+  //   return await this.authService.getKakaoUserInformation(
+  //     req.headers.authorization,
+  //   );
+  // }
 }

@@ -11,10 +11,13 @@ describe('AuthService', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [HttpModule],
-      providers: [AuthService, {
-        provide: APP_PIPE,
-        useClass: ValidationPipe
-      }],
+      providers: [
+        AuthService,
+        {
+          provide: APP_PIPE,
+          useClass: ValidationPipe,
+        },
+      ],
       controllers: [AuthController],
     }).compile();
 
@@ -27,5 +30,5 @@ describe('AuthService', () => {
 
   test('카카오 API 정상 동작 확인', async () => {
     expect(await service.getAuthToken()).not.toBeUndefined();
-  }, 60000)
+  }, 60000);
 });
