@@ -38,15 +38,15 @@ describe('UserService', () => {
   });
 
   it('getUser는 UserRepository.findOne을 호출해 데이터를 받아 UserDTO로 돌려준다', async () => {
-    //given
+    // given
     const findOne = On(userRepository)
       .get(method(() => userRepository.findOne))
       .mockResolvedValue(user);
 
-    //when
+    // when
     const result = await userService.getUser(ID);
 
-    //then
+    // then
     expect(findOne).toBeCalledTimes(1);
     expect(findOne).toBeCalledWith(ID);
     expect(result.id).toBe(user._id);
@@ -56,16 +56,16 @@ describe('UserService', () => {
   });
 
   it('updateUser는 UserRepository.updateOne을 호출해 데이터를 받아 UserDTO로 돌려준다', async () => {
-    //given
+    // given
     const updateOne = On(userRepository)
       .get(method(() => userRepository.updateOne))
       .mockResolvedValue(user);
 
-    //when
+    // when
     const userUpdateDTO = new UserUpdateDTO(NICKNAME, IMG);
     const result = await userService.updateUser(ID, userUpdateDTO);
 
-    //then
+    // then
     expect(updateOne).toBeCalledTimes(1);
     expect(updateOne).toBeCalledWith(ID, NICKNAME, IMG);
     expect(result.id).toBe(user._id);
@@ -75,15 +75,15 @@ describe('UserService', () => {
   });
 
   it('createUser는 UserRepository.insertOne을 호출한다', async () => {
-    //given
+    // given
     const insertOne = On(userRepository)
       .get(method(() => userRepository.insertOne))
       .mockResolvedValue(user);
 
-    //when
+    // when
     const result = await userService.createUser(ID, NICKNAME, IMG, PSN);
 
-    //then
+    // then
     expect(insertOne).toBeCalledTimes(1);
     expect(insertOne).toBeCalledWith(ID, NICKNAME, IMG, PSN);
     expect(result.id).toBe(user._id);
