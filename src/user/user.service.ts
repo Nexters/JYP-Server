@@ -28,7 +28,7 @@ export class UserService {
     nickname: string,
     profileImagePath: string,
     personality: string,
-  ) {
+  ): Promise<UserDTO> {
     return UserDTO.from(
       await this.userRepository.insertOne(
         id,

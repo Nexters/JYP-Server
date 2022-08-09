@@ -8,7 +8,7 @@ export class UserDTO implements User {
   profileImagePath: string;
   personality: string;
 
-  static from(user: UserDoc) {
+  static from(user: UserDoc): UserDTO {
     return new UserDTO(user._id, user.name, user.img, PERSONALITY[user.psn]);
   }
 
