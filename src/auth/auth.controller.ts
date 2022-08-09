@@ -8,11 +8,6 @@ import { HttpExceptionFilter } from '../http/http-exception.filter';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Get('/kakao')
-  async requestAuthCode(): Promise<object> {
-    return await this.authService.getAuthToken();
-  }
-
   @ApiBody({ type: KakaoInformationRequestDTO })
   @ApiOperation({ summary: '카카오 로그인' })
   @UseFilters(new HttpExceptionFilter())
@@ -22,20 +17,4 @@ export class AuthController {
       accessToken: requestBody['accessToken'],
     });
   }
-
-  // @ApiBody({ type: KakaoInformationRequestDTO })
-  // @ApiOperation({ summary: '카카오 정보 RETURN' })
-  // @UseGuards(AuthGuard)
-  // @UseFilters(new HttpExceptionFilter())
-  // @UseInterceptors(new TransformInterceptor())
-  // @Get('/kakao/userinfo')
-  // async getKakaoUserInfo(
-  //   @Req() req: Request,
-  //   @Res() res: Response,
-  // ): Promise<any> {
-  //   console.info(req.headers.authorization);
-  //   return await this.authService.getKakaoUserInformation(
-  //     req.headers.authorization,
-  //   );
-  // }
 }
