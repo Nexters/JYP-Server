@@ -4,19 +4,30 @@ import { HttpModule } from '@nestjs/axios';
 import { APP_PIPE } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AuthController } from './auth.controller';
+import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from './security/passport.jwt.strategy';
 
 describe('AuthService', () => {
   let service: AuthService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [HttpModule],
+      imports: [
+        HttpModule,
+        JwtModule.register({
+          secret: `${process.env.JWT_SECRET_KEY}`,
+          signOptions: { expiresIn: '300s' },
+        }),
+        PassportModule,
+      ],
       providers: [
         AuthService,
         {
           provide: APP_PIPE,
           useClass: ValidationPipe,
         },
+        JwtStrategy,
       ],
       controllers: [AuthController],
     }).compile();
@@ -27,8 +38,4 @@ describe('AuthService', () => {
   test('should be defined', () => {
     expect(service).toBeDefined();
   });
-
-  test('카카오 API 정상 동작 확인', async () => {
-    expect(await service.getAuthToken()).not.toBeUndefined();
-  }, 60000);
 });
