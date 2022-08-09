@@ -20,25 +20,32 @@ export class KakaoLoginRequestDTO implements KakaoLoginRequest {
 
 export class KakaoLoginResponseDTO implements KakaoLoginResponse {
   @ApiProperty({
-    example: 'auth/kakao/userinfo/액세스토큰',
-    description: '카카오 Access Token 전달',
+    example: 'auth/kakao/login',
+    description: '카카오 로그인 Req 후 JWT 토큰 전달',
     required: true,
   })
   @IsString()
   public token: string;
+
+  constructor(token) {
+    this.token = token;
+  }
 }
 
 export class KakaoInformationRequestDTO implements KakaoUserInfoRequest {
   public accessToken: string;
 }
 
-export class KakaoInformationResponseDTO implements KakaoUserInformation {
-  constructor(id, value?) {
-    this.id = id;
+export class KakaoSignUpResponseDTO implements KakaoUserInformation {
+  constructor(token, value?) {
+    this.token = token;
+    this.id = value.id;
     this.connected_at = value.connected_at;
     this.properties = value.properties;
     this.kakao_account = value.kakao_account;
   }
+  readonly token: string;
+
   readonly id: number;
   readonly connected_at: string;
 
@@ -67,8 +74,4 @@ export class KakaoInformationResponseDTO implements KakaoUserInformation {
     gender_needs_agreement: boolean;
     gender: string;
   };
-
-  getId() {
-    return this.id;
-  }
 }
