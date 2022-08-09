@@ -1,0 +1,77 @@
+import { ApiProperty } from '@nestjs/swagger';
+import {
+  KakaoUserInformation,
+  KakaoUserInfoRequest,
+  KakaoLoginRequest,
+  KakaoLoginResponse,
+} from './auth.interface';
+import { IsString, Length } from 'class-validator';
+
+export class KakaoLoginRequestDTO implements KakaoLoginRequest {
+  @ApiProperty({
+    example: 'auth/kakao/userinfo/액세스토큰',
+    description: '카카오 Access Token 전달',
+    required: true,
+  })
+  @Length(50, 60)
+  @IsString()
+  public accessToken: string;
+}
+
+export class KakaoLoginResponseDTO implements KakaoLoginResponse {
+  @ApiProperty({
+    example: 'auth/kakao/login',
+    description: '카카오 로그인 Req 후 JWT 토큰 전달',
+    required: true,
+  })
+  @IsString()
+  public token: string;
+
+  constructor(token) {
+    this.token = token;
+  }
+}
+
+export class KakaoInformationRequestDTO implements KakaoUserInfoRequest {
+  public accessToken: string;
+}
+
+export class KakaoSignUpResponseDTO implements KakaoUserInformation {
+  constructor(token, value?) {
+    this.token = token;
+    this.id = value.id;
+    this.connected_at = value.connected_at;
+    this.properties = value.properties;
+    this.kakao_account = value.kakao_account;
+  }
+  readonly token: string;
+
+  readonly id: number;
+  readonly connected_at: string;
+
+  readonly properties: {
+    nickname: string;
+    profile_image: string;
+    thumbnail_image: string;
+  };
+  readonly kakao_account: {
+    profile_nickname_needs_agreement: boolean;
+    profile_image_needs_agreement: boolean;
+    profile: object;
+    has_email: boolean;
+    email_needs_agreement: boolean;
+    is_email_valid: boolean;
+    is_email_verified: boolean;
+    email: string;
+    has_age_range: boolean;
+    age_range_needs_agreement: boolean;
+    age_range: string;
+    has_birthday: boolean;
+    birthday_needs_agreement: boolean;
+    birthday: string;
+    birthday_type: string;
+    has_gender: boolean;
+    gender_needs_agreement: boolean;
+    gender: string;
+  };
+}
