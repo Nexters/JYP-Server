@@ -27,6 +27,10 @@ export class KakaoLoginResponseDTO implements KakaoLoginResponse{
   public token: string;
 }
 
+export class KakaoInformationRequestDTO implements KakaoUserInfoRequest {
+  public accessToken: string;
+}
+
 export class KakaoInformationResponseDTO implements KakaoUserInformation {
   constructor(id, value?) {
     this.id = id;
