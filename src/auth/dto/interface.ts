@@ -4,13 +4,13 @@ export interface KakaoLoginRequest {
 
 export interface KakaoUserInformation {
   id: number;
-  connected_at: string;
-  properties: {
+  connected_at?: string;
+  properties?: {
     nickname: string;
     profile_image: string;
     thumbnail_image: string;
   };
-  kakao_account: {
+  kakao_account?: {
     profile_nickname_needs_agreement: boolean;
     profile_image_needs_agreement: boolean;
     profile: object;

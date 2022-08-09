@@ -14,11 +14,27 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const request = ctx.getRequest<Request>();
     const status = exception.getStatus();
 
+    console.info('익셉션~');
+    console.log(exception.stack);
     response.status(status).json({
       statusCode: status,
       timestamp: new Date().toISOString(),
       path: request.url,
       message: exception.message,
     });
+  }
+}
+
+@Catch(Error)
+export class ErrorFilter implements ExceptionFilter {
+  catch(error: Error, host: ArgumentsHost) {
+    const ctx = host.switchToHttp();
+    const response = ctx.getResponse<Response>();
+    const request = ctx.getRequest<Request>();
+
+    console.log("에러다잉~");
+    response.status(401).json({
+      message: error.message
+    })
   }
 }

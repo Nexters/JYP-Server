@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Post, UseFilters } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { KakaoInformationRequestDTO } from './dto/authValidation';
+import { KakaoInformationRequestDTO, KakaoInformationResponseDTO } from './dto/authValidation';
 import { ApiBody, ApiOperation } from '@nestjs/swagger';
-import { HttpExceptionFilter } from '../http/http-exception.filter';
+import { ErrorFilter, HttpExceptionFilter } from '../http/http-exception.filter';
 
 @Controller('auth')
 export class AuthController {

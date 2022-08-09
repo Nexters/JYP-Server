@@ -2,7 +2,6 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom, map } from 'rxjs';
 import {
-  KakaoInformationResponseDTO,
   KakaoLoginRequestDTO,
 } from './dto/authValidation';
 import { JwtService } from '@nestjs/jwt';
@@ -18,7 +17,7 @@ export class AuthService {
     accessToken,
   }: KakaoLoginRequestDTO): Promise<object> {
     try {
-      const response: KakaoInformationResponseDTO = (
+      const response = (
         await firstValueFrom(
           this.httpService
             .get('https://kapi.kakao.com/v2/user/me', {
@@ -31,16 +30,19 @@ export class AuthService {
       /*
        *   User 컬렉션에 `response.id` 존재하는지 확인
        * */
-      const user = false;
+      const user = true;
       if (user) {
+        // return this.jwtService.sign({
+        //   payLoad: new KakaoInformationResponseDTO(response.id).id});
         return {
           token: this.jwtService.sign({ payLoad: response.id }),
         };
       } else {
-        return {
-          token: this.jwtService.sign({ payLoad: response.id }),
-          kakaoInfo: response,
-        };
+        // return {
+        //   token: this.jwtService.sign({ payLoad: response.id }),
+        //   kakaoInfo: response,
+        // };
+        // return new KakaoInformationResponseDTO(response.id, response);
       }
     } catch {
       throw new HttpException('토큰 똑바로 주십쇼', HttpStatus.UNAUTHORIZED);

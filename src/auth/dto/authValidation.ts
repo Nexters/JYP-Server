@@ -32,15 +32,21 @@ export class KakaoInformationRequestDTO implements KakaoUserInfoRequest {
 }
 
 export class KakaoInformationResponseDTO implements KakaoUserInformation {
-  public id: number;
-  public connected_at: string;
+  constructor(id, value?) {
+    this.id = id;
+    this.connected_at = value.connected_at;
+    this.properties = value.properties;
+    this.kakao_account = value.kakao_account;
+  }
+  readonly id: number;
+  readonly connected_at: string;
 
-  public properties: {
+  readonly properties: {
     nickname: string;
     profile_image: string;
     thumbnail_image: string;
   };
-  kakao_account: {
+  readonly kakao_account: {
     profile_nickname_needs_agreement: boolean;
     profile_image_needs_agreement: boolean;
     profile: object;
@@ -60,4 +66,8 @@ export class KakaoInformationResponseDTO implements KakaoUserInformation {
     gender_needs_agreement: boolean;
     gender: string;
   };
+
+  getId() {
+    return this.id;
+  }
 }
