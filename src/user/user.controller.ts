@@ -1,4 +1,11 @@
-import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  Patch,
+} from '@nestjs/common';
 import {
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
@@ -6,6 +13,7 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
+import { Option } from 'prelude-ts';
 import { UserDTO, UserUpdateDTO } from './dtos/user.dto';
 import { UserService } from './user.service';
 
@@ -23,7 +31,8 @@ export class UserController {
   @ApiInternalServerErrorResponse({ description: '서버 오류' })
   @Get(':id')
   public async getUser(@Param('id') id: string): Promise<UserDTO> {
-    return await this.userService.getUser(id);
+    const userDTO: Option<UserDTO> = await this.userService.getUser(id);
+    return userDTO.getOrThrow(new NotFoundException());
   }
 
   @ApiTags('User')
