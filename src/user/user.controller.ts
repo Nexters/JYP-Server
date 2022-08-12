@@ -5,7 +5,9 @@ import {
   NotFoundException,
   Param,
   Patch,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import {
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
@@ -29,6 +31,7 @@ export class UserController {
   @ApiOkResponse({ description: '성공', type: UserDTO })
   @ApiNotFoundResponse({ description: '유저를 찾을 수 없음' })
   @ApiInternalServerErrorResponse({ description: '서버 오류' })
+  @UseGuards(AuthGuard('jwt'))
   @Get(':id')
   public async getUser(@Param('id') id: string): Promise<UserDTO> {
     const userDTO: Option<UserDTO> = await this.userService.getUser(id);
@@ -42,6 +45,7 @@ export class UserController {
   })
   @ApiOkResponse({ description: '성공', type: UserDTO })
   @ApiInternalServerErrorResponse({ description: '서버 오류' })
+  @UseGuards(AuthGuard('jwt'))
   @Patch(':id')
   public async updateUser(
     @Param('id') id: string,

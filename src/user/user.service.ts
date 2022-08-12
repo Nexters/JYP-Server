@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Option } from 'prelude-ts';
+import { AuthVendor } from 'src/auth/authVendor';
 import { UserDTO, UserUpdateDTO } from './dtos/user.dto';
 import { UserRepository } from './user.repository';
 
@@ -43,5 +44,9 @@ export class UserService {
         personality,
       ),
     );
+  }
+
+  public generateId(authVendor: AuthVendor, authId: string) {
+    return `${authVendor}-${authId}`;
   }
 }

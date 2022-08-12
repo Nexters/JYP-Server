@@ -7,12 +7,15 @@ import {
   KakaoLoginResponseDTO,
 } from './dto/auth.dto';
 import { JwtService } from '@nestjs/jwt';
+import { UserService } from '../user/user.service';
+import { AuthVendor } from './authVendor';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly httpService: HttpService,
     private readonly jwtService: JwtService,
+    private readonly userService: UserService,
   ) {}
 
   public async validateKakaoUser({
@@ -35,15 +38,15 @@ export class AuthService {
       /*
        *   User 컬렉션에 `response.id` 존재하는지 확인
        * */
-      const user = false;
+      const id = this.userService.generateId(AuthVendor.KAKAO, response.id);
+      const userOrNone = await this.userService.getUser(id);
+      const payload = { id: id };
 
-      if (user) {
-        return new KakaoLoginResponseDTO(
-          this.jwtService.sign({ payLoad: response.id }),
-        );
+      if (userOrNone.isSome()) {
+        return new KakaoLoginResponseDTO(this.jwtService.sign(payload));
       } else {
         return new KakaoSignUpResponseDTO(
-          this.jwtService.sign({ payLoad: response.id }),
+          this.jwtService.sign(payload),
           response,
         );
       }

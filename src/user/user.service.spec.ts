@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Option } from 'prelude-ts';
+import { AuthVendor } from '../auth/authVendor';
 import { createMock } from 'ts-auto-mock';
 import { On, method } from 'ts-auto-mock/extension';
 import { UserUpdateDTO } from './dtos/user.dto';
@@ -107,5 +108,17 @@ describe('UserService', () => {
     expect(result.nickname).toBe(user.name);
     expect(result.profileImagePath).toBe(user.img);
     expect(result.personality).toBe(PERSONALITY[user.psn]);
+  });
+
+  it('generateId는 정해진 형식대로 ID를 생성한다', () => {
+    // given
+    const authVendor = AuthVendor.KAKAO;
+    const authId = '123456';
+
+    // when
+    const id = userService.generateId(authVendor, authId);
+
+    // then
+    expect(id).toBe('kakao-123456');
   });
 });
