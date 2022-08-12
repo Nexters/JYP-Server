@@ -3,13 +3,15 @@ import { Option } from 'prelude-ts';
 import { AuthVendor } from '../auth/authVendor';
 import { createMock } from 'ts-auto-mock';
 import { On, method } from 'ts-auto-mock/extension';
-import { UserUpdateDTO } from './dtos/user.dto';
+import { UserCreateDTO, UserUpdateDTO } from './dtos/user.dto';
 import { PERSONALITY } from './schemas/personality';
 import { User } from './schemas/user.schema';
 import { UserRepository } from './user.repository';
 import { UserService } from './user.service';
 
-const ID = 'id';
+const AUTH_VENDOR = AuthVendor.KAKAO;
+const AUTH_ID = 'id';
+const ID = 'kakao-id';
 const NICKNAME = 'nickname';
 const IMG = '/image/path';
 const PSN = PERSONALITY.ME;
@@ -99,7 +101,14 @@ describe('UserService', () => {
       .mockResolvedValue(user);
 
     // when
-    const result = await userService.createUser(ID, NICKNAME, IMG, PSN);
+    const userCreateDTO = new UserCreateDTO(
+      AUTH_VENDOR,
+      AUTH_ID,
+      NICKNAME,
+      IMG,
+      PSN,
+    );
+    const result = await userService.createUser(userCreateDTO);
 
     // then
     expect(insertOne).toBeCalledTimes(1);
@@ -111,14 +120,10 @@ describe('UserService', () => {
   });
 
   it('generateId는 정해진 형식대로 ID를 생성한다', () => {
-    // given
-    const authVendor = AuthVendor.KAKAO;
-    const authId = '123456';
-
     // when
-    const id = userService.generateId(authVendor, authId);
+    const id = userService.generateId(AUTH_VENDOR, AUTH_ID);
 
     // then
-    expect(id).toBe('kakao-123456');
+    expect(id).toBe(ID);
   });
 });

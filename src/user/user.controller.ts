@@ -5,10 +5,12 @@ import {
   NotFoundException,
   Param,
   Patch,
+  Post,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
+  ApiCreatedResponse,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -16,7 +18,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Option } from 'prelude-ts';
-import { UserDTO, UserUpdateDTO } from './dtos/user.dto';
+import { UserCreateDTO, UserDTO, UserUpdateDTO } from './dtos/user.dto';
 import { UserService } from './user.service';
 
 @Controller('user')
@@ -36,6 +38,20 @@ export class UserController {
   public async getUser(@Param('id') id: string): Promise<UserDTO> {
     const userDTO: Option<UserDTO> = await this.userService.getUser(id);
     return userDTO.getOrThrow(new NotFoundException());
+  }
+
+  @ApiTags('User')
+  @ApiOperation({
+    summary: '회원가입',
+    description: '새로운 유저를 생성한다.',
+  })
+  @ApiCreatedResponse({ description: '성공', type: UserDTO })
+  @ApiInternalServerErrorResponse({ description: '서버 오류' })
+  @Post()
+  public async createUser(
+    @Body() userCreateDTO: UserCreateDTO,
+  ): Promise<UserDTO> {
+    return await this.userService.createUser(userCreateDTO);
   }
 
   @ApiTags('User')
