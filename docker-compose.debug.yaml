@@ -1,0 +1,29 @@
+version: '3.9'
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+      - "9229:9229"
+    command: node --inspect=0.0.0.0:9229 dist/main.js
+    volumes:
+      - .:/code
+    environment:
+      - MONGO_USER=jyp-server
+      - MONGO_PASSWORD=password
+      - MONGO_HOST=mongo
+      - MONGO_PORT=27017
+      - MONGO_DB=jyp
+    links:
+      - "mongo:mongo"
+    depends_on:
+      - mongo
+  mongo:
+    image: "mongo:5.0"
+    volumes:
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=password
+      - JYP_SERVER_USERNAME=jyp-server
+      - JYP_SERVER_PASSWORD=password
