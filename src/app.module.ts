@@ -15,8 +15,6 @@ const MONGO_HOST = process.env.MONGO_HOST;
 const MONGO_PORT = process.env.MONGO_PORT;
 const MONGO_DB = process.env.MONGO_DB;
 
-console.info(MONGO_DB, MONGO_PORT, MONGO_HOST);
-
 @Module({
   imports: [
     UserModule,
