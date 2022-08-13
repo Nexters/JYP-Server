@@ -4,6 +4,7 @@ import {
   ArgumentsHost,
   UnauthorizedException,
   HttpException,
+  // NotFoundException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 
@@ -15,13 +16,9 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const request = ctx.getRequest<Request>();
     const status = exception.getStatus();
 
-    console.info('메세지', exception.message);
-    console.info('코드', status);
     console.log(exception.stack);
     response.status(status).json({
-      statusCode: status,
-      timestamp: new Date().toISOString(),
-      path: request.url,
+      statusCode: String(status) + '00',
       message: exception.message,
     });
   }
@@ -32,20 +29,21 @@ export class UnauthorizedExceptionFilter implements ExceptionFilter {
   catch(exception: UnauthorizedException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    const request = ctx.getRequest<Request>();
+    // const request = ctx.getRequest<Request>();
     const status = exception.getStatus();
 
-    console.info('메세지', exception.message);
-    console.info('코드', status);
-    console.log(exception.stack);
+    console.info(exception.stack);
     response.status(status).json({
-      statusCode: status,
-      timestamp: new Date().toISOString(),
-      path: request.url,
+      statusCode: String(status) + '01',
       message: exception.message,
     });
   }
 }
+
+// @Catch(NotFoundException)
+// export class NotFoundExceptionFilter implements ExceptionFilter {
+//   catch(exception: NotFoundException, host: ArgumentsHost) {}
+// }
 
 @Catch(Error)
 export class ErrorFilter implements ExceptionFilter {

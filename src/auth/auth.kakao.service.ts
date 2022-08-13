@@ -1,6 +1,6 @@
 import {
-  HttpException,
   Injectable,
+  UnauthorizedException,
   // UnauthorizedException,
 } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
@@ -16,9 +16,8 @@ export class AuthKakaoService {
   public async validateKakaoUser(
     accessToken: KakaoLoginRequestDTO,
   ): Promise<KakaoLoginResponseDTO> {
-    console.info('validate 진입');
     try {
-      const response = (
+      return (
         await firstValueFrom(
           this.httpService
             .get('https://kapi.kakao.com/v2/user/me', {
@@ -28,11 +27,8 @@ export class AuthKakaoService {
             .pipe(map((response) => [response.data, response.status])),
         )
       )[0];
-      console.info('validate 종료');
-      return response;
-    } catch {
-      // throw new UnauthorizedException('Invalid Token', '카카오 토큰');
-      throw new HttpException('아나', 400);
+    } catch (e) {
+      throw new UnauthorizedException(e.response.data.msg, '카카오 토큰');
     }
   }
 }
