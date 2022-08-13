@@ -4,10 +4,8 @@ import {
   // UnauthorizedException,
 } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
-// import { firstValueFrom, map } from 'rxjs';
 import { KakaoLoginRequestDTO, KakaoLoginResponseDTO } from './dto/auth.dto';
 import { firstValueFrom, map } from 'rxjs';
-// import { HttpExceptionFilter } from '../http/http-exception.filter';
 
 @Injectable()
 export class AuthKakaoService {
@@ -22,7 +20,7 @@ export class AuthKakaoService {
           this.httpService
             .get('https://kapi.kakao.com/v2/user/me', {
               method: 'GET',
-              headers: { Authorization: `Bearer ${accessToken}` },
+              headers: { Authorization: `${accessToken}` },
             })
             .pipe(map((response) => [response.data, response.status])),
         )
