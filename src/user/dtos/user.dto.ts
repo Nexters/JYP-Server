@@ -9,22 +9,22 @@ export class UserDTO implements User {
   @ApiProperty({
     description: '유저 ID',
   })
-  id: string;
+  readonly id: string;
 
   @ApiProperty({
     description: '유저 닉네임',
   })
-  nickname: string;
+  readonly nickname: string;
 
   @ApiProperty({
     description: '프로필 이미지 경로',
   })
-  profileImagePath: string;
+  readonly profileImagePath: string;
 
   @ApiProperty({
     description: '유저 성향',
   })
-  personality: string;
+  readonly personality: string;
 
   static from(user: UserDoc): UserDTO {
     return new UserDTO(user._id, user.name, user.img, PERSONALITY[user.psn]);
@@ -50,28 +50,28 @@ export class UserCreateDTO implements UserCreate {
     enum: Object.values(AuthVendor),
   })
   @IsEnum(AuthVendor)
-  authVendor: AuthVendor;
+  readonly authVendor: AuthVendor;
 
   @ApiProperty({
     description: 'Auth 벤더가 제공하는 유저 ID',
   })
-  authId: string;
+  readonly authId: string;
 
   @ApiProperty({
     description: '유저 닉네임',
   })
-  nickname: string;
+  readonly nickname: string;
 
   @ApiProperty({
     description: '프로필 이미지 경로',
   })
-  profileImagePath: string;
+  readonly profileImagePath: string;
 
   @ApiProperty({
     description: '유저 성향 ID',
     enum: Object.keys(PERSONALITY),
   })
-  personalityId: string;
+  readonly personalityId: string;
 
   constructor(
     authVendor: AuthVendor,
@@ -93,13 +93,13 @@ export class UserUpdateDTO implements UserUpdate {
     description: '유저 닉네임',
     required: false,
   })
-  nickname: string;
+  readonly nickname: string;
 
   @ApiProperty({
     description: '프로필 이미지 경로',
     required: false,
   })
-  profileImagePath: string;
+  readonly profileImagePath: string;
 
   constructor(nickname: string, profileImagePath: string) {
     this.nickname = nickname;
