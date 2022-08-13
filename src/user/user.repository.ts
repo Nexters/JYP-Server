@@ -10,12 +10,7 @@ export class UserRepository {
   ) {}
 
   public async findOne(id: string): Promise<User> {
-    const user: User = await this.userModel.findOne({ _id: id }).exec();
-    if (user == null) {
-      throw new NotFoundException();
-    } else {
-      return user;
-    }
+    return await this.userModel.findOne({ _id: id }).exec();
   }
 
   public async updateOne(

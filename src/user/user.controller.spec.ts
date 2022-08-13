@@ -1,4 +1,6 @@
+import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { Option } from 'prelude-ts';
 import { createMock } from 'ts-auto-mock';
 import { On, method } from 'ts-auto-mock/extension';
 import { UserDTO, UserUpdateDTO } from './dtos/user.dto';
@@ -37,7 +39,7 @@ describe('UserController', () => {
     // given
     const getUser = On(userService)
       .get(method(() => userService.getUser))
-      .mockResolvedValue(userDTO);
+      .mockResolvedValue(Option.of(userDTO));
 
     // when
     const result = await userController.getUser(ID);
@@ -46,6 +48,16 @@ describe('UserController', () => {
     expect(getUser).toBeCalledTimes(1);
     expect(getUser).toBeCalledWith(ID);
     expect(result).toEqual(userDTO);
+  });
+
+  it('UserService.getUser가 None을 리턴할 때 getUser는 NotFoundException을 throw한다', async () => {
+    // given
+    const getUser = On(userService)
+      .get(method(() => userService.getUser))
+      .mockResolvedValue(Option.none());
+
+    // then
+    expect(userController.getUser(ID)).rejects.toThrow(new NotFoundException());
   });
 
   it('updateUser는 UserService.updateUser를 호출해 데이터를 받아 리턴한다', async () => {

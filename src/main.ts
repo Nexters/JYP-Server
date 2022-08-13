@@ -15,7 +15,7 @@ async function bootstrap() {
     .setTitle('Server API')
     .setDescription('Dev Server Docs')
     .setVersion('1.0')
-    .addCookieAuth('connect.sid')
+    .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);

@@ -6,6 +6,11 @@ import { PassportModule } from '@nestjs/passport';
 import { APP_PIPE } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './security/passport.jwt.strategy';
+import { UserModule } from 'src/user/user.module';
+import { UserService } from 'src/user/user.service';
+import { UserRepository } from 'src/user/user.repository';
+import { MongooseModule } from '@nestjs/mongoose';
+import { User, UserSchema } from 'src/user/schemas/user.schema';
 
 @Module({
   imports: [
@@ -15,6 +20,8 @@ import { JwtStrategy } from './security/passport.jwt.strategy';
       signOptions: { expiresIn: '300s' },
     }),
     PassportModule,
+    UserModule,
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
   ],
   providers: [
     AuthService,
@@ -23,6 +30,8 @@ import { JwtStrategy } from './security/passport.jwt.strategy';
       useClass: ValidationPipe,
     },
     JwtStrategy,
+    UserService,
+    UserRepository,
   ],
   controllers: [AuthController],
 })

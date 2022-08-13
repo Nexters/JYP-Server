@@ -7,6 +7,8 @@ import { AuthController } from './auth.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './security/passport.jwt.strategy';
+import { UserService } from '../user/user.service';
+import { createMock } from 'ts-auto-mock';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -28,9 +30,13 @@ describe('AuthService', () => {
           useClass: ValidationPipe,
         },
         JwtStrategy,
+        UserService,
       ],
       controllers: [AuthController],
-    }).compile();
+    })
+      .overrideProvider(UserService)
+      .useValue(createMock<UserService>())
+      .compile();
 
     service = module.get<AuthService>(AuthService);
   });
