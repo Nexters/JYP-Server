@@ -50,28 +50,28 @@ export class KakaoSignUpResponseDTO implements KakaoUserInformation {
   readonly connected_at: string;
 
   readonly properties: {
-    nickname: string;
-    profile_image: string;
-    thumbnail_image: string;
+    readonly nickname: string;
+    readonly profile_image: string;
+    readonly thumbnail_image: string;
   };
   readonly kakao_account: {
-    profile_nickname_needs_agreement: boolean;
-    profile_image_needs_agreement: boolean;
-    profile: object;
-    has_email: boolean;
-    email_needs_agreement: boolean;
-    is_email_valid: boolean;
-    is_email_verified: boolean;
-    email: string;
-    has_age_range: boolean;
-    age_range_needs_agreement: boolean;
-    age_range: string;
-    has_birthday: boolean;
-    birthday_needs_agreement: boolean;
-    birthday: string;
-    birthday_type: string;
-    has_gender: boolean;
-    gender_needs_agreement: boolean;
-    gender: string;
+    readonly profile_nickname_needs_agreement: boolean;
+    readonly profile_image_needs_agreement: boolean;
+    readonly profile: object;
+    readonly has_email: boolean;
+    readonly email_needs_agreement: boolean;
+    readonly is_email_valid: boolean;
+    readonly is_email_verified: boolean;
+    readonly email: string;
+    readonly has_age_range: boolean;
+    readonly age_range_needs_agreement: boolean;
+    readonly age_range: string;
+    readonly has_birthday: boolean;
+    readonly birthday_needs_agreement: boolean;
+    readonly birthday: string;
+    readonly birthday_type: string;
+    readonly has_gender: boolean;
+    readonly gender_needs_agreement: boolean;
+    readonly gender: string;
   };
 }
