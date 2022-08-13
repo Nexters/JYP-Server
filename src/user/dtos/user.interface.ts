@@ -12,7 +12,7 @@ export interface UserCreate {
   authId: string;
   nickname: string;
   profileImagePath: string;
-  personality: string;
+  personalityId: string;
 }
 
 export interface UserUpdate {

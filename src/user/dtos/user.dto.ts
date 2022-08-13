@@ -68,23 +68,23 @@ export class UserCreateDTO implements UserCreate {
   profileImagePath: string;
 
   @ApiProperty({
-    description: '유저 성향',
+    description: '유저 성향 ID',
     enum: Object.keys(PERSONALITY),
   })
-  personality: string;
+  personalityId: string;
 
   constructor(
     authVendor: AuthVendor,
     authId: string,
     nickname: string,
     profileImagePath: string,
-    personality: string,
+    personalityId: string,
   ) {
     this.authVendor = authVendor;
     this.authId = authId;
     this.nickname = nickname;
     this.profileImagePath = profileImagePath;
-    this.personality = personality;
+    this.personalityId = personalityId;
   }
 }
 

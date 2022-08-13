@@ -37,7 +37,7 @@ export class UserService {
         id,
         userCreateDTO.nickname,
         userCreateDTO.profileImagePath,
-        userCreateDTO.personality,
+        userCreateDTO.personalityId,
       ),
     );
   }
