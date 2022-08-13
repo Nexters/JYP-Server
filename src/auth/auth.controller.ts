@@ -17,7 +17,6 @@ export class AuthController {
   @UseFilters(new HttpExceptionFilter())
   @Get('/kakao/login')
   async kakaoLogin(@Headers() headers): Promise<KakaoLoginResponseDTO> {
-    console.info('header: ', headers);
     return await this.authService.validateKakaoUser(headers['authorization']);
   }
 }
