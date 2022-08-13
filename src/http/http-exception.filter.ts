@@ -14,7 +14,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const request = ctx.getRequest<Request>();
     const status = exception.getStatus();
 
-    console.info('익셉션~');
     console.log(exception.stack);
     response.status(status).json({
       statusCode: status,

@@ -54,6 +54,7 @@ export class KakaoSignUpResponseDTO implements KakaoUserInformation {
     readonly profile_image: string;
     readonly thumbnail_image: string;
   };
+
   readonly kakao_account: {
     readonly profile_nickname_needs_agreement: boolean;
     readonly profile_image_needs_agreement: boolean;
