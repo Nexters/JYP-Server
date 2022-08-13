@@ -7,35 +7,35 @@ import {
 } from './dto/auth.dto';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
-import { AuthKakaoService } from './auth.kakao.service';
+// import { AuthKakaoService } from './auth.kakao.service';
 import { AuthVendor } from './authVendor';
+import { firstValueFrom, map } from 'rxjs';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly httpService: HttpService,
     private readonly jwtService: JwtService,
-    private readonly userService: UserService,
-    private readonly authKakaoService: AuthKakaoService,
+    private readonly userService: UserService, // private readonly authKakaoService: AuthKakaoService,
   ) {}
 
   public async validateKakaoUser(
     accessToken: KakaoLoginRequestDTO,
   ): Promise<KakaoLoginResponseDTO | KakaoSignUpResponseDTO> {
     try {
-      // const response = (
-      //   await firstValueFrom(
-      //     this.httpService
-      //       .get('https://kapi.kakao.com/v2/user/me', {
-      //         method: 'GET',
-      //         headers: { Authorization: `Bearer ${accessToken}` },
-      //       })
-      //       .pipe(map((response) => [response.data, response.status])),
-      //   )
-      // )[0];
+      const result = (
+        await firstValueFrom(
+          this.httpService
+            .get('https://kapi.kakao.com/v2/user/me', {
+              method: 'GET',
+              headers: { Authorization: `Bearer ${accessToken}` },
+            })
+            .pipe(map((response) => [response.data, response.status])),
+        )
+      )[0];
 
-      const result: KakaoLoginResponseDTO =
-        await this.authKakaoService.validateKakaoUser(accessToken);
+      // const result: KakaoLoginResponseDTO =
+      //   await this.authKakaoService.validateKakaoUser(accessToken);
 
       console.info('카카오 결과: ', result);
       /*

@@ -9,6 +9,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './security/passport.jwt.strategy';
 import { UserService } from '../user/user.service';
 import { createMock } from 'ts-auto-mock';
+import { AuthKakaoService } from './auth.kakao.service';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -31,6 +32,7 @@ describe('AuthService', () => {
         },
         JwtStrategy,
         UserService,
+        AuthKakaoService,
       ],
       controllers: [AuthController],
     })
