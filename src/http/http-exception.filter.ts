@@ -14,6 +14,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const request = ctx.getRequest<Request>();
     const status = exception.getStatus();
 
+    console.info('메세지', exception.message);
+    console.info('코드', status);
     console.log(exception.stack);
     response.status(status).json({
       statusCode: status,
@@ -24,7 +26,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
   }
 }
 
-// TODO: Error Filter 정의 필요
 @Catch(Error)
 export class ErrorFilter implements ExceptionFilter {
   catch(error: Error, host: ArgumentsHost) {
