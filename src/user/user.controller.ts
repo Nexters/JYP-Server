@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
@@ -33,6 +34,7 @@ export class UserController {
   @ApiOkResponse({ description: '성공', type: UserDTO })
   @ApiNotFoundResponse({ description: '유저를 찾을 수 없음' })
   @ApiInternalServerErrorResponse({ description: '서버 오류' })
+  @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @Get(':id')
   public async getUser(@Param('id') id: string): Promise<UserDTO> {
@@ -47,6 +49,7 @@ export class UserController {
   })
   @ApiCreatedResponse({ description: '성공', type: UserDTO })
   @ApiInternalServerErrorResponse({ description: '서버 오류' })
+  @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @Post()
   public async createUser(
@@ -62,6 +65,7 @@ export class UserController {
   })
   @ApiOkResponse({ description: '성공', type: UserDTO })
   @ApiInternalServerErrorResponse({ description: '서버 오류' })
+  @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @Patch(':id')
   public async updateUser(
