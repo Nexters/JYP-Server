@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
-import { firstValueFrom, map } from 'rxjs';
+// import { firstValueFrom, map } from 'rxjs';
 import {
   KakaoSignUpResponseDTO,
   KakaoLoginRequestDTO,
@@ -9,6 +9,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
 import { AuthVendor } from './authVendor';
+import { firstValueFrom, map } from 'rxjs';
 
 @Injectable()
 export class AuthService {
@@ -18,11 +19,9 @@ export class AuthService {
     private readonly userService: UserService,
   ) {}
 
-  public async validateKakaoUser({
-    accessToken,
-  }: KakaoLoginRequestDTO): Promise<
-    KakaoLoginResponseDTO | KakaoSignUpResponseDTO
-  > {
+  public async validateKakaoUser(
+    accessToken: KakaoLoginRequestDTO,
+  ): Promise<KakaoLoginResponseDTO | KakaoSignUpResponseDTO> {
     try {
       const response = (
         await firstValueFrom(

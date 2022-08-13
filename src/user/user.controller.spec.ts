@@ -52,7 +52,7 @@ describe('UserController', () => {
 
   it('UserService.getUser가 None을 리턴할 때 getUser는 NotFoundException을 throw한다', async () => {
     // given
-    const getUser = On(userService)
+    On(userService)
       .get(method(() => userService.getUser))
       .mockResolvedValue(Option.none());
 

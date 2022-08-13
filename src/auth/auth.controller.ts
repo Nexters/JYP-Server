@@ -1,5 +1,6 @@
-import { Body, Controller, Post, UseFilters } from '@nestjs/common';
+import { Controller, Get, UseFilters } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { Headers } from '@nestjs/common';
 import {
   KakaoInformationRequestDTO,
   KakaoLoginResponseDTO,
@@ -14,12 +15,8 @@ export class AuthController {
   @ApiBody({ type: KakaoInformationRequestDTO })
   @ApiOperation({ summary: '카카오 로그인' })
   @UseFilters(new HttpExceptionFilter())
-  @Post('/kakao/login')
-  async kakaoLogin(
-    @Body() requestBody: string,
-  ): Promise<KakaoLoginResponseDTO> {
-    return await this.authService.validateKakaoUser({
-      accessToken: requestBody['accessToken'],
-    });
+  @Get('/kakao/login')
+  async kakaoLogin(@Headers() headers): Promise<KakaoLoginResponseDTO> {
+    return await this.authService.validateKakaoUser(headers['authorization']);
   }
 }
