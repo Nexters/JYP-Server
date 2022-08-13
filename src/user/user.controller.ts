@@ -47,6 +47,7 @@ export class UserController {
   })
   @ApiCreatedResponse({ description: '성공', type: UserDTO })
   @ApiInternalServerErrorResponse({ description: '서버 오류' })
+  @UseGuards(AuthGuard('jwt'))
   @Post()
   public async createUser(
     @Body() userCreateDTO: UserCreateDTO,
