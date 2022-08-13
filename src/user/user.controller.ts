@@ -22,7 +22,7 @@ import { Option } from 'prelude-ts';
 import { UserCreateDTO, UserDTO, UserUpdateDTO } from './dtos/user.dto';
 import { UserService } from './user.service';
 
-@Controller('user')
+@Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
