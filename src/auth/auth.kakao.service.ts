@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  UnauthorizedException,
-  // UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { KakaoLoginRequestDTO, KakaoLoginResponseDTO } from './dto/auth.dto';
 import { firstValueFrom, map } from 'rxjs';
