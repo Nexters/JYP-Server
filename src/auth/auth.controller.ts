@@ -2,10 +2,14 @@ import { Controller, Get, UseFilters } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Headers } from '@nestjs/common';
 import {
-  KakaoInformationRequestDTO,
   KakaoLoginResponseDTO,
 } from './dto/auth.dto';
-import { ApiBody, ApiOperation } from '@nestjs/swagger';
+import {
+  ApiBearerAuth, ApiInternalServerErrorResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import {
   HttpExceptionFilter,
   UnauthorizedExceptionFilter,
@@ -15,8 +19,15 @@ import {
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @ApiBody({ type: KakaoInformationRequestDTO })
+  @ApiTags('Auth')
+  @ApiOperation({
+    summary: '카카오 로그인',
+    description: '최초 로그인 여부에 따라 회원가입 / 로그인 을 수행한다.',
+  })
+  @ApiOkResponse({ description: '성공', type: KakaoLoginResponseDTO })
+  @ApiInternalServerErrorResponse({description: '서버 오류'})
   @ApiOperation({ summary: '카카오 로그인' })
+  @ApiBearerAuth('카카오 Access Token')
   @UseFilters(new HttpExceptionFilter(), new UnauthorizedExceptionFilter())
   @Get('/kakao/login')
   async kakaoLogin(@Headers() headers): Promise<KakaoLoginResponseDTO> {
