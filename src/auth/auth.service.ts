@@ -25,9 +25,6 @@ export class AuthService {
     const result: KakaoLoginResponseDTO =
       await this.authKakaoService.validateKakaoUser(accessToken);
 
-    /*
-     *   User 컬렉션에 `response.id` 존재하는지 확인
-     * */
     const id = this.userService.generateId(AuthVendor.KAKAO, result['id']);
     const userOrNone = await this.userService.getUser(id);
     const payload = { id: id };
