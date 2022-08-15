@@ -7,31 +7,31 @@ export interface KakaoLoginResponse {
 }
 
 export interface KakaoUserInformation {
-  id: number;
-  connected_at?: string;
+  id: string;
+  connectedAt?: string;
   properties?: {
     nickname: string;
-    profile_image: string;
-    thumbnail_image: string;
+    profileImage: string;
+    thumbnailImage: string;
   };
-  kakao_account?: {
-    profile_nickname_needs_agreement: boolean;
-    profile_image_needs_agreement: boolean;
+  kakaoAccount?: {
+    profileNicknameNeedsAgreement: boolean;
+    profileImageNeedsAgreement: boolean;
     profile: object;
-    has_email: boolean;
-    email_needs_agreement: boolean;
-    is_email_valid: boolean;
-    is_email_verified: boolean;
+    hasEmail: boolean;
+    emailNeedsAgreement: boolean;
+    isEmailValid: boolean;
+    isEmailVerified: boolean;
     email: string;
-    has_age_range: boolean;
-    age_range_needs_agreement: boolean;
-    age_range: string;
-    has_birthday: boolean;
-    birthday_needs_agreement: boolean;
+    hasAgeRange: boolean;
+    ageRangeNeedsAgreement: boolean;
+    ageRange: string;
+    hasBirthday: boolean;
+    birthdayNeedsAgreement: boolean;
     birthday: string;
-    birthday_type: string;
-    has_gender: boolean;
-    gender_needs_agreement: boolean;
+    birthdayType: string;
+    hasGender: boolean;
+    genderNeedsAgreement: boolean;
     gender: string;
   };
 }
