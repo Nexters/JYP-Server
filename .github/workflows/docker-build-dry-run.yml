@@ -13,9 +13,15 @@ jobs:
         with:
           node-version: 18
       - uses: bahmutov/npm-install@v1
-      - run: npm run lint
-      - run: npm run test
-      - run: npm run test:e2e
+      - 
+        name: Lint
+        run: npm run lint
+      - 
+        name: Unit test
+        run: npm run test
+      - 
+        name: End-to-End test
+        run: npm run test:e2e
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v2
