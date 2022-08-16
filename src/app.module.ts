@@ -4,9 +4,8 @@ import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
-import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
-import { TransformInterceptor } from './http/http.interceptor';
-import { ErrorFilter } from './http/http-exception.filter';
+// import { APP_FILTER } from '@nestjs/core';
+// import { ErrorFilter } from './http/http-exception.filter';
 import { MongooseModule } from '@nestjs/mongoose';
 
 const MONGO_USER = process.env.MONGO_USER;
@@ -28,14 +27,6 @@ const MONGO_DB = process.env.MONGO_DB;
   controllers: [AppController],
   providers: [
     AppService,
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: TransformInterceptor,
-    },
-    {
-      provide: APP_FILTER,
-      useClass: ErrorFilter,
-    },
   ],
 })
 export class AppModule {}

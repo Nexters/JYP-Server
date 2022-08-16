@@ -32,7 +32,10 @@ export class AuthService {
     if (userOrNone.isSome()) {
       return new KakaoLoginResponseDTO(this.jwtService.sign(payload));
     } else {
-      return new KakaoSignUpResponseDTO(this.jwtService.sign(payload), toCamel(result));
+      return new KakaoSignUpResponseDTO(
+        this.jwtService.sign(payload),
+        toCamel(result),
+      );
     }
   }
 }
