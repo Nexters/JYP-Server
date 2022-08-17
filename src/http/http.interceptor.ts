@@ -4,7 +4,7 @@ import {
   ExecutionContext,
   CallHandler,
 } from '@nestjs/common';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 
 export interface Response<T> {
   data: T;
@@ -18,6 +18,12 @@ export class TransformInterceptor<T>
     context: ExecutionContext,
     next: CallHandler,
   ): Observable<Response<T>> {
-    return next.handle().pipe();
+    return next.handle().pipe(
+      map((data) => ({
+        data: data,
+        message: 'Success',
+        code: context.switchToHttp().getResponse().statusCode,
+      })),
+    );
   }
 }

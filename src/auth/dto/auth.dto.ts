@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   KakaoUserInformation,
-  KakaoUserInfoRequest,
   KakaoLoginRequest,
   KakaoLoginResponse,
 } from './auth.interface';
@@ -32,47 +31,49 @@ export class KakaoLoginResponseDTO implements KakaoLoginResponse {
   }
 }
 
-export class KakaoInformationRequestDTO implements KakaoUserInfoRequest {
-  public accessToken: string;
-}
-
 export class KakaoSignUpResponseDTO implements KakaoUserInformation {
+  readonly token: string;
+
+  readonly id: string;
+  readonly connectedAt: string;
+
+  properties: {
+    readonly nickname: string;
+    profileImage: string;
+    thumbnailImage: string;
+  };
+
+  kakaoAccount: {
+    profileNicknameNeedsAgreement: boolean;
+    profileImageNeedsAgreement: boolean;
+    profile: {
+      nickname: string;
+      thumbnailImageUrl: string;
+      profileImageUrl: string;
+      isDefaultImage: string;
+    };
+    hasEmail: boolean;
+    emailNeedsAgreement: boolean;
+    isEmailValid: boolean;
+    isEmailVerified: boolean;
+    email: string;
+    hasAgeRange: boolean;
+    ageRangeNeedsAgreement: boolean;
+    ageRange: string;
+    hasBirthday: boolean;
+    birthdayNeedsAgreement: boolean;
+    birthday: string;
+    birthdayType: string;
+    hasGender: boolean;
+    genderNeedsAgreement: boolean;
+    gender: string;
+  };
+
   constructor(token, value?) {
     this.token = token;
     this.id = value.id;
-    this.connected_at = value.connected_at;
+    this.connectedAt = value.connected_at;
     this.properties = value.properties;
-    this.kakao_account = value.kakao_account;
+    this.kakaoAccount = value.kakaoAccount;
   }
-  readonly token: string;
-
-  readonly id: number;
-  readonly connected_at: string;
-
-  readonly properties: {
-    readonly nickname: string;
-    readonly profile_image: string;
-    readonly thumbnail_image: string;
-  };
-
-  readonly kakao_account: {
-    readonly profile_nickname_needs_agreement: boolean;
-    readonly profile_image_needs_agreement: boolean;
-    readonly profile: object;
-    readonly has_email: boolean;
-    readonly email_needs_agreement: boolean;
-    readonly is_email_valid: boolean;
-    readonly is_email_verified: boolean;
-    readonly email: string;
-    readonly has_age_range: boolean;
-    readonly age_range_needs_agreement: boolean;
-    readonly age_range: string;
-    readonly has_birthday: boolean;
-    readonly birthday_needs_agreement: boolean;
-    readonly birthday: string;
-    readonly birthday_type: string;
-    readonly has_gender: boolean;
-    readonly gender_needs_agreement: boolean;
-    readonly gender: string;
-  };
 }
