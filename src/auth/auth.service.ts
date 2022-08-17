@@ -22,10 +22,12 @@ export class AuthService {
 
   public async validateKakaoUser(
     accessToken: KakaoLoginRequestDTO,
-  ): Promise<KakaoLoginResponseDTO | any> {
-    const result = await this.authKakaoService.validateKakaoUser(accessToken);
+  ): Promise<KakaoLoginResponseDTO | KakaoSignUpResponseDTO> {
+    const kakaoInfo = await this.authKakaoService.validateKakaoUser(
+      accessToken,
+    );
 
-    const id = this.userService.generateId(AuthVendor.KAKAO, result['id']);
+    const id = this.userService.generateId(AuthVendor.KAKAO, kakaoInfo['id']);
     const userOrNone = await this.userService.getUser(id);
     const payload = { id: id };
 
@@ -34,7 +36,7 @@ export class AuthService {
     } else {
       return new KakaoSignUpResponseDTO(
         this.jwtService.sign(payload),
-        toCamel(result),
+        toCamel(kakaoInfo),
       );
     }
   }

@@ -11,6 +11,7 @@ import { UserService } from '../user/user.service';
 import { UserRepository } from '../user/user.repository';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from '../user/schemas/user.schema';
+import { AuthKakaoService } from './auth.kakao.service';
 
 @Module({
   imports: [

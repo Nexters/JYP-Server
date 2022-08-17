@@ -12,28 +12,27 @@ export class HttpExceptionFilter implements ExceptionFilter {
   catch(exception: HttpException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    // const request = ctx.getRequest<Request>();
     const status = exception.getStatus();
 
     console.log(exception.stack);
     response.status(status).json({
-      statusCode: String(status) + '00',
+      code: String(status) + '00',
       message: exception.message,
     });
   }
 }
 
+// TODO: const request = ctx.getRequest<Request>();
 @Catch(UnauthorizedException)
 export class UnauthorizedExceptionFilter implements ExceptionFilter {
   catch(exception: UnauthorizedException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    // const request = ctx.getRequest<Request>();
     const status = exception.getStatus();
 
     console.info(exception.stack);
     response.status(status).json({
-      statusCode: String(status) + '01',
+      code: String(status) + '01',
       message: exception.message,
     });
   }
@@ -45,7 +44,7 @@ export class ErrorFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
 
-    response.status(401).json({
+    response.status(400).json({
       message: error.message,
     });
   }

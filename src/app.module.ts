@@ -23,8 +23,6 @@ const MONGO_DB = process.env.MONGO_DB;
     ),
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-  ],
+  providers: [AppService],
 })
 export class AppModule {}

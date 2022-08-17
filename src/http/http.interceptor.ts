@@ -22,7 +22,7 @@ export class TransformInterceptor<T>
       map((data) => ({
         data: data,
         message: 'Success',
-        statusCode: context.switchToHttp().getResponse().statusCode,
+        code: context.switchToHttp().getResponse().statusCode,
       })),
     );
   }
