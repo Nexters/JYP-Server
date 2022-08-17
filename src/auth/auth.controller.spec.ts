@@ -10,9 +10,11 @@ import { JwtStrategy } from './security/passport.jwt.strategy';
 import { UserService } from '../user/user.service';
 import { createMock } from 'ts-auto-mock';
 import { AuthKakaoService } from './auth.kakao.service';
+import { method, On } from 'ts-auto-mock/extension';
 
 describe('AuthController', () => {
-  let controller: AuthController;
+  let authController: AuthController;
+  let authService: AuthService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -40,10 +42,23 @@ describe('AuthController', () => {
       .useValue(createMock<UserService>())
       .compile();
 
-    controller = module.get<AuthController>(AuthController);
+    authController = module.get<AuthController>(AuthController);
+    authService = module.get<AuthService>(AuthService);
   });
 
   it('should be defined', () => {
-    expect(controller).toBeDefined();
+    expect(authController).toBeDefined();
   });
+
+  it('kakaoLogin은 AuthService.validateKakaoUser를 ' +
+    '호출해 토큰 혹은 토큰/카카오정보를 리턴한다', async () => {
+    // given
+    const getToken = On(authService)
+      .get(method)
+
+    // when
+
+    // then
+  })
+
 });
