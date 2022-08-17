@@ -7,6 +7,20 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - uses: bahmutov/npm-install@v1
+      - 
+        name: Lint
+        run: npm run lint
+      - 
+        name: Unit test
+        run: npm run test
+      - 
+        name: End-to-End test
+        run: npm run test:e2e
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v2
