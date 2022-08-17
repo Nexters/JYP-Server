@@ -6,12 +6,11 @@ import { PassportModule } from '@nestjs/passport';
 import { APP_PIPE } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './security/passport.jwt.strategy';
-import { UserModule } from 'src/user/user.module';
-import { UserService } from 'src/user/user.service';
-import { UserRepository } from 'src/user/user.repository';
+import { UserModule } from '../user/user.module';
+import { UserService } from '../user/user.service';
+import { UserRepository } from '../user/user.repository';
 import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from 'src/user/schemas/user.schema';
-import { AuthKakaoService } from './auth.kakao.service';
+import { User, UserSchema } from '../user/schemas/user.schema';
 
 @Module({
   imports: [
