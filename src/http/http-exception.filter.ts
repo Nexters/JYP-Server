@@ -4,7 +4,6 @@ import {
   ArgumentsHost,
   UnauthorizedException,
   HttpException,
-  // NotFoundException,
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -39,11 +38,6 @@ export class UnauthorizedExceptionFilter implements ExceptionFilter {
     });
   }
 }
-
-// @Catch(NotFoundException)
-// export class NotFoundExceptionFilter implements ExceptionFilter {
-//   catch(exception: NotFoundException, host: ArgumentsHost) {}
-// }
 
 @Catch(Error)
 export class ErrorFilter implements ExceptionFilter {
