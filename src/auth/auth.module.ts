@@ -12,13 +12,27 @@ import { UserRepository } from '../user/user.repository';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from '../user/schemas/user.schema';
 import { AuthKakaoService } from './auth.kakao.service';
+import { Environment } from '../common/environment';
 
 @Module({
   imports: [
     HttpModule,
-    JwtModule.register({
-      secret: `${process.env.JWT_SECRET_KEY}`,
-      signOptions: { expiresIn: '300s' },
+    JwtModule.registerAsync({
+      useFactory: () => {
+        if (process.env.ENV == Environment.PRODUCTION) {
+          return {
+            publicKey: process.env.JWT_PUBLIC_KEY,
+            privateKey: process.env.JWT_PRIVATE_KEY,
+            signOptions: {
+              expiresIn: '300s',
+              issuer: 'journeypiki',
+              algorithm: 'RS256',
+            },
+          };
+        } else {
+          return { secret: process.env.JWT_SECRET_KEY };
+        }
+      },
     }),
     PassportModule,
     UserModule,
