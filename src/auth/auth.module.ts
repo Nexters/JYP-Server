@@ -24,7 +24,7 @@ import { Environment } from '../common/environment';
             publicKey: process.env.JWT_PUBLIC_KEY,
             privateKey: process.env.JWT_PRIVATE_KEY,
             signOptions: {
-              expiresIn: '300s',
+              expiresIn: '1h',
               issuer: 'journeypiki',
               algorithm: 'RS256',
             },
