@@ -38,6 +38,8 @@ describe('AuthController', () => {
     })
       .overrideProvider(UserService)
       .useValue(createMock<UserService>())
+      .overrideProvider(JwtStrategy)
+      .useValue(createMock<JwtStrategy>())
       .compile();
 
     controller = module.get<AuthController>(AuthController);
