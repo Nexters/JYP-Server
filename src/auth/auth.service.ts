@@ -23,7 +23,7 @@ export class AuthService {
   public async validateKakaoUser(
     accessToken: KakaoLoginRequestDTO,
   ): Promise<KakaoLoginResponseDTO | KakaoSignUpResponseDTO> {
-    const kakaoInfo = await this.authKakaoService.validateKakaoUser(
+    const kakaoInfo = await this.authKakaoService.getKakaoInfo(
       accessToken,
     );
 

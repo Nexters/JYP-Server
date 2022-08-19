@@ -7,7 +7,7 @@ import { firstValueFrom, map } from 'rxjs';
 export class AuthKakaoService {
   constructor(private httpService: HttpService) {}
 
-  public async validateKakaoUser(
+  public async getKakaoInfo(
     accessToken: KakaoLoginRequestDTO,
   ): Promise<KakaoSignUpResponseDTO> {
     try {
