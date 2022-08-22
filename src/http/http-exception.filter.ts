@@ -43,6 +43,7 @@ export class ErrorFilter implements ExceptionFilter {
   catch(error: Error, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
+    console.info("Error Object: ", error);
 
     response.status(400).json({
       message: error.message,

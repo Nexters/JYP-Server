@@ -11,7 +11,6 @@ import { createMock } from 'ts-auto-mock';
 import { AuthKakaoService } from './auth.kakao.service';
 import { method, On } from 'ts-auto-mock/extension';
 import { KakaoLoginResponseDTO, KakaoSignUpResponseDTO } from './dto/auth.dto';
-import { Option } from 'prelude-ts';
 
 const ACCESS_TOKEN = 'Bearer F43zy61WlAkM43Q0WEARqSozcbMTZjv0Bx8w_o16Cj11nAAAAYKrhju2';
 const OK_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Imtha2FvLTIzNDY5MjYyNjYiLCJpYXQiOjE2NjA3MzUwODAsImV4cCI6MTY2MDczNTM4MH0.Ya4euRAWQCQpJjNR-UVBfHKOnzR2EPSuIHYtu2hJ2Sk'
@@ -101,6 +100,7 @@ describe('AuthController', () => {
 
     // then
     expect(validateKakaoUser).toBeCalledTimes(1);
+    expect(validateKakaoUser).toBeCalledWith(ACCESS_TOKEN);
     expect(result).toEqual(authLoginDTO);
   })
 
