@@ -46,6 +46,7 @@ export class ErrorFilter implements ExceptionFilter {
     console.info("Error Object: ", error);
 
     response.status(400).json({
+      code: '50000',
       message: error.message,
     });
   }
