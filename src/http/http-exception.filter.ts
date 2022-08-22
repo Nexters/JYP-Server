@@ -45,6 +45,7 @@ export class ErrorFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
 
     response.status(400).json({
+      code: '50000',
       message: error.message,
     });
   }
