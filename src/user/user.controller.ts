@@ -61,7 +61,7 @@ export class UserController {
   @ApiTags('User')
   @ApiOperation({
     summary: '유저 정보 수정',
-    description: '유저 닉네임 혹은 프로필 사진을 수정한다.',
+    description: '유저 이름 혹은 프로필 사진을 수정한다.',
   })
   @ApiOkResponse({ description: '성공', type: UserDTO })
   @ApiInternalServerErrorResponse({ description: '서버 오류' })
