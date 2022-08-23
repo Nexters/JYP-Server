@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Option } from 'prelude-ts';
-import { AuthVendor } from '../auth/authVendor';
+import { generateId } from '../common/util';
 import { UserCreateDTO, UserDTO, UserUpdateDTO } from './dtos/user.dto';
 import { UserRepository } from './user.repository';
 
@@ -31,7 +31,7 @@ export class UserService {
   }
 
   public async createUser(userCreateDTO: UserCreateDTO): Promise<UserDTO> {
-    const id = this.generateId(userCreateDTO.authVendor, userCreateDTO.authId);
+    const id = generateId(userCreateDTO.authVendor, userCreateDTO.authId);
     return UserDTO.from(
       await this.userRepository.insertOne(
         id,
@@ -40,9 +40,5 @@ export class UserService {
         userCreateDTO.personalityId,
       ),
     );
-  }
-
-  public generateId(authVendor: AuthVendor, authId: string) {
-    return `${authVendor}-${authId}`;
   }
 }

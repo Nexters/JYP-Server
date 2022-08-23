@@ -10,6 +10,7 @@ import { UserService } from '../user/user.service';
 import { AuthVendor } from './authVendor';
 import { AuthKakaoService } from './auth.kakao.service';
 import { toCamel } from 'snake-camel';
+import { generateId } from '../common/util';
 
 @Injectable()
 export class AuthService {
@@ -27,7 +28,7 @@ export class AuthService {
       accessToken,
     );
 
-    const id = this.userService.generateId(AuthVendor.KAKAO, kakaoInfo['id']);
+    const id = generateId(AuthVendor.KAKAO, kakaoInfo['id']);
     const userOrNone = await this.userService.getUser(id);
     const payload = { id: id };
 

@@ -8,10 +8,11 @@ import { PERSONALITY } from './schemas/personality';
 import { User } from './schemas/user.schema';
 import { UserRepository } from './user.repository';
 import { UserService } from './user.service';
+import { generateId } from '../common/util';
 
 const AUTH_VENDOR = AuthVendor.KAKAO;
 const AUTH_ID = 'id';
-const ID = 'kakao-id';
+const ID = generateId(AUTH_VENDOR, AUTH_ID);
 const NAME = 'name';
 const IMG = '/image/path';
 const PSN = PERSONALITY.ME;
@@ -117,13 +118,5 @@ describe('UserService', () => {
     expect(result.name).toBe(user.name);
     expect(result.profileImagePath).toBe(user.img);
     expect(result.personality).toBe(PERSONALITY[user.psn]);
-  });
-
-  it('generateId는 정해진 형식대로 ID를 생성한다', () => {
-    // when
-    const id = userService.generateId(AUTH_VENDOR, AUTH_ID);
-
-    // then
-    expect(id).toBe(ID);
   });
 });
