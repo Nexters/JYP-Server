@@ -12,3 +12,5 @@ export const IS_EMUN_MSG = (args: ValidationArguments) => {
 };
 
 export const IS_IN_MSG = '$property 값은 $constraint1 중 하나여야 합니다.';
+
+export const DEFAULT_MSG = '잘못된 요청입니다.';
