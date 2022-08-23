@@ -27,7 +27,6 @@ export class AuthController {
   @ApiInternalServerErrorResponse({ description: '서버 오류' })
   @ApiOperation({ summary: '카카오 로그인' })
   @ApiBearerAuth('카카오 Access Token')
-  @UseFilters(new HttpExceptionFilter(), new UnauthorizedExceptionFilter())
   @Get('/kakao/login')
   async kakaoLogin(
     @Headers() headers,

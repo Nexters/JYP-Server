@@ -6,12 +6,19 @@ import { TransformInterceptor } from './http/http.interceptor';
 import {
   BadRequestExceptionFilter,
   ErrorFilter,
+  HttpExceptionFilter,
+  UnauthorizedExceptionFilter,
 } from './http/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(new ValidationPipe());
-  app.useGlobalFilters(new ErrorFilter(), new BadRequestExceptionFilter());
+  app.useGlobalFilters(
+    new ErrorFilter(),
+    new HttpExceptionFilter(),
+    new UnauthorizedExceptionFilter(),
+    new BadRequestExceptionFilter(),
+  );
   app.useGlobalInterceptors(new TransformInterceptor());
 
   const swaggerConfig = new DocumentBuilder()
