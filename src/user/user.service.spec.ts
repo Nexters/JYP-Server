@@ -12,7 +12,7 @@ import { UserService } from './user.service';
 const AUTH_VENDOR = AuthVendor.KAKAO;
 const AUTH_ID = 'id';
 const ID = 'kakao-id';
-const NICKNAME = 'nickname';
+const NAME = 'name';
 const IMG = '/image/path';
 const PSN = PERSONALITY.ME;
 const user = new User();
@@ -23,7 +23,7 @@ describe('UserService', () => {
 
   beforeEach(async () => {
     user._id = ID;
-    user.name = NICKNAME;
+    user.name = NAME;
     user.img = IMG;
     user.psn = PSN;
     const module: TestingModule = await Test.createTestingModule({
@@ -55,7 +55,7 @@ describe('UserService', () => {
     expect(findOne).toBeCalledWith(ID);
     const optionContent = result.getOrUndefined();
     expect(optionContent.id).toBe(user._id);
-    expect(optionContent.nickname).toBe(user.name);
+    expect(optionContent.name).toBe(user.name);
     expect(optionContent.profileImagePath).toBe(user.img);
     expect(optionContent.personality).toBe(PERSONALITY[user.psn]);
   });
@@ -82,14 +82,14 @@ describe('UserService', () => {
       .mockResolvedValue(user);
 
     // when
-    const userUpdateDTO = new UserUpdateDTO(NICKNAME, IMG);
+    const userUpdateDTO = new UserUpdateDTO(NAME, IMG);
     const result = await userService.updateUser(ID, userUpdateDTO);
 
     // then
     expect(updateOne).toBeCalledTimes(1);
-    expect(updateOne).toBeCalledWith(ID, NICKNAME, IMG);
+    expect(updateOne).toBeCalledWith(ID, NAME, IMG);
     expect(result.id).toBe(user._id);
-    expect(result.nickname).toBe(user.name);
+    expect(result.name).toBe(user.name);
     expect(result.profileImagePath).toBe(user.img);
     expect(result.personality).toBe(PERSONALITY[user.psn]);
   });
@@ -104,7 +104,7 @@ describe('UserService', () => {
     const userCreateDTO = new UserCreateDTO(
       AUTH_VENDOR,
       AUTH_ID,
-      NICKNAME,
+      NAME,
       IMG,
       PSN,
     );
@@ -112,9 +112,9 @@ describe('UserService', () => {
 
     // then
     expect(insertOne).toBeCalledTimes(1);
-    expect(insertOne).toBeCalledWith(ID, NICKNAME, IMG, PSN);
+    expect(insertOne).toBeCalledWith(ID, NAME, IMG, PSN);
     expect(result.id).toBe(user._id);
-    expect(result.nickname).toBe(user.name);
+    expect(result.name).toBe(user.name);
     expect(result.profileImagePath).toBe(user.img);
     expect(result.personality).toBe(PERSONALITY[user.psn]);
   });

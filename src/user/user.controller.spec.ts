@@ -9,10 +9,10 @@ import { UserController } from './user.controller';
 import { UserService } from './user.service';
 
 const ID = 'id';
-const NICKNAME = 'nickname';
+const NAME = 'name';
 const IMG = '/image/path';
 const PSN = PERSONALITY.ME;
-const userDTO = new UserDTO(ID, NICKNAME, IMG, PERSONALITY[PSN]);
+const userDTO = new UserDTO(ID, NAME, IMG, PERSONALITY[PSN]);
 
 describe('UserController', () => {
   let userController: UserController;
@@ -67,7 +67,7 @@ describe('UserController', () => {
       .mockResolvedValue(userDTO);
 
     // when
-    const userUpdateDTO = new UserUpdateDTO(NICKNAME, IMG);
+    const userUpdateDTO = new UserUpdateDTO(NAME, IMG);
     const result = await userController.updateUser(ID, userUpdateDTO);
 
     // then

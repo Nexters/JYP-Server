@@ -2,7 +2,7 @@ import { AuthVendor } from '../../auth/authVendor';
 
 export interface User {
   id: string;
-  nickname: string;
+  name: string;
   profileImagePath: string;
   personality: string;
 }
@@ -10,12 +10,12 @@ export interface User {
 export interface UserCreate {
   authVendor: AuthVendor;
   authId: string;
-  nickname: string;
+  name: string;
   profileImagePath: string;
   personalityId: string;
 }
 
 export interface UserUpdate {
-  nickname: string;
+  name: string;
   profileImagePath: string;
 }

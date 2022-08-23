@@ -24,7 +24,7 @@ export class UserService {
     return UserDTO.from(
       await this.userRepository.updateOne(
         id,
-        userUpdateDTO.nickname,
+        userUpdateDTO.name,
         userUpdateDTO.profileImagePath,
       ),
     );
@@ -35,7 +35,7 @@ export class UserService {
     return UserDTO.from(
       await this.userRepository.insertOne(
         id,
-        userCreateDTO.nickname,
+        userCreateDTO.name,
         userCreateDTO.profileImagePath,
         userCreateDTO.personalityId,
       ),

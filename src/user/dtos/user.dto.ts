@@ -24,9 +24,9 @@ export class UserDTO implements User {
   readonly id: string;
 
   @ApiProperty({
-    description: '유저 닉네임',
+    description: '유저 이름',
   })
-  readonly nickname: string;
+  readonly name: string;
 
   @ApiProperty({
     description: '프로필 이미지 경로',
@@ -44,12 +44,12 @@ export class UserDTO implements User {
 
   constructor(
     id: string,
-    nickname: string,
+    name: string,
     profileImagePath: string,
     personality: string,
   ) {
     this.id = id;
-    this.nickname = nickname;
+    this.name = name;
     this.profileImagePath = profileImagePath;
     this.personality = personality;
   }
@@ -71,12 +71,12 @@ export class UserCreateDTO implements UserCreate {
   readonly authId: string;
 
   @ApiProperty({
-    description: '유저 닉네임',
+    description: '유저 이름',
     maxLength: 10,
   })
   @IsNotEmpty()
   @MaxLength(10, { message: MAX_LENGTH_MSG })
-  readonly nickname: string;
+  readonly name: string;
 
   @ApiProperty({
     description: '프로필 이미지 경로',
@@ -94,13 +94,13 @@ export class UserCreateDTO implements UserCreate {
   constructor(
     authVendor: AuthVendor,
     authId: string,
-    nickname: string,
+    name: string,
     profileImagePath: string,
     personalityId: string,
   ) {
     this.authVendor = authVendor;
     this.authId = authId;
-    this.nickname = nickname;
+    this.name = name;
     this.profileImagePath = profileImagePath;
     this.personalityId = personalityId;
   }
@@ -108,13 +108,13 @@ export class UserCreateDTO implements UserCreate {
 
 export class UserUpdateDTO implements UserUpdate {
   @ApiProperty({
-    description: '유저 닉네임',
+    description: '유저 이름',
     maxLength: 10,
     required: false,
   })
   @IsOptional()
   @MaxLength(10, { message: MAX_LENGTH_MSG })
-  readonly nickname: string;
+  readonly name: string;
 
   @ApiProperty({
     description: '프로필 이미지 경로',
@@ -123,8 +123,8 @@ export class UserUpdateDTO implements UserUpdate {
   @IsOptional()
   readonly profileImagePath: string;
 
-  constructor(nickname: string, profileImagePath: string) {
-    this.nickname = nickname;
+  constructor(name: string, profileImagePath: string) {
+    this.name = name;
     this.profileImagePath = profileImagePath;
   }
 }
