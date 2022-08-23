@@ -4,8 +4,10 @@ import {
   ArgumentsHost,
   UnauthorizedException,
   HttpException,
+  BadRequestException,
 } from '@nestjs/common';
 import { Response } from 'express';
+import { DEFAULT_MSG } from '../common/validation.message';
 
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -38,6 +40,26 @@ export class UnauthorizedExceptionFilter implements ExceptionFilter {
   }
 }
 
+@Catch(BadRequestException)
+export class BadRequestExceptionFilter implements ExceptionFilter {
+  catch(exception: BadRequestException, host: ArgumentsHost) {
+    const response = getResponse(host);
+    const status = exception.getStatus();
+    const exceptionResponse = exception.getResponse();
+    if (typeof exceptionResponse === 'object') {
+      response.status(status).json({
+        code: String(status) + '01',
+        message: exceptionResponse?.['message']?.[0] || DEFAULT_MSG,
+      });
+    } else {
+      response.status(status).json({
+        code: String(status) + '01',
+        message: exceptionResponse,
+      });
+    }
+  }
+}
+
 @Catch(Error)
 export class ErrorFilter implements ExceptionFilter {
   catch(error: Error, host: ArgumentsHost) {
@@ -50,3 +72,6 @@ export class ErrorFilter implements ExceptionFilter {
     });
   }
 }
+
+const getResponse = (host: ArgumentsHost) =>
+  host.switchToHttp().getResponse<Response>();
