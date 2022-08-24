@@ -110,7 +110,6 @@ describe('AuthService', () => {
     expect(generateId).toBeCalledWith(AuthVendor.KAKAO, KAKAO_ID);
     expect(userOrNone).toBeCalledTimes(1);
     expect(payload.id).toBe(GENERATED_ID);
-    expect(result).toBeCalledTimes(1);
     expect(result).toEqual(
       new KakaoSignUpResponseDTO(
         await sign(payload),
