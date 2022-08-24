@@ -14,7 +14,6 @@ import { toCamel } from 'snake-camel';
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly httpService: HttpService,
     private readonly jwtService: JwtService,
     private readonly userService: UserService,
     private readonly authKakaoService: AuthKakaoService,
