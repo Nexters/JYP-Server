@@ -9,8 +9,10 @@ import { AuthKakaoService } from './auth.kakao.service';
 import { method, On } from 'ts-auto-mock/extension';
 import { KakaoLoginResponseDTO, KakaoSignUpResponseDTO } from './dto/auth.dto';
 
-const ACCESS_TOKEN = 'Bearer F43zy61WlAkM43Q0WEARqSozcbMTZjv0Bx8w_o16Cj11nAAAAYKrhju2';
-const OK_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Imtha2FvLTIzNDY5MjYyNjYiLCJpYXQiOjE2NjA3MzUwODAsImV4cCI6MTY2MDczNTM4MH0.Ya4euRAWQCQpJjNR-UVBfHKOnzR2EPSuIHYtu2hJ2Sk'
+const ACCESS_TOKEN =
+  'Bearer F43zy61WlAkM43Q0WEARqSozcbMTZjv0Bx8w_o16Cj11nAAAAYKrhju2';
+const OK_TOKEN =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Imtha2FvLTIzNDY5MjYyNjYiLCJpYXQiOjE2NjA3MzUwODAsImV4cCI6MTY2MDczNTM4MH0.Ya4euRAWQCQpJjNR-UVBfHKOnzR2EPSuIHYtu2hJ2Sk';
 const authLoginDTO = new KakaoLoginResponseDTO(OK_TOKEN);
 const authSignUpDTO = new KakaoSignUpResponseDTO(ACCESS_TOKEN, {
   token: null,
@@ -19,7 +21,7 @@ const authSignUpDTO = new KakaoSignUpResponseDTO(ACCESS_TOKEN, {
   properties: {
     nickname: null,
     profileImage: null,
-    thumbnailImage: null
+    thumbnailImage: null,
   },
   kakaoAccount: {
     profileNicknameNeedsAgreement: null,
@@ -34,7 +36,7 @@ const authSignUpDTO = new KakaoSignUpResponseDTO(ACCESS_TOKEN, {
     emailNeedsAgreement: null,
     isEmailValid: null,
     isEmailVerified: null,
-    email: "thd930308@naver.com",
+    email: 'thd930308@naver.com',
     hasAgeRange: null,
     ageRangeNeedsAgreement: null,
     ageRange: null,
@@ -45,7 +47,7 @@ const authSignUpDTO = new KakaoSignUpResponseDTO(ACCESS_TOKEN, {
     hasGender: null,
     genderNeedsAgreement: null,
     gender: null,
-  }
+  },
 });
 
 describe('AuthController', () => {
@@ -54,9 +56,7 @@ describe('AuthController', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [
-        HttpModule,
-      ],
+      imports: [HttpModule],
       providers: [
         AuthService,
         {
@@ -82,7 +82,7 @@ describe('AuthController', () => {
   it('kakaoLogin은 AuthService.validateKakaoUser를 호출해 토큰을 리턴한다', async () => {
     // given
     const validateKakaoUser = On(authService)
-      .get(method(()=> authService.validateKakaoUser))
+      .get(method(() => authService.validateKakaoUser))
       .mockResolvedValue(authLoginDTO);
 
     // when
@@ -91,7 +91,7 @@ describe('AuthController', () => {
     // then
     expect(validateKakaoUser).toBeCalledTimes(1);
     expect(result).toEqual(authLoginDTO);
-  })
+  });
 
   it('kakaoLogin은 AuthService.validateKakaoUser를 호출해 토큰과 정보를 리턴한다', async () => {
     //given
@@ -105,5 +105,5 @@ describe('AuthController', () => {
     //then
     expect(validateKakaoUser).toBeCalledTimes(1);
     expect(result).toEqual(authSignUpDTO);
-  })
+  });
 });
