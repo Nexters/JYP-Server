@@ -10,10 +10,11 @@ import { ConsoleLogger } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { PERSONALITY } from '../src/user/schemas/personality';
 import { AuthVendor } from '../src/auth/authVendor';
+import { generateId } from '../src/common/util';
 
 const AUTH_VENDOR = AuthVendor.KAKAO;
 const AUTH_ID = '1234';
-const ID = 'kakao-1234';
+const ID = generateId(AUTH_VENDOR, AUTH_ID);
 const NAME = 'name';
 const IMG = '/some/path';
 const PSN = 'ME';
