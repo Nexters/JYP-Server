@@ -10,10 +10,8 @@ import { JwtService } from '@nestjs/jwt';
 import { KakaoSignUpResponseDTO } from './dto/auth.dto';
 import { toCamel } from 'snake-camel';
 
-const ACCESS_TOKEN =
-  'Bearer F43zy61WlAkM43Q0WEARqSozcbMTZjv0Bx8w_o16Cj11nAAAAYKrhju2';
-const OK_TOKEN =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Imtha2FvLTIzNDY5MjYyNjYiLCJpYXQiOjE2NjA3MzUwODAsImV4cCI6MTY2MDczNTM4MH0.Ya4euRAWQCQpJjNR-UVBfHKOnzR2EPSuIHYtu2hJ2Sk';
+const ACCESS_TOKEN = 'ACCESS_TOKEN';
+const OK_TOKEN = 'OK_TOKEN';
 
 const KAKAO_ID = 123;
 const GENERATED_ID = 'kakao-123';
@@ -84,7 +82,7 @@ describe('AuthService', () => {
 
   it('validateKakaoUser 는 유저가 최초 로그인이라면 카카오의 정보와 토큰을 리턴한다. ', async () => {
     // given
-    const kakaoInfo = On(authKakaoService)
+    const getKakaoInfo = On(authKakaoService)
       .get(method(() => authKakaoService.getKakaoInfo))
       .mockResolvedValue(authSignUpDTO);
 
@@ -92,7 +90,7 @@ describe('AuthService', () => {
       .get(method(() => userService.generateId))
       .mockResolvedValue(GENERATED_ID);
 
-    const userOrNone = On(userService)
+    const getUser = On(userService)
       .get(method(() => userService.getUser))
       .mockResolvedValue(Option.none());
 
@@ -106,14 +104,15 @@ describe('AuthService', () => {
     const result = await authService.validateKakaoUser(ACCESS_TOKEN as any);
 
     // then
+    expect(getKakaoInfo).toBeCalledTimes(1);
     expect(generateId).toBeCalledTimes(2);
     expect(generateId).toBeCalledWith(AuthVendor.KAKAO, KAKAO_ID);
-    expect(userOrNone).toBeCalledTimes(1);
+    expect(getUser).toBeCalledTimes(1);
     expect(payload.id).toBe(GENERATED_ID);
     expect(result).toEqual(
       new KakaoSignUpResponseDTO(
         await sign(payload),
-        toCamel(await kakaoInfo()),
+        toCamel(await getKakaoInfo()),
       ),
     );
   });

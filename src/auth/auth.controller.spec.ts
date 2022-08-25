@@ -1,19 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
-import { HttpModule } from '@nestjs/axios';
 import { AuthService } from './auth.service';
-import { ValidationPipe } from '@nestjs/common';
-import { APP_PIPE } from '@nestjs/core';
 import { createMock } from 'ts-auto-mock';
-import { AuthKakaoService } from './auth.kakao.service';
 import { method, On } from 'ts-auto-mock/extension';
-import { KakaoLoginResponseDTO, KakaoSignUpResponseDTO } from './dto/auth.dto';
+import { KakaoSignUpResponseDTO } from './dto/auth.dto';
 
-const ACCESS_TOKEN =
-  'Bearer F43zy61WlAkM43Q0WEARqSozcbMTZjv0Bx8w_o16Cj11nAAAAYKrhju2';
-const OK_TOKEN =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Imtha2FvLTIzNDY5MjYyNjYiLCJpYXQiOjE2NjA3MzUwODAsImV4cCI6MTY2MDczNTM4MH0.Ya4euRAWQCQpJjNR-UVBfHKOnzR2EPSuIHYtu2hJ2Sk';
-const authLoginDTO = new KakaoLoginResponseDTO(OK_TOKEN);
+const ACCESS_TOKEN = 'ACCESS_TOKEN';
 const authSignUpDTO = new KakaoSignUpResponseDTO(ACCESS_TOKEN, {
   token: null,
   id: null,
@@ -56,15 +48,7 @@ describe('AuthController', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [HttpModule],
-      providers: [
-        AuthService,
-        {
-          provide: APP_PIPE,
-          useClass: ValidationPipe,
-        },
-        AuthKakaoService,
-      ],
+      providers: [AuthService],
       controllers: [AuthController],
     })
       .overrideProvider(AuthService)
