@@ -79,20 +79,6 @@ describe('AuthController', () => {
     expect(authController).toBeDefined();
   });
 
-  it('kakaoLogin은 AuthService.validateKakaoUser를 호출해 토큰을 리턴한다', async () => {
-    // given
-    const validateKakaoUser = On(authService)
-      .get(method(() => authService.validateKakaoUser))
-      .mockResolvedValue(authLoginDTO);
-
-    // when
-    const result = await authController.kakaoLogin(ACCESS_TOKEN);
-
-    // then
-    expect(validateKakaoUser).toBeCalledTimes(1);
-    expect(result).toEqual(authLoginDTO);
-  });
-
   it('kakaoLogin은 AuthService.validateKakaoUser를 호출해 토큰과 정보를 리턴한다', async () => {
     //given
     const validateKakaoUser = On(authService)
