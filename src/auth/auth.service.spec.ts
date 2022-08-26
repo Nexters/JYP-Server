@@ -7,8 +7,9 @@ import { AuthKakaoService } from './auth.kakao.service';
 import { Option } from 'prelude-ts';
 import { AuthVendor } from './authVendor';
 import { JwtService } from '@nestjs/jwt';
-import { KakaoSignUpResponseDTO } from './dto/auth.dto';
+import { KakaoLoginResponseDTO, KakaoSignUpResponseDTO } from './dto/auth.dto';
 import { toCamel } from 'snake-camel';
+import { UserDTO } from '../user/dtos/user.dto';
 
 const ACCESS_TOKEN = 'ACCESS_TOKEN';
 const OK_TOKEN = 'OK_TOKEN';
@@ -78,6 +79,42 @@ describe('AuthService', () => {
 
   it('should be defined', () => {
     expect(authService).toBeDefined();
+  });
+
+  it('validateKakaoUser 는 유저가 최초 로그인이 아니라면 토큰을 리턴한다', async () => {
+    // given
+    const getKakaoInfo = On(authKakaoService)
+      .get(method(() => authKakaoService.getKakaoInfo))
+      .mockResolvedValue(authSignUpDTO);
+
+    const generateId = On(userService)
+      .get(method(() => userService.generateId))
+      .mockResolvedValue(GENERATED_ID);
+
+    const getUser = On(userService)
+      .get(method(() => userService.getUser))
+      .mockResolvedValue(
+        Option.of(
+          UserDTO.from({ _id: 'id', name: 'name', img: 'img', psn: 'psn' }),
+        ),
+      );
+
+    const sign = On(jwtService)
+      .get(method(() => jwtService.sign))
+      .mockResolvedValue(OK_TOKEN);
+
+    const payload = { id: await generateId() };
+
+    // when
+    const result = await authService.validateKakaoUser(ACCESS_TOKEN as any);
+
+    // then
+    expect(getKakaoInfo).toBeCalledTimes(1);
+    expect(generateId).toBeCalledTimes(2);
+    expect(generateId).toBeCalledWith(AuthVendor.KAKAO, KAKAO_ID);
+    expect(getUser).toBeCalledTimes(1);
+    expect(payload.id).toBe(GENERATED_ID);
+    expect(result).toEqual(new KakaoLoginResponseDTO(sign(payload)));
   });
 
   it('validateKakaoUser 는 유저가 최초 로그인이라면 카카오의 정보와 토큰을 리턴한다. ', async () => {

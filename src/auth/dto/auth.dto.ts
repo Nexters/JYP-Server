@@ -24,7 +24,7 @@ export class KakaoLoginResponseDTO implements KakaoLoginResponse {
     required: true,
   })
   @IsString()
-  public token: string;
+  readonly token: string;
 
   constructor(token) {
     this.token = token;
