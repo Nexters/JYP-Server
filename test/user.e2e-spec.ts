@@ -10,14 +10,15 @@ import { ConsoleLogger } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { PERSONALITY } from '../src/user/schemas/personality';
 import { AuthVendor } from '../src/auth/authVendor';
+import { generateId } from '../src/common/util';
 
 const AUTH_VENDOR = AuthVendor.KAKAO;
 const AUTH_ID = '1234';
-const ID = 'kakao-1234';
-const NICKNAME = 'nickname';
+const ID = generateId(AUTH_VENDOR, AUTH_ID);
+const NAME = 'name';
 const IMG = '/some/path';
 const PSN = 'ME';
-const CHANGED_NICKNAME = 'nickname2';
+const CHANGED_NAME = 'name2';
 const CHANGED_IMG = '/other/path';
 
 describe('Users controller', () => {
@@ -51,7 +52,7 @@ describe('Users controller', () => {
   });
 
   it('GET /users/:id', async () => {
-    const user = new userModel({ _id: ID, name: NICKNAME, img: IMG, psn: PSN });
+    const user = new userModel({ _id: ID, name: NAME, img: IMG, psn: PSN });
     await user.save();
 
     return request(app.getHttpServer())
@@ -60,7 +61,7 @@ describe('Users controller', () => {
       .expect(200)
       .expect({
         id: ID,
-        nickname: NICKNAME,
+        name: NAME,
         profileImagePath: IMG,
         personality: PERSONALITY[PSN],
       });
@@ -79,7 +80,7 @@ describe('Users controller', () => {
       .send({
         authVendor: AUTH_VENDOR,
         authId: AUTH_ID,
-        nickname: NICKNAME,
+        name: NAME,
         profileImagePath: IMG,
         personalityId: PSN,
       })
@@ -88,26 +89,26 @@ describe('Users controller', () => {
       .expect(async (res) => {
         expect(res.body).toEqual({
           id: ID,
-          nickname: NICKNAME,
+          name: NAME,
           profileImagePath: IMG,
           personality: PERSONALITY[PSN],
         });
         const user = await userModel.findById({ _id: ID }).exec();
         expect(user._id).toBe(ID);
-        expect(user.name).toBe(NICKNAME);
+        expect(user.name).toBe(NAME);
         expect(user.img).toBe(IMG);
         expect(user.psn).toBe(PSN);
       });
   });
 
   it('PATCH /users/:id', async () => {
-    const user = new userModel({ _id: ID, name: NICKNAME, img: IMG, psn: PSN });
+    const user = new userModel({ _id: ID, name: NAME, img: IMG, psn: PSN });
     await user.save();
 
     return request(app.getHttpServer())
       .patch(`/users/${ID}`)
       .send({
-        nickname: CHANGED_NICKNAME,
+        name: CHANGED_NAME,
         profileImagePath: CHANGED_IMG,
       })
       .type('application/json')
@@ -115,13 +116,13 @@ describe('Users controller', () => {
       .expect(async (res) => {
         expect(res.body).toEqual({
           id: ID,
-          nickname: CHANGED_NICKNAME,
+          name: CHANGED_NAME,
           profileImagePath: CHANGED_IMG,
           personality: PERSONALITY[PSN],
         });
         const user = await userModel.findById({ _id: ID }).exec();
         expect(user._id).toBe(ID);
-        expect(user.name).toBe(CHANGED_NICKNAME);
+        expect(user.name).toBe(CHANGED_NAME);
         expect(user.img).toBe(CHANGED_IMG);
         expect(user.psn).toBe(PSN);
       });

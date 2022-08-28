@@ -15,25 +15,25 @@ export class UserRepository {
 
   public async updateOne(
     id: string,
-    nickname: string,
+    name: string,
     profileImagePath: string,
   ): Promise<User> {
     return await this.userModel.findOneAndUpdate(
       { _id: id },
-      { name: nickname, img: profileImagePath },
+      { name: name, img: profileImagePath },
       { returnDocument: 'after' },
     );
   }
 
   public async insertOne(
     id: string,
-    nickname: string,
+    name: string,
     profileImagePath: string,
     personality: string,
   ): Promise<User> {
     const user = new this.userModel({
       _id: id,
-      name: nickname,
+      name: name,
       img: profileImagePath,
       psn: personality,
     });
