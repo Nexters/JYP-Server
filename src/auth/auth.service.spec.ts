@@ -10,11 +10,12 @@ import { JwtService } from '@nestjs/jwt';
 import { KakaoLoginResponseDTO, KakaoSignUpResponseDTO } from './dto/auth.dto';
 import { toCamel } from 'snake-camel';
 import { UserDTO } from '../user/dtos/user.dto';
+import { generateId } from '../common/util';
 
 const ACCESS_TOKEN = 'ACCESS_TOKEN';
 const OK_TOKEN = 'OK_TOKEN';
 
-const KAKAO_ID = 123;
+const KAKAO_ID = '123';
 const GENERATED_ID = 'kakao-123';
 
 const authSignUpDTO = new KakaoSignUpResponseDTO(OK_TOKEN, {
@@ -59,6 +60,7 @@ describe('AuthService', () => {
   let authKakaoService: AuthKakaoService;
   let jwtService: JwtService;
 
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [AuthService, JwtService, UserService, AuthKakaoService],
@@ -87,9 +89,7 @@ describe('AuthService', () => {
       .get(method(() => authKakaoService.getKakaoInfo))
       .mockResolvedValue(authSignUpDTO);
 
-    const generateId = On(userService)
-      .get(method(() => userService.generateId))
-      .mockResolvedValue(GENERATED_ID);
+    const id = generateId(AuthVendor.KAKAO, KAKAO_ID);
 
     const getUser = On(userService)
       .get(method(() => userService.getUser))
@@ -103,15 +103,13 @@ describe('AuthService', () => {
       .get(method(() => jwtService.sign))
       .mockResolvedValue(OK_TOKEN);
 
-    const payload = { id: await generateId() };
+    const payload = { id: id };
 
     // when
     const result = await authService.validateKakaoUser(ACCESS_TOKEN as any);
 
     // then
     expect(getKakaoInfo).toBeCalledTimes(1);
-    expect(generateId).toBeCalledTimes(2);
-    expect(generateId).toBeCalledWith(AuthVendor.KAKAO, KAKAO_ID);
     expect(getUser).toBeCalledTimes(1);
     expect(payload.id).toBe(GENERATED_ID);
     expect(result).toEqual(new KakaoLoginResponseDTO(sign(payload)));
@@ -123,11 +121,7 @@ describe('AuthService', () => {
       .get(method(() => authKakaoService.getKakaoInfo))
       .mockResolvedValue(authSignUpDTO);
 
-    const generateId = On(userService)
-      .get(method(() => userService.generateId))
-      .mockReturnValue(GENERATED_ID);
-
-    console.info(generateId);
+    const id = generateId(AuthVendor.KAKAO, '123');
 
     const getUser = On(userService)
       .get(method(() => userService.getUser))
@@ -137,15 +131,13 @@ describe('AuthService', () => {
       .get(method(() => jwtService.sign))
       .mockResolvedValue(OK_TOKEN);
 
-    const payload = { id: await generateId() };
+    const payload = { id: id };
 
     // when
     const result = await authService.validateKakaoUser(ACCESS_TOKEN as any);
 
     // then
     expect(getKakaoInfo).toBeCalledTimes(1);
-    expect(generateId).toBeCalledTimes(2);
-    expect(generateId).toBeCalledWith(AuthVendor.KAKAO, KAKAO_ID);
     expect(getUser).toBeCalledTimes(1);
     expect(getUser).toBeCalledWith(GENERATED_ID);
     expect(payload.id).toBe(GENERATED_ID);
