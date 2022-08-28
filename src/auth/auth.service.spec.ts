@@ -109,7 +109,9 @@ describe('AuthService', () => {
 
     // then
     expect(getKakaoInfo).toBeCalledTimes(1);
+    expect(getKakaoInfo).toBeCalledWith(ACCESS_TOKEN);
     expect(getUser).toBeCalledTimes(1);
+    expect(getUser).toBeCalledWith(id);
     expect(payload.id).toBe(GENERATED_ID);
     expect(result).toEqual(new KakaoLoginResponseDTO(sign(payload)));
   });
@@ -137,6 +139,7 @@ describe('AuthService', () => {
 
     // then
     expect(getKakaoInfo).toBeCalledTimes(1);
+    expect(getKakaoInfo).toBeCalledWith(ACCESS_TOKEN);
     expect(getUser).toBeCalledTimes(1);
     expect(getUser).toBeCalledWith(GENERATED_ID);
     expect(payload.id).toBe(GENERATED_ID);
