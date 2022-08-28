@@ -125,7 +125,9 @@ describe('AuthService', () => {
 
     const generateId = On(userService)
       .get(method(() => userService.generateId))
-      .mockResolvedValue(GENERATED_ID);
+      .mockReturnValue(GENERATED_ID);
+
+    console.info(generateId);
 
     const getUser = On(userService)
       .get(method(() => userService.getUser))
@@ -145,6 +147,7 @@ describe('AuthService', () => {
     expect(generateId).toBeCalledTimes(2);
     expect(generateId).toBeCalledWith(AuthVendor.KAKAO, KAKAO_ID);
     expect(getUser).toBeCalledTimes(1);
+    expect(getUser).toBeCalledWith(GENERATED_ID);
     expect(payload.id).toBe(GENERATED_ID);
     expect(result).toEqual(
       new KakaoSignUpResponseDTO(
