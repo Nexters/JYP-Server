@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
 import {
   KakaoSignUpResponseDTO,
   KakaoLoginRequestDTO,
@@ -15,7 +14,6 @@ import { generateId } from '../common/util';
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly httpService: HttpService,
     private readonly jwtService: JwtService,
     private readonly userService: UserService,
     private readonly authKakaoService: AuthKakaoService,
@@ -24,9 +22,7 @@ export class AuthService {
   public async validateKakaoUser(
     accessToken: KakaoLoginRequestDTO,
   ): Promise<KakaoLoginResponseDTO | KakaoSignUpResponseDTO> {
-    const kakaoInfo = await this.authKakaoService.validateKakaoUser(
-      accessToken,
-    );
+    const kakaoInfo = await this.authKakaoService.getKakaoInfo(accessToken);
 
     const id = generateId(AuthVendor.KAKAO, kakaoInfo['id']);
     const userOrNone = await this.userService.getUser(id);
@@ -36,7 +32,7 @@ export class AuthService {
       return new KakaoLoginResponseDTO(this.jwtService.sign(payload));
     } else {
       return new KakaoSignUpResponseDTO(
-        this.jwtService.sign(payload),
+        await this.jwtService.sign(payload),
         toCamel(kakaoInfo),
       );
     }

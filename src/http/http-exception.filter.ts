@@ -34,7 +34,7 @@ export class UnauthorizedExceptionFilter implements ExceptionFilter {
 
     console.info(exception.stack);
     response.status(status).json({
-      code: String(status) + '01',
+      code: String(status) + '00',
       message: exception.message,
     });
   }
@@ -66,7 +66,7 @@ export class ErrorFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
 
-    response.status(400).json({
+    response.status(500).json({
       code: '50000',
       message: error.message,
     });
