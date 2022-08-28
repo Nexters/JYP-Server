@@ -60,7 +60,6 @@ describe('AuthService', () => {
   let authKakaoService: AuthKakaoService;
   let jwtService: JwtService;
 
-
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [AuthService, JwtService, UserService, AuthKakaoService],
