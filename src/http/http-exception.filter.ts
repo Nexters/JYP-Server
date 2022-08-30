@@ -48,10 +48,17 @@ export class BadRequestExceptionFilter implements ExceptionFilter {
     const status = exception.getStatus();
     const exceptionResponse = exception.getResponse();
     if (typeof exceptionResponse === 'object') {
-      response.status(status).json({
-        code: String(status) + '01',
-        message: exceptionResponse?.['message']?.[0] || DEFAULT_MSG,
-      });
+      if (Array.isArray(exceptionResponse?.['message'])) {
+        response.status(status).json({
+          code: String(status) + '01',
+          message: exceptionResponse?.['message']?.[0] || DEFAULT_MSG,
+        });
+      } else {
+        response.status(status).json({
+          code: String(status) + '01',
+          message: exceptionResponse?.['message'] || DEFAULT_MSG,
+        });
+      }
     } else {
       response.status(status).json({
         code: String(status) + '01',
