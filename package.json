@@ -35,6 +35,7 @@
     "class-validator": "^0.13.2",
     "mongodb-memory-server": "^8.8.0",
     "mongoose": "^6.5.1",
+    "mongoose-long": "^0.5.1",
     "node-fetch": "^3.2.8",
     "passport-jwt": "^4.0.0",
     "prelude-ts": "^1.0.4",

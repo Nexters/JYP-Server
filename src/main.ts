@@ -7,6 +7,7 @@ import {
   BadRequestExceptionFilter,
   ErrorFilter,
   HttpExceptionFilter,
+  LimitExceededExceptionFilter,
   UnauthorizedExceptionFilter,
 } from './http/http-exception.filter';
 
@@ -18,6 +19,7 @@ async function bootstrap() {
     new HttpExceptionFilter(),
     new UnauthorizedExceptionFilter(),
     new BadRequestExceptionFilter(),
+    new LimitExceededExceptionFilter(),
   );
   app.useGlobalInterceptors(new TransformInterceptor());
 

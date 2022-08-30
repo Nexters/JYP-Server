@@ -5,6 +5,7 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { JourneyModule } from './journey/journey.module';
 
 const MONGO_USER = process.env.MONGO_USER;
 const MONGO_PASSWORD = process.env.MONGO_PASSWORD;
@@ -15,6 +16,7 @@ const MONGO_DB = process.env.MONGO_DB;
 @Module({
   imports: [
     UserModule,
+    JourneyModule,
     AuthModule,
     ConfigModule.forRoot(),
     MongooseModule.forRoot(

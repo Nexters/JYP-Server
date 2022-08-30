@@ -7,6 +7,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { Response } from 'express';
+import { LimitExceededException } from '../common/exceptions';
 import { DEFAULT_MSG } from '../common/validation.message';
 
 @Catch(HttpException)
@@ -57,6 +58,18 @@ export class BadRequestExceptionFilter implements ExceptionFilter {
         message: exceptionResponse,
       });
     }
+  }
+}
+
+@Catch(LimitExceededException)
+export class LimitExceededExceptionFilter implements ExceptionFilter {
+  catch(exception: LimitExceededException, host: ArgumentsHost) {
+    const response = getResponse(host);
+    const status = exception.getStatus();
+    response.status(status).json({
+      code: String(status) + '02',
+      message: exception.message,
+    });
   }
 }
 
