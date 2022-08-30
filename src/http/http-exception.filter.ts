@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import { LimitExceededException } from '../common/exceptions';
-import { DEFAULT_MSG } from '../common/validation.message';
+import { DEFAULT_MSG } from '../common/validation/validation.messages';
 
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -47,24 +47,10 @@ export class BadRequestExceptionFilter implements ExceptionFilter {
     const response = getResponse(host);
     const status = exception.getStatus();
     const exceptionResponse = exception.getResponse();
-    if (typeof exceptionResponse === 'object') {
-      if (Array.isArray(exceptionResponse?.['message'])) {
-        response.status(status).json({
-          code: String(status) + '01',
-          message: exceptionResponse?.['message']?.[0] || DEFAULT_MSG,
-        });
-      } else {
-        response.status(status).json({
-          code: String(status) + '01',
-          message: exceptionResponse?.['message'] || DEFAULT_MSG,
-        });
-      }
-    } else {
-      response.status(status).json({
-        code: String(status) + '01',
-        message: exceptionResponse,
-      });
-    }
+    response.status(status).json({
+      code: String(status) + '01',
+      message: preprocessMessage(exceptionResponse?.['message']) || DEFAULT_MSG,
+    });
   }
 }
 
@@ -95,3 +81,33 @@ export class ErrorFilter implements ExceptionFilter {
 
 const getResponse = (host: ArgumentsHost) =>
   host.switchToHttp().getResponse<Response>();
+
+const NESTED_ARRAY_VALIDATION_MSG_REGEX = new RegExp(
+  '^[a-zA-Z]+\\.[0-9]+\\.(.*)$',
+);
+
+const NESTED_OBJECT_VALIDATION_MSG_REGEX = new RegExp('^[a-zA-Z]+\\.(.*)$');
+
+const preprocessMessage = (message: any) => {
+  if (Array.isArray(message) && message[0]) {
+    return preprocessMessage(message[0]);
+  } else if (typeof message === 'string') {
+    // nested field의 validation의 경우 메시지 앞에 prefix가 붙어서 온다.
+    // ex) tags.1.{원래 메시지}
+    // 따라서 여기서 원래 메시지만 추출하는 작업을 한다.
+    const firstSearchResult = NESTED_ARRAY_VALIDATION_MSG_REGEX.exec(message);
+    if (firstSearchResult != null && firstSearchResult?.[1]) {
+      return firstSearchResult[1];
+    } else {
+      const secondSearchResult =
+        NESTED_OBJECT_VALIDATION_MSG_REGEX.exec(message);
+      if (secondSearchResult != null && secondSearchResult?.[1]) {
+        return secondSearchResult[1];
+      } else {
+        return message;
+      }
+    }
+  } else {
+    return '';
+  }
+};

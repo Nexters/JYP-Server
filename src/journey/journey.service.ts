@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { JOURNEY_EXCEEDED } from '../common/validation.message';
+import { JOURNEY_EXCEEDED_MSG } from '../common/validation/validation.messages';
 import { LimitExceededException } from '../common/exceptions';
 import { createEmptyNestedArray, getDayDiff } from '../common/util';
 import { UserRepository } from '../user/user.repository';
 import { JourneyCreateDto, IdResponseDto } from './dtos/journey.dto';
 import { JourneyRepository } from './journey.repository';
 import { Journey, JourneyDocument, Tag } from './schemas/journey.schema';
-import { MAX_JOURNEY_PER_USER } from '../common/constants';
+import { MAX_JOURNEY_PER_USER } from '../common/validation/validation.constants';
 
 @Injectable()
 export class JourneyService {
@@ -29,7 +29,7 @@ export class JourneyService {
       false,
     );
     if (existingJourneys.length >= MAX_JOURNEY_PER_USER) {
-      throw new LimitExceededException(JOURNEY_EXCEEDED);
+      throw new LimitExceededException(JOURNEY_EXCEEDED_MSG);
     }
     const tags: Tag[] = journeyCreateDto.tags.map((tagCreateDto) => {
       return new Tag(tagCreateDto.topic, tagCreateDto.orientation, [user]);

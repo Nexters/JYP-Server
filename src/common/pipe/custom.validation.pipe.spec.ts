@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
-import { MAX_JOURNEY_DAYS } from '../constants';
-import { TIME_RANGE_INVALID } from '../validation.message';
+import { MAX_JOURNEY_DAYS } from '../validation/validation.constants';
+import { TIME_RANGE_INVALID_MSG } from '../validation/validation.messages';
 import { TimeRangeValidationPipe } from './custom.validation.pipe';
 
 describe('TimeRangeValidationPipe', () => {
@@ -27,7 +27,7 @@ describe('TimeRangeValidationPipe', () => {
     const endDate = startDate + (MAX_JOURNEY_DAYS + 1) * 3600 * 24;
     const value = { startDate: startDate, endDate: endDate };
     expect(() => timeRangeValidationPipe.transform(value, null)).toThrowError(
-      new BadRequestException(TIME_RANGE_INVALID),
+      new BadRequestException(TIME_RANGE_INVALID_MSG),
     );
   });
 

@@ -15,7 +15,7 @@ import {
   IS_IN_MSG,
   IS_NOT_EMPTY_MSG,
   MAX_LENGTH_MSG,
-} from '../../common/validation.message';
+} from '../../common/validation/validation.messages';
 
 export class UserDTO implements User {
   @ApiProperty({

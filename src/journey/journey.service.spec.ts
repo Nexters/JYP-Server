@@ -12,8 +12,8 @@ import {
 } from './dtos/journey.dto';
 import { User } from '../user/schemas/user.schema';
 import { LimitExceededException } from '../common/exceptions';
-import { JOURNEY_EXCEEDED } from '../common/validation.message';
-import { MAX_JOURNEY_PER_USER } from '../common/constants';
+import { JOURNEY_EXCEEDED_MSG } from '../common/validation/validation.messages';
+import { MAX_JOURNEY_PER_USER } from '../common/validation/validation.constants';
 
 const JOURNEY_NAME = 'name';
 const START_DATE = 1661299200;
@@ -142,7 +142,7 @@ describe('JourneyService', () => {
     // then
     await expect(
       journeyService.createJourney(JOURNEY_CREATE_DTO, USER_ID),
-    ).rejects.toThrow(new LimitExceededException(JOURNEY_EXCEEDED));
+    ).rejects.toThrow(new LimitExceededException(JOURNEY_EXCEEDED_MSG));
     expect(userRepository.findOne).toBeCalledTimes(1);
     expect(userRepository.findOne).toBeCalledWith(USER_ID);
     expect(journeyRepository.listByUser).toBeCalledTimes(1);
