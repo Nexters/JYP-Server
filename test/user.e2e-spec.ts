@@ -5,7 +5,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import { Model } from 'mongoose';
 import { User, UserDocument } from '../src/user/schemas/user.schema';
 import { UserModule } from '../src/user/user.module';
-import * as request from 'supertest';
+import request from 'supertest';
 import { ConsoleLogger } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { PERSONALITY } from '../src/user/schemas/personality';
