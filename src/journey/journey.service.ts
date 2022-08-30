@@ -5,7 +5,7 @@ import { JOURNEY_EXCEEDED_MSG } from '../common/validation/validation.messages';
 import { LimitExceededException } from '../common/exceptions';
 import { createEmptyNestedArray, getDayDiff } from '../common/util';
 import { UserRepository } from '../user/user.repository';
-import { JourneyCreateDto, IdResponseDto } from './dtos/journey.dto';
+import { JourneyCreateDTO, IdResponseDTO } from './dtos/journey.dto';
 import { JourneyRepository } from './journey.repository';
 import { Journey, JourneyDocument, Tag } from './schemas/journey.schema';
 import { MAX_JOURNEY_PER_USER } from '../common/validation/validation.constants';
@@ -20,9 +20,9 @@ export class JourneyService {
   ) {}
 
   public async createJourney(
-    journeyCreateDto: JourneyCreateDto,
+    journeyCreateDto: JourneyCreateDTO,
     userId: string,
-  ): Promise<IdResponseDto> {
+  ): Promise<IdResponseDTO> {
     const user = await this.userRepository.findOne(userId);
     const existingJourneys = await this.journeyRepository.listByUser(
       user,
@@ -49,6 +49,6 @@ export class JourneyService {
       pikis: createEmptyNestedArray(dayDiff),
     });
     const savedJourney = await this.journeyRepository.insertOne(journey);
-    return new IdResponseDto(savedJourney._id.toString());
+    return new IdResponseDTO(savedJourney._id.toString());
   }
 }

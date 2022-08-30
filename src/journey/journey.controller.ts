@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { TimeRangeValidationPipe } from '../common/pipe/custom.validation.pipe';
-import { JourneyCreateDto, IdResponseDto } from './dtos/journey.dto';
+import { JourneyCreateDTO, IdResponseDTO } from './dtos/journey.dto';
 import { JourneyService } from './journey.service';
 
 @Controller('journeys')
@@ -19,9 +19,9 @@ export class JourneyController {
   @UsePipes(new TimeRangeValidationPipe())
   @Post()
   public async createJourney(
-    @Body() journeyCreateDto: JourneyCreateDto,
+    @Body() journeyCreateDto: JourneyCreateDTO,
     @Request() req,
-  ): Promise<IdResponseDto> {
+  ): Promise<IdResponseDTO> {
     return await this.journeyService.createJourney(
       journeyCreateDto,
       req.user.id,

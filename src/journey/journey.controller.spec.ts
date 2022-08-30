@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import {
-  TagCreateDto,
-  JourneyCreateDto,
-  IdResponseDto,
+  TagCreateDTO,
+  JourneyCreateDTO,
+  IdResponseDTO,
 } from './dtos/journey.dto';
 import { JourneyController } from './journey.controller';
 import { JourneyService } from './journey.service';
@@ -16,10 +16,10 @@ const FIRST_ORIENT = 'like';
 const SECOND_TOPIC = 'topic2';
 const SECOND_ORIENT = 'dislike';
 const TAG_CREATE_DTOS = [
-  new TagCreateDto(FIRST_TOPIC, FIRST_ORIENT),
-  new TagCreateDto(SECOND_TOPIC, SECOND_ORIENT),
+  new TagCreateDTO(FIRST_TOPIC, FIRST_ORIENT),
+  new TagCreateDTO(SECOND_TOPIC, SECOND_ORIENT),
 ];
-const JOURNEY_CREATE_DTO = new JourneyCreateDto(
+const JOURNEY_CREATE_DTO = new JourneyCreateDTO(
   JOURNEY_NAME,
   START_DATE,
   END_DATE,
@@ -31,7 +31,7 @@ const REQ = {
   user: { id: USER_ID },
 };
 const JOURNEY_ID = '630b28c08abfc3f96130789c';
-const ID_RESPONSE_DTO = new IdResponseDto(JOURNEY_ID);
+const ID_RESPONSE_DTO = new IdResponseDTO(JOURNEY_ID);
 
 describe('JourneyController', () => {
   let journeyController: JourneyController;

@@ -6,9 +6,9 @@ import { JourneyRepository } from './journey.repository';
 import { JourneyService } from './journey.service';
 import { Journey, JourneyDocument, Tag } from './schemas/journey.schema';
 import {
-  IdResponseDto,
-  JourneyCreateDto,
-  TagCreateDto,
+  IdResponseDTO,
+  JourneyCreateDTO,
+  TagCreateDTO,
 } from './dtos/journey.dto';
 import { User } from '../user/schemas/user.schema';
 import { LimitExceededException } from '../common/exceptions';
@@ -24,10 +24,10 @@ const FIRST_ORIENT = 'like';
 const SECOND_TOPIC = 'topic2';
 const SECOND_ORIENT = 'dislike';
 const TAG_CREATE_DTOS = [
-  new TagCreateDto(FIRST_TOPIC, FIRST_ORIENT),
-  new TagCreateDto(SECOND_TOPIC, SECOND_ORIENT),
+  new TagCreateDTO(FIRST_TOPIC, FIRST_ORIENT),
+  new TagCreateDTO(SECOND_TOPIC, SECOND_ORIENT),
 ];
-const JOURNEY_CREATE_DTO = new JourneyCreateDto(
+const JOURNEY_CREATE_DTO = new JourneyCreateDTO(
   JOURNEY_NAME,
   START_DATE,
   END_DATE,
@@ -54,7 +54,7 @@ const JOURNEY = new Journey(
 const SAVED_JOURNEY = structuredClone(JOURNEY);
 const JOURNEY_ID = '630b28c08abfc3f96130789c';
 SAVED_JOURNEY._id = new mongoose.Types.ObjectId(JOURNEY_ID);
-const ID_RESPONSE_DTO = new IdResponseDto(JOURNEY_ID);
+const ID_RESPONSE_DTO = new IdResponseDTO(JOURNEY_ID);
 
 describe('JourneyService', () => {
   let journeyService: JourneyService;

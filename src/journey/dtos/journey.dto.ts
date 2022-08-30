@@ -22,7 +22,7 @@ import {
 import { ORIENTATION } from '../schemas/orientation';
 import { IdResponse, JourneyCreate, TagCreate } from './journey.interface';
 
-export class JourneyCreateDto implements JourneyCreate {
+export class JourneyCreateDTO implements JourneyCreate {
   @MaxLength(MAX_JOURNEY_NAME_LENGTH, {
     message: JOURNEY_NAME_LENGTH_EXCEEDED_MSG,
   })
@@ -40,15 +40,15 @@ export class JourneyCreateDto implements JourneyCreate {
 
   @ArrayMaxSize(MAX_TAGS, { message: TAG_EXCEEDED_MSG })
   @ValidateNested({ each: true })
-  @Type(() => TagCreateDto)
-  readonly tags: TagCreateDto[];
+  @Type(() => TagCreateDTO)
+  readonly tags: TagCreateDTO[];
 
   constructor(
     name: string,
     startDate: number,
     endDate: number,
     themePath: string,
-    tags: TagCreateDto[],
+    tags: TagCreateDTO[],
   ) {
     this.name = name;
     this.startDate = startDate;
@@ -58,7 +58,7 @@ export class JourneyCreateDto implements JourneyCreate {
   }
 }
 
-export class TagCreateDto implements TagCreate {
+export class TagCreateDTO implements TagCreate {
   @MaxLength(MAX_TAG_TOPIC_LENGTH, { message: TAG_TOPIC_LENGTH_EXCEEDED_MSG })
   @IsNotEmpty({ message: IS_NOT_EMPTY_KIND_MSG('태그 이름') })
   readonly topic: string;
@@ -73,7 +73,7 @@ export class TagCreateDto implements TagCreate {
   }
 }
 
-export class IdResponseDto implements IdResponse {
+export class IdResponseDTO implements IdResponse {
   readonly id: string;
 
   constructor(id: string) {
