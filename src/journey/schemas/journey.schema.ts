@@ -9,6 +9,9 @@ import { generateSchemaWithoutId } from '../../common/util';
 mongooseLong(mongoose);
 export type JourneyDocument = Journey & Document<mongoose.Types.ObjectId>;
 
+const toLong = (n: number) => mongoose.Types.Long.fromNumber(n);
+const fromLong = (l: mongoose.Types.Long) => Number(l.toString());
+
 @Schema()
 export class Tag {
   @Prop({ required: true })
@@ -201,6 +204,8 @@ export class Journey {
     type: mongoose.Schema.Types.Long,
     alias: 'startDate',
     required: true,
+    set: toLong,
+    get: fromLong,
   })
   start: number;
 
@@ -208,6 +213,8 @@ export class Journey {
     type: mongoose.Schema.Types.Long,
     alias: 'endDate',
     required: true,
+    set: toLong,
+    get: fromLong,
   })
   end: number;
 
