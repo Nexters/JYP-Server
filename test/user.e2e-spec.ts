@@ -1,7 +1,6 @@
 import { NestApplication } from '@nestjs/core';
 import { getModelToken, MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
-import { MongoMemoryServer } from 'mongodb-memory-server';
 import { Model } from 'mongoose';
 import { User, UserDocument } from '../src/user/schemas/user.schema';
 import { UserModule } from '../src/user/user.module';
@@ -17,7 +16,8 @@ const AUTH_ID = '1234';
 const ID = generateId(AUTH_VENDOR, AUTH_ID);
 const NAME = 'name';
 const IMG = '/some/path';
-const PSN = 'ME';
+const PSN_ID = 'ME';
+const USER = new User(ID, NAME, IMG, PSN_ID);
 const CHANGED_NAME = 'name2';
 const CHANGED_IMG = '/other/path';
 
@@ -48,80 +48,76 @@ describe('Users controller', () => {
   });
 
   it('GET /users/:id', async () => {
-    const user = new userModel({ _id: ID, name: NAME, img: IMG, psn: PSN });
+    const user = new userModel(USER);
     await user.save();
 
-    return request(app.getHttpServer())
+    const response = await request(app.getHttpServer())
       .get(`/users/${ID}`)
-      .type('application/json')
-      .expect(200)
-      .expect({
-        id: ID,
-        name: NAME,
-        profileImagePath: IMG,
-        personality: PERSONALITY[PSN],
-      });
+      .type('application/json');
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toEqual({
+      id: ID,
+      name: NAME,
+      profileImagePath: IMG,
+      personality: PERSONALITY[PSN_ID],
+    });
   });
 
   it('GET /users/:id and get 404', async () => {
-    return request(app.getHttpServer())
+    const response = await request(app.getHttpServer())
       .get(`/users/${ID}`)
-      .type('application/json')
-      .expect(404);
+      .type('application/json');
+    expect(response.statusCode).toBe(404);
   });
 
   it('POST /users', async () => {
-    return request(app.getHttpServer())
+    const response = await request(app.getHttpServer())
       .post('/users')
       .send({
         authVendor: AUTH_VENDOR,
         authId: AUTH_ID,
         name: NAME,
         profileImagePath: IMG,
-        personalityId: PSN,
+        personalityId: PSN_ID,
       })
-      .type('application/json')
-      .expect(201)
-      .expect(async (res) => {
-        expect(res.body).toEqual({
-          id: ID,
-          name: NAME,
-          profileImagePath: IMG,
-          personality: PERSONALITY[PSN],
-        });
-        const user = await userModel.findById({ _id: ID }).exec();
-        expect(user._id).toBe(ID);
-        expect(user.name).toBe(NAME);
-        expect(user.img).toBe(IMG);
-        expect(user.psn).toBe(PSN);
-      });
+      .type('application/json');
+    expect(response.statusCode).toBe(201);
+    expect(response.body).toEqual({
+      id: ID,
+      name: NAME,
+      profileImagePath: IMG,
+      personality: PERSONALITY[PSN_ID],
+    });
+    const user = await userModel.findById({ _id: ID }).exec();
+    expect(user._id).toBe(ID);
+    expect(user.name).toBe(NAME);
+    expect(user.img).toBe(IMG);
+    expect(user.psn).toBe(PSN_ID);
   });
 
   it('PATCH /users/:id', async () => {
-    const user = new userModel({ _id: ID, name: NAME, img: IMG, psn: PSN });
+    const user = new userModel(USER);
     await user.save();
 
-    return request(app.getHttpServer())
+    const response = await request(app.getHttpServer())
       .patch(`/users/${ID}`)
       .send({
         name: CHANGED_NAME,
         profileImagePath: CHANGED_IMG,
       })
-      .type('application/json')
-      .expect(200)
-      .expect(async (res) => {
-        expect(res.body).toEqual({
-          id: ID,
-          name: CHANGED_NAME,
-          profileImagePath: CHANGED_IMG,
-          personality: PERSONALITY[PSN],
-        });
-        const user = await userModel.findById({ _id: ID }).exec();
-        expect(user._id).toBe(ID);
-        expect(user.name).toBe(CHANGED_NAME);
-        expect(user.img).toBe(CHANGED_IMG);
-        expect(user.psn).toBe(PSN);
-      });
+      .type('application/json');
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toEqual({
+      id: ID,
+      name: CHANGED_NAME,
+      profileImagePath: CHANGED_IMG,
+      personality: PERSONALITY[PSN_ID],
+    });
+    const updatedUser = await userModel.findById({ _id: ID }).exec();
+    expect(updatedUser._id).toBe(ID);
+    expect(updatedUser.name).toBe(CHANGED_NAME);
+    expect(updatedUser.img).toBe(CHANGED_IMG);
+    expect(updatedUser.psn).toBe(PSN_ID);
   });
 
   afterEach(async () => {
