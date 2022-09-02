@@ -1,4 +1,7 @@
 {
+  "preset": "ts-jest",
+  "globalSetup": "<rootDir>/global.setup.ts",
+  "globalTeardown": "<rootDir>/global.teardown.ts",
   "moduleFileExtensions": ["js", "json", "ts"],
   "rootDir": ".",
   "testEnvironment": "node",

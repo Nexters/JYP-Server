@@ -1,0 +1,18 @@
+export const CATEGORY = {
+  M: 'M',
+  CS: 'CS',
+  S: 'S',
+  T: 'T',
+  CI: 'CI',
+  PI: 'PI',
+  TS: 'TS',
+  L: 'L',
+  R: 'R',
+  C: 'C',
+  H: 'H',
+  P: 'P',
+  B: 'B',
+  CZ: 'CZ',
+  PL: 'PL',
+  ETC: 'ETC',
+};
