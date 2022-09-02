@@ -19,8 +19,14 @@ export class JourneyRepository {
       return this.journeyModel
         .find({ users: user })
         .populate('users')
-        .populate('tags')
-        .populate('pikmis')
+        .populate({
+          path: 'tags',
+          populate: { path: 'users' },
+        })
+        .populate({
+          path: 'pikmis',
+          populate: { path: 'likeBy' },
+        })
         .populate('pikis')
         .exec();
     } else {
