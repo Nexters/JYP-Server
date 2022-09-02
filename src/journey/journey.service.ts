@@ -38,17 +38,18 @@ export class JourneyService {
       journeyCreateDto.startDate,
       journeyCreateDto.endDate,
     );
-    const journey: JourneyDocument = new this.journeyModel({
-      name: journeyCreateDto.name,
-      start: journeyCreateDto.startDate,
-      end: journeyCreateDto.endDate,
-      theme: journeyCreateDto.themePath,
-      users: [user],
-      tags: tags,
-      pikmis: [],
-      pikis: createEmptyNestedArray(dayDiff),
-    });
-    const savedJourney = await this.journeyRepository.insertOne(journey);
+    const journey = new Journey(
+      journeyCreateDto.name,
+      journeyCreateDto.startDate,
+      journeyCreateDto.endDate,
+      journeyCreateDto.themePath,
+      [user],
+      tags,
+      [],
+      createEmptyNestedArray(dayDiff),
+    );
+    const journeyDoc: JourneyDocument = new this.journeyModel(journey);
+    const savedJourney = await this.journeyRepository.insertOne(journeyDoc);
     return new IdResponseDTO(savedJourney._id.toString());
   }
 }

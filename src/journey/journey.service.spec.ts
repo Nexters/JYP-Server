@@ -15,6 +15,10 @@ import { LimitExceededException } from '../common/exceptions';
 import { JOURNEY_EXCEEDED_MSG } from '../common/validation/validation.messages';
 import { MAX_JOURNEY_PER_USER } from '../common/validation/validation.constants';
 
+jest.mock('../common/validation/validation.constants', () => ({
+  MAX_JOURNEY_PER_USER: 5,
+}));
+
 const JOURNEY_NAME = 'name';
 const START_DATE = 1661299200;
 const END_DATE = 1661558400; // 3일 차이
@@ -35,8 +39,10 @@ const JOURNEY_CREATE_DTO = new JourneyCreateDTO(
   TAG_CREATE_DTOS,
 );
 const USER_ID = 'kakao-1234';
-const USER = new User();
-USER._id = USER_ID;
+const USER_NAME = 'username';
+const USER_IMG = '/user/img';
+const USER_PSN_ID = 'ME';
+const USER = new User(USER_ID, USER_NAME, USER_IMG, USER_PSN_ID);
 const TAGS = [
   new Tag(FIRST_TOPIC, FIRST_ORIENT, [USER]),
   new Tag(SECOND_TOPIC, SECOND_ORIENT, [USER]),
@@ -111,16 +117,7 @@ describe('JourneyService', () => {
     expect(journeyRepository.listByUser).toBeCalledTimes(1);
     expect(journeyRepository.listByUser).toBeCalledWith(USER, false);
     expect(journeyModel).toBeCalledTimes(1);
-    expect(journeyModel).toBeCalledWith({
-      name: JOURNEY_NAME,
-      start: START_DATE,
-      end: END_DATE,
-      theme: THEME_PATH,
-      users: [USER],
-      tags: TAGS,
-      pikmis: [],
-      pikis: [[], [], []],
-    });
+    expect(journeyModel).toBeCalledWith(JOURNEY);
     expect(journeyRepository.insertOne).toBeCalledTimes(1);
     expect(journeyRepository.insertOne).toBeCalledWith(JOURNEY);
     expect(result).toEqual(ID_RESPONSE_DTO);
@@ -129,7 +126,7 @@ describe('JourneyService', () => {
   it('createJourney는 유저가 이미 만든 journey가 MAX_JOURNEY_PER_USER를 초과할 경우 LimitExceededException을 throw한다.', async () => {
     // given
     const existingJourneys = [];
-    for (const i of Array(MAX_JOURNEY_PER_USER).keys()) {
+    for (const _ of Array(MAX_JOURNEY_PER_USER).keys()) {
       existingJourneys.push([]);
     }
     userRepository.findOne = jest.fn().mockResolvedValue(USER);
