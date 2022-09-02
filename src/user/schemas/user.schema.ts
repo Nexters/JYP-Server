@@ -21,6 +21,13 @@ export class User {
     required: true,
   })
   psn: string;
+
+  constructor(id: string, name: string, img: string, psn: string) {
+    this._id = id;
+    this.name = name;
+    this.img = img;
+    this.psn = psn;
+  }
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
