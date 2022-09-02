@@ -11,8 +11,14 @@ import {
   TagCreateDTO,
 } from './dtos/journey.dto';
 import { User } from '../user/schemas/user.schema';
-import { LimitExceededException } from '../common/exceptions';
-import { JOURNEY_EXCEEDED_MSG } from '../common/validation/validation.messages';
+import {
+  InvalidJwtPayloadException,
+  LimitExceededException,
+} from '../common/exceptions';
+import {
+  INVALID_ID_IN_JWT_MSG,
+  JOURNEY_EXCEEDED_MSG,
+} from '../common/validation/validation.messages';
 import { MAX_JOURNEY_PER_USER } from '../common/validation/validation.constants';
 
 jest.mock('../common/validation/validation.constants', () => ({
@@ -144,5 +150,26 @@ describe('JourneyService', () => {
     expect(userRepository.findOne).toBeCalledWith(USER_ID);
     expect(journeyRepository.listByUser).toBeCalledTimes(1);
     expect(journeyRepository.listByUser).toBeCalledWith(USER, false);
+  });
+
+  it('createJourney는 userId에 해당하는 user가 없을 경우 InvalidJwtPayloadException을 throw한다.', async () => {
+    // given
+    const existingJourneys = [];
+    for (const _ of Array(MAX_JOURNEY_PER_USER).keys()) {
+      existingJourneys.push([]);
+    }
+    userRepository.findOne = jest.fn().mockResolvedValue(null);
+    journeyRepository.listByUser = jest
+      .fn()
+      .mockResolvedValue(existingJourneys);
+    journeyModel.constructor = jest.fn().mockReturnValue(JOURNEY);
+    journeyRepository.insertOne = jest.fn().mockResolvedValue(SAVED_JOURNEY);
+
+    // then
+    await expect(
+      journeyService.createJourney(JOURNEY_CREATE_DTO, USER_ID),
+    ).rejects.toThrow(new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG));
+    expect(userRepository.findOne).toBeCalledTimes(1);
+    expect(userRepository.findOne).toBeCalledWith(USER_ID);
   });
 });

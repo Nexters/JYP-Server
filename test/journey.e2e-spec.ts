@@ -152,6 +152,29 @@ describe('Journeys controller', () => {
     expect(response.statusCode).toBe(400);
   });
 
+  it('POST /journeys, payload로 전달된 회원 ID가 존재하지 않는 회원 ID일 때 401 응답', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/journeys')
+      .send({
+        name: JOURNEY_NAME,
+        startDate: START_DATE,
+        endDate: END_DATE,
+        themePath: THEME_PATH,
+        tags: [
+          {
+            topic: FIRST_TOPIC,
+            orientation: FIRST_ORIENT,
+          },
+          {
+            topic: SECOND_TOPIC,
+            orientation: SECOND_ORIENT,
+          },
+        ],
+      })
+      .type('application/json');
+    expect(response.statusCode).toBe(401);
+  });
+
   afterEach(async () => {
     await userModel.deleteMany({});
     await journeyModel.deleteMany({});

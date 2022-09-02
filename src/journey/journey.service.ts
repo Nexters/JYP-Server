@@ -1,8 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { JOURNEY_EXCEEDED_MSG } from '../common/validation/validation.messages';
-import { LimitExceededException } from '../common/exceptions';
+import {
+  INVALID_ID_IN_JWT_MSG,
+  JOURNEY_EXCEEDED_MSG,
+} from '../common/validation/validation.messages';
+import {
+  InvalidJwtPayloadException,
+  LimitExceededException,
+} from '../common/exceptions';
 import { createEmptyNestedArray, getDayDiff } from '../common/util';
 import { UserRepository } from '../user/user.repository';
 import { JourneyCreateDTO, IdResponseDTO } from './dtos/journey.dto';
@@ -24,6 +30,9 @@ export class JourneyService {
     userId: string,
   ): Promise<IdResponseDTO> {
     const user = await this.userRepository.findOne(userId);
+    if (user == null) {
+      throw new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG);
+    }
     const existingJourneys = await this.journeyRepository.listByUser(
       user,
       false,

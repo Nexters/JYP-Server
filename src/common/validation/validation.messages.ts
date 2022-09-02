@@ -33,4 +33,6 @@ export const TAG_TOPIC_LENGTH_EXCEEDED_MSG = `태그 이름은 ${MAX_TAG_TOPIC_L
 export const IS_NOT_EMPTY_KIND_MSG = (field: string) =>
   `${field} 정보가 입력되지 않았어요!`;
 
+export const INVALID_ID_IN_JWT_MSG = `존재하지 않는 회원 ID로 인증되었습니다.`;
+
 export const DEFAULT_MSG = '잘못된 요청입니다.';

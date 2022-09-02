@@ -7,7 +7,10 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { Response } from 'express';
-import { LimitExceededException } from '../common/exceptions';
+import {
+  InvalidJwtPayloadException,
+  LimitExceededException,
+} from '../common/exceptions';
 import { DEFAULT_MSG } from '../common/validation/validation.messages';
 
 @Catch(HttpException)
@@ -36,6 +39,19 @@ export class UnauthorizedExceptionFilter implements ExceptionFilter {
     console.info(exception.stack);
     response.status(status).json({
       code: String(status) + '00',
+      message: exception.message,
+    });
+  }
+}
+
+@Catch(InvalidJwtPayloadException)
+export class InvalidJwtPayloadExceptionFilter implements ExceptionFilter {
+  catch(exception: InvalidJwtPayloadException, host: ArgumentsHost) {
+    const ctx = host.switchToHttp();
+    const response = ctx.getResponse<Response>();
+    const status = exception.getStatus();
+    response.status(status).json({
+      code: String(status) + '01',
       message: exception.message,
     });
   }
