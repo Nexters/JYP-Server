@@ -14,6 +14,7 @@ import {
   ApiInternalServerErrorResponse,
   ApiOperation,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { TimeRangeValidationPipe } from '../common/pipe/custom.validation.pipe';
 import { JourneyCreateDTO, IdResponseDTO } from './dtos/journey.dto';
@@ -30,6 +31,7 @@ export class JourneyController {
   })
   @ApiCreatedResponse({ description: '성공', type: IdResponseDTO })
   @ApiBadRequestResponse({ description: '요청 데이터가 잘못됨' })
+  @ApiUnauthorizedResponse({ description: '인증 실패' })
   @ApiInternalServerErrorResponse({ description: '서버 오류' })
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
