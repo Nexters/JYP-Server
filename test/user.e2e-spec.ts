@@ -22,19 +22,15 @@ const CHANGED_NAME = 'name2';
 const CHANGED_IMG = '/other/path';
 
 describe('Users controller', () => {
-  let mongoServer: MongoMemoryServer;
   let app: NestApplication;
   let userModel: Model<UserDocument>;
 
   beforeAll(async () => {
-    mongoServer = await MongoMemoryServer.create({
-      instance: { dbName: 'jyp' },
-    });
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         MongooseModule.forRootAsync({
           useFactory: async () => {
-            return { uri: mongoServer.getUri() };
+            return { uri: process.env['MONGO_URI'] };
           },
         }),
         UserModule,
@@ -133,7 +129,6 @@ describe('Users controller', () => {
   });
 
   afterAll(async () => {
-    app.close();
-    mongoServer.stop();
+    await app.close();
   });
 });
