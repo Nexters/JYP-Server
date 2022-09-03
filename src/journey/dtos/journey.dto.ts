@@ -4,22 +4,31 @@ import {
   ArrayMaxSize,
   IsIn,
   IsNotEmpty,
+  Max,
   MaxLength,
+  Min,
   ValidateNested,
 } from 'class-validator';
 import {
   MAX_JOURNEY_NAME_LENGTH,
+  MAX_LATITUDE,
+  MAX_LONGITUDE,
   MAX_TAGS,
   MAX_TAG_TOPIC_LENGTH,
+  MIN_LATITUDE,
+  MIN_LONGITUDE,
 } from '../../common/validation/validation.constants';
 import {
   IS_IN_MSG,
   IS_NOT_EMPTY_KIND_MSG,
   IS_NOT_EMPTY_MSG,
   JOURNEY_NAME_LENGTH_EXCEEDED_MSG,
+  LATITUDE_INVALID_MSG,
+  LONGITUDE_INVALID_MSG,
   TAG_EXCEEDED_MSG,
   TAG_TOPIC_LENGTH_EXCEEDED_MSG,
 } from '../../common/validation/validation.messages';
+import { CATEGORY } from '../schemas/category';
 import { ORIENTATION } from '../schemas/orientation';
 import {
   IdResponse,
@@ -87,11 +96,33 @@ export class JourneyCreateDTO implements JourneyCreate {
 }
 
 export class PikmiCreateDTO implements PikmiCreate {
+  @ApiProperty({ description: '픽미 이름' })
+  @IsNotEmpty({ message: IS_NOT_EMPTY_MSG })
   readonly name: string;
+
+  @ApiProperty({ description: '픽미 주소' })
+  @IsNotEmpty({ message: IS_NOT_EMPTY_MSG })
   readonly address: string;
+
+  @ApiProperty({ description: '픽미 카테고리' })
+  @IsIn(Object.values(CATEGORY), { message: IS_IN_MSG })
+  @IsNotEmpty({ message: IS_NOT_EMPTY_MSG })
   readonly category: string;
+
+  @ApiProperty({ description: '픽미 경도 값' })
+  @Min(MIN_LONGITUDE, { message: LONGITUDE_INVALID_MSG })
+  @Max(MAX_LONGITUDE, { message: LONGITUDE_INVALID_MSG })
+  @IsNotEmpty({ message: IS_NOT_EMPTY_MSG })
   readonly longitude: number;
+
+  @ApiProperty({ description: '픽미 위도 값' })
+  @Min(MIN_LATITUDE, { message: LATITUDE_INVALID_MSG })
+  @Max(MAX_LATITUDE, { message: LATITUDE_INVALID_MSG })
+  @IsNotEmpty({ message: IS_NOT_EMPTY_MSG })
   readonly latitude: number;
+
+  @ApiProperty({ description: '픽미 자세한 정보 링크' })
+  @IsNotEmpty({ message: IS_NOT_EMPTY_MSG })
   readonly link: string;
 
   constructor(

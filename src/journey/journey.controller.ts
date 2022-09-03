@@ -25,11 +25,11 @@ import {
 } from './dtos/journey.dto';
 import { JourneyService } from './journey.service';
 
+@ApiTags('Journey')
 @Controller('journeys')
 export class JourneyController {
   constructor(private readonly journeyService: JourneyService) {}
 
-  @ApiTags('Journey')
   @ApiOperation({
     summary: '여행 생성',
     description: '새로운 여행을 생성한다.',
@@ -52,6 +52,15 @@ export class JourneyController {
     );
   }
 
+  @ApiOperation({
+    summary: '픽미 추가',
+    description: '검색을 통해 선택된 픽미를 여행에 추가한다.',
+  })
+  @ApiCreatedResponse({ description: '성공', type: IdResponseDTO })
+  @ApiBadRequestResponse({ description: '요청 데이터가 잘못됨' })
+  @ApiUnauthorizedResponse({ description: '인증 실패' })
+  @ApiInternalServerErrorResponse({ description: '서버 오류' })
+  @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @Post(':journeyId/pikmis')
   public async createPikmi(

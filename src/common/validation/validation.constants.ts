@@ -4,3 +4,7 @@ export const MAX_TAGS = 3;
 export const MAX_JOURNEY_NAME_LENGTH = 10;
 export const MAX_TAG_TOPIC_LENGTH = 6;
 export const MAX_PIKMI_PER_JOURNEY = 100;
+export const MIN_LONGITUDE = 124;
+export const MAX_LONGITUDE = 132;
+export const MIN_LATITUDE = 33;
+export const MAX_LATITUDE = 43;
