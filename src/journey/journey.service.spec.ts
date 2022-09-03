@@ -127,12 +127,12 @@ describe('JourneyService', () => {
   });
 
   describe('createJourney', () => {
-    it('JourneyDocument 인스턴스를 생성해서 JourneyRepository.insertOne을 호출한다.', async () => {
+    it('JourneyDocument 인스턴스를 생성해서 JourneyRepository.insert를 호출한다.', async () => {
       // given
       userRepository.findOne = jest.fn().mockResolvedValue(USER);
       journeyModel.constructor = jest.fn().mockReturnValue(JOURNEY);
       journeyRepository.listByUser = jest.fn().mockResolvedValue([[]]);
-      journeyRepository.insertOne = jest.fn().mockResolvedValue(SAVED_JOURNEY);
+      journeyRepository.insert = jest.fn().mockResolvedValue(SAVED_JOURNEY);
 
       // when
       const result = await journeyService.createJourney(
@@ -147,8 +147,8 @@ describe('JourneyService', () => {
       expect(journeyRepository.listByUser).toBeCalledWith(USER, false);
       expect(journeyModel).toBeCalledTimes(1);
       expect(journeyModel).toBeCalledWith(JOURNEY);
-      expect(journeyRepository.insertOne).toBeCalledTimes(1);
-      expect(journeyRepository.insertOne).toBeCalledWith(JOURNEY);
+      expect(journeyRepository.insert).toBeCalledTimes(1);
+      expect(journeyRepository.insert).toBeCalledWith(JOURNEY);
       expect(result).toEqual(JOURNEY_ID_RESPONSE_DTO);
     });
 
@@ -163,7 +163,7 @@ describe('JourneyService', () => {
         .fn()
         .mockResolvedValue(existingJourneys);
       journeyModel.constructor = jest.fn().mockReturnValue(JOURNEY);
-      journeyRepository.insertOne = jest.fn().mockResolvedValue(SAVED_JOURNEY);
+      journeyRepository.insert = jest.fn().mockResolvedValue(SAVED_JOURNEY);
 
       // then
       await expect(
@@ -186,7 +186,7 @@ describe('JourneyService', () => {
         .fn()
         .mockResolvedValue(existingJourneys);
       journeyModel.constructor = jest.fn().mockReturnValue(JOURNEY);
-      journeyRepository.insertOne = jest.fn().mockResolvedValue(SAVED_JOURNEY);
+      journeyRepository.insert = jest.fn().mockResolvedValue(SAVED_JOURNEY);
 
       // then
       await expect(
@@ -203,7 +203,7 @@ describe('JourneyService', () => {
       const journeyForUpdate = structuredClone(JOURNEY);
       journeyRepository.get = jest.fn().mockResolvedValue(journeyForUpdate);
       userRepository.findOne = jest.fn().mockResolvedValue(USER);
-      journeyRepository.updateOne = jest.fn();
+      journeyRepository.update = jest.fn();
 
       // when
       const result = await journeyService.createPikmi(
@@ -217,8 +217,8 @@ describe('JourneyService', () => {
       expect(userRepository.findOne).toBeCalledWith(USER_ID);
       expect(journeyRepository.get).toBeCalledTimes(1);
       expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
-      expect(journeyRepository.updateOne).toBeCalledTimes(1);
-      expect(journeyRepository.updateOne).toBeCalledWith(journeyForUpdate);
+      expect(journeyRepository.update).toBeCalledTimes(1);
+      expect(journeyRepository.update).toBeCalledWith(journeyForUpdate);
       expect(JOURNEY.pikmis.length + 1).toBe(journeyForUpdate.pikmis.length);
       const pikmiWithId =
         journeyForUpdate.pikmis[journeyForUpdate.pikmis.length - 1];
@@ -238,7 +238,7 @@ describe('JourneyService', () => {
       const journeyForUpdate = structuredClone(JOURNEY);
       userRepository.findOne = jest.fn().mockResolvedValue(null);
       journeyRepository.get = jest.fn().mockResolvedValue(journeyForUpdate);
-      journeyRepository.updateOne = jest.fn();
+      journeyRepository.update = jest.fn();
 
       // then
       await expect(
@@ -246,14 +246,14 @@ describe('JourneyService', () => {
       ).rejects.toThrow(new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG));
       expect(userRepository.findOne).toBeCalledTimes(1);
       expect(userRepository.findOne).toBeCalledWith(USER_ID);
-      expect(journeyRepository.updateOne).toBeCalledTimes(0);
+      expect(journeyRepository.update).toBeCalledTimes(0);
     });
 
     it('해당하는 저니가 없으면 JourneyNotExistException을 throw한다.', async () => {
       // given
       userRepository.findOne = jest.fn().mockResolvedValue(USER);
       journeyRepository.get = jest.fn().mockResolvedValue(null);
-      journeyRepository.updateOne = jest.fn();
+      journeyRepository.update = jest.fn();
 
       // then
       await expect(
@@ -261,7 +261,7 @@ describe('JourneyService', () => {
       ).rejects.toThrow(new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG));
       expect(journeyRepository.get).toBeCalledTimes(1);
       expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
-      expect(journeyRepository.updateOne).toBeCalledTimes(0);
+      expect(journeyRepository.update).toBeCalledTimes(0);
     });
 
     it('저니에 픽미 갯수가 MAX_PIKMI_PER_JOURNEY를 초과할 경우 LimitExceededException을 throw한다.', async () => {
@@ -272,7 +272,7 @@ describe('JourneyService', () => {
       }
       userRepository.findOne = jest.fn().mockResolvedValue(USER);
       journeyRepository.get = jest.fn().mockResolvedValue(journeyForUpdate);
-      journeyRepository.updateOne = jest.fn();
+      journeyRepository.update = jest.fn();
 
       // then
       await expect(
@@ -280,7 +280,7 @@ describe('JourneyService', () => {
       ).rejects.toThrow(new LimitExceededException(PIKMI_EXCEEDED_MSG));
       expect(journeyRepository.get).toBeCalledTimes(1);
       expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
-      expect(journeyRepository.updateOne).toBeCalledTimes(0);
+      expect(journeyRepository.update).toBeCalledTimes(0);
     });
   });
 });

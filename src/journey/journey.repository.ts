@@ -55,11 +55,11 @@ export class JourneyRepository {
     }
   }
 
-  public async insertOne(journey: JourneyDocument): Promise<JourneyDocument> {
+  public async insert(journey: JourneyDocument): Promise<JourneyDocument> {
     return journey.save();
   }
 
-  public async updateOne(journey: JourneyDocument): Promise<JourneyDocument> {
+  public async update(journey: JourneyDocument): Promise<JourneyDocument> {
     return journey.save();
   }
 }

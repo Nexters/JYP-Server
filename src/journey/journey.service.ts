@@ -68,7 +68,7 @@ export class JourneyService {
       createEmptyNestedArray(dayDiff),
     );
     const journeyDoc: JourneyDocument = new this.journeyModel(journey);
-    const savedJourney = await this.journeyRepository.insertOne(journeyDoc);
+    const savedJourney = await this.journeyRepository.insert(journeyDoc);
     return new IdResponseDTO(savedJourney._id.toString());
   }
 
@@ -98,7 +98,7 @@ export class JourneyService {
       pikmiCreateDto.link,
     );
     journey.pikmis.push(pikmi);
-    await this.journeyRepository.updateOne(journey);
+    await this.journeyRepository.update(journey);
     return new IdResponseDTO(pikmi._id.toString());
   }
 }
