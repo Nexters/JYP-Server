@@ -104,72 +104,74 @@ describe('JourneyService', () => {
     expect(journeyService).toBeDefined();
   });
 
-  it('createJourney는 JourneyDocument 인스턴스를 생성해서 JourneyRepository.insertOne을 호출한다.', async () => {
-    // given
-    userRepository.findOne = jest.fn().mockResolvedValue(USER);
-    journeyModel.constructor = jest.fn().mockReturnValue(JOURNEY);
-    journeyRepository.listByUser = jest.fn().mockResolvedValue([[]]);
-    journeyRepository.insertOne = jest.fn().mockResolvedValue(SAVED_JOURNEY);
+  describe('createJourney', () => {
+    it('JourneyDocument 인스턴스를 생성해서 JourneyRepository.insertOne을 호출한다.', async () => {
+      // given
+      userRepository.findOne = jest.fn().mockResolvedValue(USER);
+      journeyModel.constructor = jest.fn().mockReturnValue(JOURNEY);
+      journeyRepository.listByUser = jest.fn().mockResolvedValue([[]]);
+      journeyRepository.insertOne = jest.fn().mockResolvedValue(SAVED_JOURNEY);
 
-    // when
-    const result = await journeyService.createJourney(
-      JOURNEY_CREATE_DTO,
-      USER_ID,
-    );
+      // when
+      const result = await journeyService.createJourney(
+        JOURNEY_CREATE_DTO,
+        USER_ID,
+      );
 
-    // then
-    expect(userRepository.findOne).toBeCalledTimes(1);
-    expect(userRepository.findOne).toBeCalledWith(USER_ID);
-    expect(journeyRepository.listByUser).toBeCalledTimes(1);
-    expect(journeyRepository.listByUser).toBeCalledWith(USER, false);
-    expect(journeyModel).toBeCalledTimes(1);
-    expect(journeyModel).toBeCalledWith(JOURNEY);
-    expect(journeyRepository.insertOne).toBeCalledTimes(1);
-    expect(journeyRepository.insertOne).toBeCalledWith(JOURNEY);
-    expect(result).toEqual(ID_RESPONSE_DTO);
-  });
+      // then
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.listByUser).toBeCalledTimes(1);
+      expect(journeyRepository.listByUser).toBeCalledWith(USER, false);
+      expect(journeyModel).toBeCalledTimes(1);
+      expect(journeyModel).toBeCalledWith(JOURNEY);
+      expect(journeyRepository.insertOne).toBeCalledTimes(1);
+      expect(journeyRepository.insertOne).toBeCalledWith(JOURNEY);
+      expect(result).toEqual(ID_RESPONSE_DTO);
+    });
 
-  it('createJourney는 유저가 이미 만든 journey가 MAX_JOURNEY_PER_USER를 초과할 경우 LimitExceededException을 throw한다.', async () => {
-    // given
-    const existingJourneys = [];
-    for (const _ of Array(MAX_JOURNEY_PER_USER).keys()) {
-      existingJourneys.push([]);
-    }
-    userRepository.findOne = jest.fn().mockResolvedValue(USER);
-    journeyRepository.listByUser = jest
-      .fn()
-      .mockResolvedValue(existingJourneys);
-    journeyModel.constructor = jest.fn().mockReturnValue(JOURNEY);
-    journeyRepository.insertOne = jest.fn().mockResolvedValue(SAVED_JOURNEY);
+    it('유저가 이미 만든 journey가 MAX_JOURNEY_PER_USER를 초과할 경우 LimitExceededException을 throw한다.', async () => {
+      // given
+      const existingJourneys = [];
+      for (const _ of Array(MAX_JOURNEY_PER_USER).keys()) {
+        existingJourneys.push([]);
+      }
+      userRepository.findOne = jest.fn().mockResolvedValue(USER);
+      journeyRepository.listByUser = jest
+        .fn()
+        .mockResolvedValue(existingJourneys);
+      journeyModel.constructor = jest.fn().mockReturnValue(JOURNEY);
+      journeyRepository.insertOne = jest.fn().mockResolvedValue(SAVED_JOURNEY);
 
-    // then
-    await expect(
-      journeyService.createJourney(JOURNEY_CREATE_DTO, USER_ID),
-    ).rejects.toThrow(new LimitExceededException(JOURNEY_EXCEEDED_MSG));
-    expect(userRepository.findOne).toBeCalledTimes(1);
-    expect(userRepository.findOne).toBeCalledWith(USER_ID);
-    expect(journeyRepository.listByUser).toBeCalledTimes(1);
-    expect(journeyRepository.listByUser).toBeCalledWith(USER, false);
-  });
+      // then
+      await expect(
+        journeyService.createJourney(JOURNEY_CREATE_DTO, USER_ID),
+      ).rejects.toThrow(new LimitExceededException(JOURNEY_EXCEEDED_MSG));
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.listByUser).toBeCalledTimes(1);
+      expect(journeyRepository.listByUser).toBeCalledWith(USER, false);
+    });
 
-  it('createJourney는 userId에 해당하는 user가 없을 경우 InvalidJwtPayloadException을 throw한다.', async () => {
-    // given
-    const existingJourneys = [];
-    for (const _ of Array(MAX_JOURNEY_PER_USER).keys()) {
-      existingJourneys.push([]);
-    }
-    userRepository.findOne = jest.fn().mockResolvedValue(null);
-    journeyRepository.listByUser = jest
-      .fn()
-      .mockResolvedValue(existingJourneys);
-    journeyModel.constructor = jest.fn().mockReturnValue(JOURNEY);
-    journeyRepository.insertOne = jest.fn().mockResolvedValue(SAVED_JOURNEY);
+    it('userId에 해당하는 user가 없을 경우 InvalidJwtPayloadException을 throw한다.', async () => {
+      // given
+      const existingJourneys = [];
+      for (const _ of Array(MAX_JOURNEY_PER_USER).keys()) {
+        existingJourneys.push([]);
+      }
+      userRepository.findOne = jest.fn().mockResolvedValue(null);
+      journeyRepository.listByUser = jest
+        .fn()
+        .mockResolvedValue(existingJourneys);
+      journeyModel.constructor = jest.fn().mockReturnValue(JOURNEY);
+      journeyRepository.insertOne = jest.fn().mockResolvedValue(SAVED_JOURNEY);
 
-    // then
-    await expect(
-      journeyService.createJourney(JOURNEY_CREATE_DTO, USER_ID),
-    ).rejects.toThrow(new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG));
-    expect(userRepository.findOne).toBeCalledTimes(1);
-    expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      // then
+      await expect(
+        journeyService.createJourney(JOURNEY_CREATE_DTO, USER_ID),
+      ).rejects.toThrow(new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG));
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+    });
   });
 });
