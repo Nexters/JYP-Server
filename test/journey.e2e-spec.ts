@@ -87,92 +87,94 @@ describe('Journeys controller', () => {
     );
   });
 
-  it('POST /journeys', async () => {
-    const user = new userModel(USER);
-    await user.save();
-    const response = await request(app.getHttpServer())
-      .post('/journeys')
-      .send({
-        name: JOURNEY_NAME,
-        startDate: START_DATE,
-        endDate: END_DATE,
-        themePath: THEME_PATH,
-        tags: [
-          {
-            topic: FIRST_TOPIC,
-            orientation: FIRST_ORIENT,
-          },
-          {
-            topic: SECOND_TOPIC,
-            orientation: SECOND_ORIENT,
-          },
-        ],
-      })
-      .type('application/json');
-    expect(response.statusCode).toBe(201);
-    const journeyId = response.body.id;
-    const journeyDoc = await journeyModel
-      .findById({ _id: journeyId })
-      .populate({
-        path: 'tags',
-        populate: { path: 'users' },
-      })
-      .populate('users')
-      .exec();
-    const journey = toPlainObject(journeyDoc, JOURNEY);
-    expect(journey).toEqual(JOURNEY);
-  });
+  describe('POST /journeys', () => {
+    it('success', async () => {
+      const user = new userModel(USER);
+      await user.save();
+      const response = await request(app.getHttpServer())
+        .post('/journeys')
+        .send({
+          name: JOURNEY_NAME,
+          startDate: START_DATE,
+          endDate: END_DATE,
+          themePath: THEME_PATH,
+          tags: [
+            {
+              topic: FIRST_TOPIC,
+              orientation: FIRST_ORIENT,
+            },
+            {
+              topic: SECOND_TOPIC,
+              orientation: SECOND_ORIENT,
+            },
+          ],
+        })
+        .type('application/json');
+      expect(response.statusCode).toBe(201);
+      const journeyId = response.body.id;
+      const journeyDoc = await journeyModel
+        .findById({ _id: journeyId })
+        .populate({
+          path: 'tags',
+          populate: { path: 'users' },
+        })
+        .populate('users')
+        .exec();
+      const journey = toPlainObject(journeyDoc, JOURNEY);
+      expect(journey).toEqual(JOURNEY);
+    });
 
-  it('POST /journeys, 최대 여행 갯수 초과로 400 응답', async () => {
-    const user = new userModel(USER);
-    await user.save();
-    for (const _ of Array(MAX_JOURNEY_PER_USER).keys()) {
-      const existingJourney = new journeyModel(JOURNEY);
-      existingJourney.save();
-    }
-    const response = await request(app.getHttpServer())
-      .post('/journeys')
-      .send({
-        name: JOURNEY_NAME,
-        startDate: START_DATE,
-        endDate: END_DATE,
-        themePath: THEME_PATH,
-        tags: [
-          {
-            topic: FIRST_TOPIC,
-            orientation: FIRST_ORIENT,
-          },
-          {
-            topic: SECOND_TOPIC,
-            orientation: SECOND_ORIENT,
-          },
-        ],
-      })
-      .type('application/json');
-    expect(response.statusCode).toBe(400);
-  });
+    it('최대 여행 갯수 초과로 400 응답', async () => {
+      const user = new userModel(USER);
+      await user.save();
+      for (const _ of Array(MAX_JOURNEY_PER_USER).keys()) {
+        const existingJourney = new journeyModel(JOURNEY);
+        existingJourney.save();
+      }
+      const response = await request(app.getHttpServer())
+        .post('/journeys')
+        .send({
+          name: JOURNEY_NAME,
+          startDate: START_DATE,
+          endDate: END_DATE,
+          themePath: THEME_PATH,
+          tags: [
+            {
+              topic: FIRST_TOPIC,
+              orientation: FIRST_ORIENT,
+            },
+            {
+              topic: SECOND_TOPIC,
+              orientation: SECOND_ORIENT,
+            },
+          ],
+        })
+        .type('application/json');
+      expect(response.statusCode).toBe(400);
+    });
 
-  it('POST /journeys, payload로 전달된 회원 ID가 존재하지 않는 회원 ID일 때 401 응답', async () => {
-    const response = await request(app.getHttpServer())
-      .post('/journeys')
-      .send({
-        name: JOURNEY_NAME,
-        startDate: START_DATE,
-        endDate: END_DATE,
-        themePath: THEME_PATH,
-        tags: [
-          {
-            topic: FIRST_TOPIC,
-            orientation: FIRST_ORIENT,
-          },
-          {
-            topic: SECOND_TOPIC,
-            orientation: SECOND_ORIENT,
-          },
-        ],
-      })
-      .type('application/json');
-    expect(response.statusCode).toBe(401);
+    it('payload로 전달된 회원 ID가 존재하지 않는 회원 ID일 때 401 응답', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/journeys')
+        .send({
+          name: JOURNEY_NAME,
+          startDate: START_DATE,
+          endDate: END_DATE,
+          themePath: THEME_PATH,
+          tags: [
+            {
+              topic: FIRST_TOPIC,
+              orientation: FIRST_ORIENT,
+            },
+            {
+              topic: SECOND_TOPIC,
+              orientation: SECOND_ORIENT,
+            },
+          ],
+        })
+        .type('application/json');
+      expect(response.statusCode).toBe(401);
+    });
   });
 
   afterEach(async () => {
