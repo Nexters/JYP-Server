@@ -3,6 +3,7 @@ import {
   MAX_JOURNEY_DAYS,
   MAX_JOURNEY_NAME_LENGTH,
   MAX_JOURNEY_PER_USER,
+  MAX_PIKMI_PER_JOURNEY,
   MAX_TAGS,
   MAX_TAG_TOPIC_LENGTH,
 } from './validation.constants';
@@ -34,5 +35,9 @@ export const IS_NOT_EMPTY_KIND_MSG = (field: string) =>
   `${field} 정보가 입력되지 않았어요!`;
 
 export const INVALID_ID_IN_JWT_MSG = `존재하지 않는 회원 ID로 인증되었습니다.`;
+
+export const JOURNEY_NOT_EXIST_MSG = `해당 여행이 존재하지 않습니다.`;
+
+export const PIKMI_EXCEEDED_MSG = `여행 후보 장소는 ${MAX_PIKMI_PER_JOURNEY}개까지만 추가할 수 있어요!`;
 
 export const DEFAULT_MSG = '잘못된 요청입니다.';

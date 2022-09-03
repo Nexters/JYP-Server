@@ -9,6 +9,7 @@ import {
 import { Response } from 'express';
 import {
   InvalidJwtPayloadException,
+  JourneyNotExistException,
   LimitExceededException,
 } from '../common/exceptions';
 import { DEFAULT_MSG } from '../common/validation/validation.messages';
@@ -77,6 +78,18 @@ export class LimitExceededExceptionFilter implements ExceptionFilter {
     const status = exception.getStatus();
     response.status(status).json({
       code: String(status) + '02',
+      message: exception.message,
+    });
+  }
+}
+
+@Catch(JourneyNotExistException)
+export class JourneyNotExistExceptionFliter implements ExceptionFilter {
+  catch(exception: JourneyNotExistException, host: ArgumentsHost) {
+    const response = getResponse(host);
+    const status = exception.getStatus();
+    response.status(status).json({
+      code: String(status) + '03',
       message: exception.message,
     });
   }

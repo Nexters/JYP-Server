@@ -9,15 +9,20 @@ import {
   Tag,
   Journey,
   JourneyDocument,
+  Pikmi,
 } from '../src/journey/schemas/journey.schema';
 import { User, UserDocument } from '../src/user/schemas/user.schema';
 import { UserModule } from '../src/user/user.module';
 import request from 'supertest';
-import { MAX_JOURNEY_PER_USER } from '../src/common/validation/validation.constants';
+import {
+  MAX_JOURNEY_PER_USER,
+  MAX_PIKMI_PER_JOURNEY,
+} from '../src/common/validation/validation.constants';
 import { toPlainObject } from '../src/common/util';
 
 jest.mock('../src/common/validation/validation.constants', () => ({
   MAX_JOURNEY_PER_USER: 5,
+  MAX_PIKMI_PER_JOURNEY: 5,
 }));
 
 const JOURNEY_NAME = 'name';
@@ -50,6 +55,12 @@ const JOURNEY = new Journey(
 const SAVED_JOURNEY = structuredClone(JOURNEY);
 const JOURNEY_ID = '630b28c08abfc3f96130789c';
 SAVED_JOURNEY._id = new mongoose.Types.ObjectId(JOURNEY_ID);
+const PIKMI_NAME = 'pikmi';
+const PIKMI_ADDR = 'pikmi addr';
+const PIKMI_CATEGORY = 'P';
+const PIKMI_LON = 129.4;
+const PIKMI_LAT = 36.7;
+const PIKMI_LINK = '/pikmi/link';
 
 describe('Journeys controller', () => {
   let app: NestApplication;
@@ -174,6 +185,114 @@ describe('Journeys controller', () => {
         })
         .type('application/json');
       expect(response.statusCode).toBe(401);
+    });
+  });
+
+  describe('POST journeys/:journeyId/pikmis', () => {
+    it('success', async () => {
+      const journey = new journeyModel(JOURNEY);
+      const journeyId = journey._id.toString();
+      await journey.save();
+      const user = new userModel(USER);
+      await user.save();
+      const response = await request(app.getHttpServer())
+        .post(`/journeys/${journeyId}/pikmis`)
+        .send({
+          name: PIKMI_NAME,
+          address: PIKMI_ADDR,
+          category: PIKMI_CATEGORY,
+          longitude: PIKMI_LON,
+          latitude: PIKMI_LAT,
+          link: PIKMI_LINK,
+        })
+        .type('application/json');
+      expect(response.statusCode).toBe(201);
+      const updatedJourney = await journeyModel
+        .findById(new mongoose.Types.ObjectId(journeyId))
+        .populate({
+          path: 'pikmis',
+          populate: { path: 'likeBy' },
+        })
+        .exec();
+      expect(updatedJourney.pikmis.length).toBe(journey.pikmis.length + 1);
+      const createdPikmi =
+        updatedJourney.pikmis[updatedJourney.pikmis.length - 1];
+      expect(createdPikmi._id.toString()).toBe(response.body.id);
+      expect(createdPikmi.name).toBe(PIKMI_NAME);
+      expect(createdPikmi.addr).toBe(PIKMI_ADDR);
+      expect(createdPikmi.cate).toBe(PIKMI_CATEGORY);
+      expect(toPlainObject(createdPikmi.likeBy, [USER])).toEqual([USER]);
+      expect(createdPikmi.lon).toBe(PIKMI_LON);
+      expect(createdPikmi.lat).toBe(PIKMI_LAT);
+      expect(createdPikmi.link).toBe(PIKMI_LINK);
+    });
+
+    it('payload로 전달된 회원 ID가 존재하지 않는 회원 ID일 때 401 응답', async () => {
+      const journey = new journeyModel(JOURNEY);
+      const journeyId = journey._id.toString();
+      await journey.save();
+      const response = await request(app.getHttpServer())
+        .post(`/journeys/${journeyId}/pikmis`)
+        .send({
+          name: PIKMI_NAME,
+          address: PIKMI_ADDR,
+          category: PIKMI_CATEGORY,
+          longitude: PIKMI_LON,
+          latitude: PIKMI_LAT,
+          link: PIKMI_LINK,
+        })
+        .type('application/json');
+      expect(response.statusCode).toBe(401);
+    });
+
+    it('저니가 존재하지 않을 때 400 응답', async () => {
+      const user = new userModel(USER);
+      await user.save();
+      const nonExistingJourneyId = '630b28c08abfc3f96130789f';
+      const response = await request(app.getHttpServer())
+        .post(`/journeys/${nonExistingJourneyId}/pikmis`)
+        .send({
+          name: PIKMI_NAME,
+          address: PIKMI_ADDR,
+          category: PIKMI_CATEGORY,
+          longitude: PIKMI_LON,
+          latitude: PIKMI_LAT,
+          link: PIKMI_LINK,
+        })
+        .type('application/json');
+      expect(response.statusCode).toBe(400);
+    });
+
+    it('저니에 픽미 갯수가 MAX_PIKMI_PER_JOURNEY를 초과했을 때 400 응답', async () => {
+      const journey = new journeyModel(JOURNEY);
+      for (const _ of Array(MAX_PIKMI_PER_JOURNEY).keys()) {
+        const pikmi = Pikmi.create(
+          PIKMI_NAME,
+          PIKMI_ADDR,
+          PIKMI_CATEGORY,
+          [USER],
+          PIKMI_LON,
+          PIKMI_LAT,
+          PIKMI_LINK,
+        );
+        journey.pikmis.push(pikmi);
+      }
+      const journeyId = journey._id.toString();
+      await journey.save();
+      const user = new userModel(USER);
+      await user.save();
+      const response = await request(app.getHttpServer())
+        .post(`/journeys/${journeyId}/pikmis`)
+        .send({
+          name: PIKMI_NAME,
+          address: PIKMI_ADDR,
+          category: PIKMI_CATEGORY,
+          longitude: PIKMI_LON,
+          latitude: PIKMI_LAT,
+          link: PIKMI_LINK,
+        })
+        .type('application/json');
+      expect(response.statusCode).toBe(400);
     });
   });
 

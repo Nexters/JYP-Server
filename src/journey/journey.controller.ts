@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Param,
   Post,
   Request,
   UseGuards,
@@ -17,7 +18,11 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { TimeRangeValidationPipe } from '../common/pipe/custom.validation.pipe';
-import { JourneyCreateDTO, IdResponseDTO } from './dtos/journey.dto';
+import {
+  JourneyCreateDTO,
+  IdResponseDTO,
+  PikmiCreateDTO,
+} from './dtos/journey.dto';
 import { JourneyService } from './journey.service';
 
 @Controller('journeys')
@@ -43,6 +48,20 @@ export class JourneyController {
   ): Promise<IdResponseDTO> {
     return await this.journeyService.createJourney(
       journeyCreateDto,
+      req.user.id,
+    );
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post(':journeyId/pikmis')
+  public async createPikmi(
+    @Param('journeyId') journeyId: string,
+    @Body() pikmiCreateDto: PikmiCreateDTO,
+    @Request() req,
+  ): Promise<IdResponseDTO> {
+    return await this.journeyService.createPikmi(
+      pikmiCreateDto,
+      journeyId,
       req.user.id,
     );
   }

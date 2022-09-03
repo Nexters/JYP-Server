@@ -4,17 +4,27 @@ import { Model } from 'mongoose';
 import {
   INVALID_ID_IN_JWT_MSG,
   JOURNEY_EXCEEDED_MSG,
+  JOURNEY_NOT_EXIST_MSG,
+  PIKMI_EXCEEDED_MSG,
 } from '../common/validation/validation.messages';
 import {
   InvalidJwtPayloadException,
+  JourneyNotExistException,
   LimitExceededException,
 } from '../common/exceptions';
 import { createEmptyNestedArray, getDayDiff } from '../common/util';
 import { UserRepository } from '../user/user.repository';
-import { JourneyCreateDTO, IdResponseDTO } from './dtos/journey.dto';
+import {
+  JourneyCreateDTO,
+  IdResponseDTO,
+  PikmiCreateDTO,
+} from './dtos/journey.dto';
 import { JourneyRepository } from './journey.repository';
-import { Journey, JourneyDocument, Tag } from './schemas/journey.schema';
-import { MAX_JOURNEY_PER_USER } from '../common/validation/validation.constants';
+import { Journey, JourneyDocument, Pikmi, Tag } from './schemas/journey.schema';
+import {
+  MAX_JOURNEY_PER_USER,
+  MAX_PIKMI_PER_JOURNEY,
+} from '../common/validation/validation.constants';
 
 @Injectable()
 export class JourneyService {
@@ -60,5 +70,35 @@ export class JourneyService {
     const journeyDoc: JourneyDocument = new this.journeyModel(journey);
     const savedJourney = await this.journeyRepository.insertOne(journeyDoc);
     return new IdResponseDTO(savedJourney._id.toString());
+  }
+
+  public async createPikmi(
+    pikmiCreateDto: PikmiCreateDTO,
+    journeyId: string,
+    userId: string,
+  ) {
+    const user = await this.userRepository.findOne(userId);
+    if (user == null) {
+      throw new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG);
+    }
+    const journey = await this.journeyRepository.get(journeyId, false);
+    if (journey == null) {
+      throw new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG);
+    }
+    if (journey.pikmis.length >= MAX_PIKMI_PER_JOURNEY) {
+      throw new LimitExceededException(PIKMI_EXCEEDED_MSG);
+    }
+    const pikmi = Pikmi.create(
+      pikmiCreateDto.name,
+      pikmiCreateDto.address,
+      pikmiCreateDto.category,
+      [user],
+      pikmiCreateDto.longitude,
+      pikmiCreateDto.latitude,
+      pikmiCreateDto.link,
+    );
+    journey.pikmis.push(pikmi);
+    await this.journeyRepository.updateOne(journey);
+    return new IdResponseDTO(pikmi._id.toString());
   }
 }

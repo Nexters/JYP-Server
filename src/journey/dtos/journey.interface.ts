@@ -11,6 +11,15 @@ export interface JourneyCreate {
   tags: TagCreate[];
 }
 
+export interface PikmiCreate {
+  name: string;
+  address: string;
+  category: string;
+  longitude: number;
+  latitude: number;
+  link: string;
+}
+
 export interface IdResponse {
   id: string;
 }

@@ -8,21 +8,29 @@ import { Journey, JourneyDocument, Tag } from './schemas/journey.schema';
 import {
   IdResponseDTO,
   JourneyCreateDTO,
+  PikmiCreateDTO,
   TagCreateDTO,
 } from './dtos/journey.dto';
 import { User } from '../user/schemas/user.schema';
 import {
   InvalidJwtPayloadException,
+  JourneyNotExistException,
   LimitExceededException,
 } from '../common/exceptions';
 import {
   INVALID_ID_IN_JWT_MSG,
   JOURNEY_EXCEEDED_MSG,
+  JOURNEY_NOT_EXIST_MSG,
+  PIKMI_EXCEEDED_MSG,
 } from '../common/validation/validation.messages';
-import { MAX_JOURNEY_PER_USER } from '../common/validation/validation.constants';
+import {
+  MAX_JOURNEY_PER_USER,
+  MAX_PIKMI_PER_JOURNEY,
+} from '../common/validation/validation.constants';
 
 jest.mock('../common/validation/validation.constants', () => ({
   MAX_JOURNEY_PER_USER: 5,
+  MAX_PIKMI_PER_JOURNEY: 5,
 }));
 
 const JOURNEY_NAME = 'name';
@@ -66,7 +74,21 @@ const JOURNEY = new Journey(
 const SAVED_JOURNEY = structuredClone(JOURNEY);
 const JOURNEY_ID = '630b28c08abfc3f96130789c';
 SAVED_JOURNEY._id = new mongoose.Types.ObjectId(JOURNEY_ID);
-const ID_RESPONSE_DTO = new IdResponseDTO(JOURNEY_ID);
+const JOURNEY_ID_RESPONSE_DTO = new IdResponseDTO(JOURNEY_ID);
+const PIKMI_NAME = 'pikmi';
+const PIKMI_ADDR = 'pikmi addr';
+const PIKMI_CATEGORY = 'P';
+const PIKMI_LON = 129.4;
+const PIKMI_LAT = 36.7;
+const PIKMI_LINK = '/pikmi/link';
+const PIKMI_CREATE_DTO = new PikmiCreateDTO(
+  PIKMI_NAME,
+  PIKMI_ADDR,
+  PIKMI_CATEGORY,
+  PIKMI_LON,
+  PIKMI_LAT,
+  PIKMI_LINK,
+);
 
 describe('JourneyService', () => {
   let journeyService: JourneyService;
@@ -127,7 +149,7 @@ describe('JourneyService', () => {
       expect(journeyModel).toBeCalledWith(JOURNEY);
       expect(journeyRepository.insertOne).toBeCalledTimes(1);
       expect(journeyRepository.insertOne).toBeCalledWith(JOURNEY);
-      expect(result).toEqual(ID_RESPONSE_DTO);
+      expect(result).toEqual(JOURNEY_ID_RESPONSE_DTO);
     });
 
     it('유저가 이미 만든 journey가 MAX_JOURNEY_PER_USER를 초과할 경우 LimitExceededException을 throw한다.', async () => {
@@ -172,6 +194,93 @@ describe('JourneyService', () => {
       ).rejects.toThrow(new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG));
       expect(userRepository.findOne).toBeCalledTimes(1);
       expect(userRepository.findOne).toBeCalledWith(USER_ID);
+    });
+  });
+
+  describe('createPikmi', () => {
+    it('Pikmi 인스턴스를 생성해서 journey에 넣고 journeyRepository.update를 호출한다.', async () => {
+      // given
+      const journeyForUpdate = structuredClone(JOURNEY);
+      journeyRepository.get = jest.fn().mockResolvedValue(journeyForUpdate);
+      userRepository.findOne = jest.fn().mockResolvedValue(USER);
+      journeyRepository.updateOne = jest.fn();
+
+      // when
+      const result = await journeyService.createPikmi(
+        PIKMI_CREATE_DTO,
+        JOURNEY_ID,
+        USER_ID,
+      );
+
+      // then
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.updateOne).toBeCalledTimes(1);
+      expect(journeyRepository.updateOne).toBeCalledWith(journeyForUpdate);
+      expect(JOURNEY.pikmis.length + 1).toBe(journeyForUpdate.pikmis.length);
+      const pikmiWithId =
+        journeyForUpdate.pikmis[journeyForUpdate.pikmis.length - 1];
+      expect(pikmiWithId.name).toBe(PIKMI_NAME);
+      expect(pikmiWithId.addr).toBe(PIKMI_ADDR);
+      expect(pikmiWithId.cate).toBe(PIKMI_CATEGORY);
+      expect(pikmiWithId.likeBy).toEqual([USER]);
+      expect(pikmiWithId.lon).toBe(PIKMI_LON);
+      expect(pikmiWithId.lat).toBe(PIKMI_LAT);
+      expect(pikmiWithId.link).toBe(PIKMI_LINK);
+      const expectedResponse = new IdResponseDTO(pikmiWithId._id.toString());
+      expect(result).toEqual(expectedResponse);
+    });
+
+    it('해당하는 유저가 없으면 InvalidJwtPayloadException을 throw한다.', async () => {
+      // given
+      const journeyForUpdate = structuredClone(JOURNEY);
+      userRepository.findOne = jest.fn().mockResolvedValue(null);
+      journeyRepository.get = jest.fn().mockResolvedValue(journeyForUpdate);
+      journeyRepository.updateOne = jest.fn();
+
+      // then
+      await expect(
+        journeyService.createPikmi(PIKMI_CREATE_DTO, JOURNEY_ID, USER_ID),
+      ).rejects.toThrow(new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG));
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.updateOne).toBeCalledTimes(0);
+    });
+
+    it('해당하는 저니가 없으면 JourneyNotExistException을 throw한다.', async () => {
+      // given
+      userRepository.findOne = jest.fn().mockResolvedValue(USER);
+      journeyRepository.get = jest.fn().mockResolvedValue(null);
+      journeyRepository.updateOne = jest.fn();
+
+      // then
+      await expect(
+        journeyService.createPikmi(PIKMI_CREATE_DTO, JOURNEY_ID, USER_ID),
+      ).rejects.toThrow(new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG));
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.updateOne).toBeCalledTimes(0);
+    });
+
+    it('저니에 픽미 갯수가 MAX_PIKMI_PER_JOURNEY를 초과할 경우 LimitExceededException을 throw한다.', async () => {
+      // given
+      const journeyForUpdate = structuredClone(JOURNEY);
+      for (const _ of Array(MAX_PIKMI_PER_JOURNEY).keys()) {
+        journeyForUpdate.pikmis.push({});
+      }
+      userRepository.findOne = jest.fn().mockResolvedValue(USER);
+      journeyRepository.get = jest.fn().mockResolvedValue(journeyForUpdate);
+      journeyRepository.updateOne = jest.fn();
+
+      // then
+      await expect(
+        journeyService.createPikmi(PIKMI_CREATE_DTO, JOURNEY_ID, USER_ID),
+      ).rejects.toThrow(new LimitExceededException(PIKMI_EXCEEDED_MSG));
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.updateOne).toBeCalledTimes(0);
     });
   });
 });

@@ -21,7 +21,12 @@ import {
   TAG_TOPIC_LENGTH_EXCEEDED_MSG,
 } from '../../common/validation/validation.messages';
 import { ORIENTATION } from '../schemas/orientation';
-import { IdResponse, JourneyCreate, TagCreate } from './journey.interface';
+import {
+  IdResponse,
+  JourneyCreate,
+  PikmiCreate,
+  TagCreate,
+} from './journey.interface';
 
 export class TagCreateDTO implements TagCreate {
   @ApiProperty({ description: '태그 주제' })
@@ -78,6 +83,31 @@ export class JourneyCreateDTO implements JourneyCreate {
     this.endDate = endDate;
     this.themePath = themePath;
     this.tags = tags;
+  }
+}
+
+export class PikmiCreateDTO implements PikmiCreate {
+  readonly name: string;
+  readonly address: string;
+  readonly category: string;
+  readonly longitude: number;
+  readonly latitude: number;
+  readonly link: string;
+
+  constructor(
+    name: string,
+    address: string,
+    category: string,
+    longitude: number,
+    latitude: number,
+    link: string,
+  ) {
+    this.name = name;
+    this.address = address;
+    this.category = category;
+    this.longitude = longitude;
+    this.latitude = latitude;
+    this.link = link;
   }
 }
 

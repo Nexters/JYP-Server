@@ -8,6 +8,7 @@ import {
   ErrorFilter,
   HttpExceptionFilter,
   InvalidJwtPayloadExceptionFilter,
+  JourneyNotExistExceptionFliter,
   LimitExceededExceptionFilter,
   UnauthorizedExceptionFilter,
 } from './http/http-exception.filter';
@@ -22,6 +23,7 @@ async function bootstrap() {
     new InvalidJwtPayloadExceptionFilter(),
     new BadRequestExceptionFilter(),
     new LimitExceededExceptionFilter(),
+    new JourneyNotExistExceptionFliter(),
   );
   app.useGlobalInterceptors(new TransformInterceptor());
 
