@@ -285,6 +285,36 @@ describe('Journeys controller', () => {
       expect(response.statusCode).toBe(400);
     });
 
+    it('유저가 저니에 소속되어 있지 않을 때 401 응답', async () => {
+      const journeyWithoutUser = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER2],
+        TAGS,
+        [],
+        [[], [], []],
+      );
+      const journey = new journeyModel(journeyWithoutUser);
+      const journeyId = journey._id.toString();
+      await journey.save();
+      const user = new userModel(USER);
+      await user.save();
+      const response = await request(app.getHttpServer())
+        .post(`/journeys/${journeyId}/pikmis`)
+        .send({
+          name: PIKMI_NAME,
+          address: PIKMI_ADDR,
+          category: PIKMI_CATEGORY,
+          longitude: PIKMI_LON,
+          latitude: PIKMI_LAT,
+          link: PIKMI_LINK,
+        })
+        .type('application/json');
+      expect(response.statusCode).toBe(401);
+    });
+
     it('저니에 픽미 갯수가 MAX_PIKMI_PER_JOURNEY를 초과했을 때 400 응답', async () => {
       const journey = new journeyModel(JOURNEY);
       for (const _ of Array(MAX_PIKMI_PER_JOURNEY).keys()) {
@@ -427,6 +457,39 @@ describe('Journeys controller', () => {
       expect(updatedPikis[1].link).toBe(PIKI2_LINK);
     });
 
+    it('payload로 전달된 회원 ID가 존재하지 않는 회원 ID일 때 401 응답', async () => {
+      const journey = new journeyModel(JOURNEY);
+      const journeyId = journey._id.toString();
+      await journey.save();
+      const response = await request(app.getHttpServer())
+        .post(`/journeys/${journeyId}/pikis`)
+        .send({
+          index: PIKI_INDEX,
+          pikis: [
+            {
+              id: PIKI1_ID,
+              name: PIKI1_NAME,
+              address: PIKI1_ADDR,
+              category: PIKI1_CATEGORY,
+              longitude: PIKI1_LON,
+              latitude: PIKI1_LAT,
+              link: PIKI1_LINK,
+            },
+            {
+              id: PIKI2_ID,
+              name: PIKI2_NAME,
+              address: PIKI2_ADDR,
+              category: PIKI2_CATEGORY,
+              longitude: PIKI2_LON,
+              latitude: PIKI2_LAT,
+              link: PIKI2_LINK,
+            },
+          ],
+        })
+        .type('application/json');
+      expect(response.statusCode).toBe(401);
+    });
+
     it('저니가 존재하지 않을 때 400 응답', async () => {
       const user = new userModel(USER);
       await user.save();
@@ -456,6 +519,49 @@ describe('Journeys controller', () => {
         })
         .type('application/json');
       expect(response.statusCode).toBe(400);
+    });
+
+    it('유저가 저니에 소속되어 있지 않을 때 401 응답', async () => {
+      const journeyWithoutUser = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER2],
+        TAGS,
+        [],
+        [[], [], []],
+      );
+      const journey = new journeyModel(journeyWithoutUser);
+      const journeyId = journey._id.toString();
+      await journey.save();
+      const user = new userModel(USER);
+      await user.save();
+      const response = await request(app.getHttpServer())
+        .post(`/journeys/${journeyId}/pikis`)
+        .send({
+          index: PIKI_INDEX,
+          pikis: [
+            {
+              name: PIKI1_NAME,
+              address: PIKI1_ADDR,
+              category: PIKI1_CATEGORY,
+              longitude: PIKI1_LON,
+              latitude: PIKI1_LAT,
+              link: PIKI1_LINK,
+            },
+            {
+              name: PIKI2_NAME,
+              address: PIKI2_ADDR,
+              category: PIKI2_CATEGORY,
+              longitude: PIKI2_LON,
+              latitude: PIKI2_LAT,
+              link: PIKI2_LINK,
+            },
+          ],
+        })
+        .type('application/json');
+      expect(response.statusCode).toBe(401);
     });
 
     it('index가 범위를 벗어났을 때 400 응답', async () => {
@@ -553,6 +659,96 @@ describe('Journeys controller', () => {
       expect(updatedTags[2].topic).toBe(FOURTH_TOPIC);
       expect(updatedTags[2].orient).toBe(FOURTH_ORIENT);
       expect(updatedTags[2].users).toMatchObject([USER]);
+    });
+
+    it('payload로 전달된 회원 ID가 존재하지 않는 회원 ID일 때 401 응답', async () => {
+      const journey = new journeyModel(JOURNEY);
+      const journeyId = journey._id.toString();
+      await journey.save();
+      const response = await request(app.getHttpServer())
+        .post(`/journeys/${journeyId}/tags`)
+        .send({
+          tags: [
+            {
+              topic: FIRST_TOPIC,
+              orientation: FIRST_ORIENT,
+            },
+            {
+              topic: SECOND_TOPIC,
+              orientation: SECOND_ORIENT,
+            },
+            {
+              topic: FOURTH_TOPIC,
+              orientation: FOURTH_ORIENT,
+            },
+          ],
+        })
+        .type('application/json');
+      expect(response.statusCode).toBe(401);
+    });
+
+    it('저니가 존재하지 않을 때 400 응답', async () => {
+      const user = new userModel(USER);
+      await user.save();
+      const nonExistingJourneyId = '630b28c08abfc3f96130789f';
+      const response = await request(app.getHttpServer())
+        .post(`/journeys/${nonExistingJourneyId}/tags`)
+        .send({
+          tags: [
+            {
+              topic: FIRST_TOPIC,
+              orientation: FIRST_ORIENT,
+            },
+            {
+              topic: SECOND_TOPIC,
+              orientation: SECOND_ORIENT,
+            },
+            {
+              topic: FOURTH_TOPIC,
+              orientation: FOURTH_ORIENT,
+            },
+          ],
+        })
+        .type('application/json');
+      expect(response.statusCode).toBe(400);
+    });
+
+    it('유저가 저니에 소속되어 있지 않을 때 401 응답', async () => {
+      const journeyWithoutUser = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER2],
+        TAGS,
+        [],
+        [[], [], []],
+      );
+      const journey = new journeyModel(journeyWithoutUser);
+      const journeyId = journey._id.toString();
+      await journey.save();
+      const user = new userModel(USER);
+      await user.save();
+      const response = await request(app.getHttpServer())
+        .post(`/journeys/${journeyId}/tags`)
+        .send({
+          tags: [
+            {
+              topic: FIRST_TOPIC,
+              orientation: FIRST_ORIENT,
+            },
+            {
+              topic: SECOND_TOPIC,
+              orientation: SECOND_ORIENT,
+            },
+            {
+              topic: FOURTH_TOPIC,
+              orientation: FOURTH_ORIENT,
+            },
+          ],
+        })
+        .type('application/json');
+      expect(response.statusCode).toBe(401);
     });
   });
 

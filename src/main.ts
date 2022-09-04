@@ -12,6 +12,7 @@ import {
   JourneyNotExistExceptionFliter,
   LimitExceededExceptionFilter,
   UnauthorizedExceptionFilter,
+  UnauthenticatedExceptionFilter,
 } from './http/http-exception.filter';
 
 async function bootstrap() {
@@ -22,6 +23,7 @@ async function bootstrap() {
     new HttpExceptionFilter(),
     new UnauthorizedExceptionFilter(),
     new InvalidJwtPayloadExceptionFilter(),
+    new UnauthenticatedExceptionFilter(),
     new BadRequestExceptionFilter(),
     new LimitExceededExceptionFilter(),
     new JourneyNotExistExceptionFliter(),

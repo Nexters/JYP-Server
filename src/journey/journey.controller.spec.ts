@@ -170,6 +170,7 @@ describe('JourneyController', () => {
     const result = await journeyController.updatePiki(
       JOURNEY_ID,
       PIKIS_UPDATE_DTO_NO_ID,
+      REQ,
     );
 
     // then
@@ -177,6 +178,7 @@ describe('JourneyController', () => {
     expect(journeyService.updatePiki).toBeCalledWith(
       PIKIS_UPDATE_DTO_NO_ID,
       JOURNEY_ID,
+      USER_ID,
     );
     expect(result).toStrictEqual(PIKIS_IDS_RESPONSE_DTO);
   });

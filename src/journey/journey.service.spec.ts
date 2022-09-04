@@ -20,6 +20,7 @@ import {
   InvalidJwtPayloadException,
   JourneyNotExistException,
   LimitExceededException,
+  UnauthenticatedException,
 } from '../common/exceptions';
 import {
   INDEX_OUT_OF_RANGE_MSG,
@@ -27,6 +28,7 @@ import {
   JOURNEY_EXCEEDED_MSG,
   JOURNEY_NOT_EXIST_MSG,
   PIKMI_EXCEEDED_MSG,
+  USER_NOT_IN_JOURNEY_MSG,
 } from '../common/validation/validation.messages';
 import {
   MAX_JOURNEY_PER_USER,
@@ -338,6 +340,33 @@ describe('JourneyService', () => {
       expect(journeyRepository.update).toBeCalledTimes(0);
     });
 
+    it('저니에 유저가 소속되어 있지 않으면 UnauthenticatedException을 throw한다.', async () => {
+      // given
+      const journeyWithoutUser = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER2],
+        TAGS,
+        [],
+        [[], [], []],
+      ) as JourneyDocument;
+      journeyRepository.get = jest.fn().mockResolvedValue(journeyWithoutUser);
+      userRepository.findOne = jest.fn().mockResolvedValue(USER);
+      journeyRepository.update = jest.fn();
+
+      // then
+      await expect(
+        journeyService.createPikmi(PIKMI_CREATE_DTO, JOURNEY_ID, USER_ID),
+      ).rejects.toThrow(new UnauthenticatedException(USER_NOT_IN_JOURNEY_MSG));
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.update).toBeCalledTimes(0);
+    });
+
     it('저니에 픽미 갯수가 MAX_PIKMI_PER_JOURNEY를 초과할 경우 LimitExceededException을 throw한다.', async () => {
       // given
       const journeyForUpdate = structuredClone(JOURNEY);
@@ -361,6 +390,7 @@ describe('JourneyService', () => {
   describe('updatePiki', () => {
     it('piki에 id가 없을 경우 직접 생성해서 journey의 올바른 인덱스에 넣고 journeyRepository.update를 호출한다.', async () => {
       // given
+      userRepository.findOne = jest.fn().mockResolvedValue(USER);
       const journeyForUpdate = structuredClone(JOURNEY);
       journeyRepository.get = jest.fn().mockResolvedValue(journeyForUpdate);
       journeyRepository.update = jest.fn();
@@ -369,9 +399,12 @@ describe('JourneyService', () => {
       const result = await journeyService.updatePiki(
         PIKIS_UPDATE_DTO_NO_ID,
         JOURNEY_ID,
+        USER_ID,
       );
 
       // then
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
       expect(journeyRepository.get).toBeCalledTimes(1);
       expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
       expect(journeyRepository.update).toBeCalledTimes(1);
@@ -397,6 +430,7 @@ describe('JourneyService', () => {
 
     it('piki에 id가 존재할 경우 그대로 사용해서 journey의 올바른 인덱스에 넣고 journeyRepository.update를 호출한다.', async () => {
       // given
+      userRepository.findOne = jest.fn().mockResolvedValue(USER);
       const journeyForUpdate = structuredClone(JOURNEY);
       journeyRepository.get = jest.fn().mockResolvedValue(journeyForUpdate);
       journeyRepository.update = jest.fn();
@@ -405,9 +439,12 @@ describe('JourneyService', () => {
       const result = await journeyService.updatePiki(
         PIKIS_UPDATE_DTO_WITH_ID,
         JOURNEY_ID,
+        USER_ID,
       );
 
       // then
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
       expect(journeyRepository.get).toBeCalledTimes(1);
       expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
       expect(journeyRepository.update).toBeCalledTimes(1);
@@ -433,15 +470,59 @@ describe('JourneyService', () => {
       expect(piki2.link).toBe(PIKI2_LINK);
     });
 
+    it('해당하는 유저가 없으면 InvalidJwtPayloadException을 throw한다.', async () => {
+      // given
+      const journeyForUpdate = structuredClone(JOURNEY);
+      userRepository.findOne = jest.fn().mockResolvedValue(null);
+      journeyRepository.get = jest.fn().mockResolvedValue(journeyForUpdate);
+      journeyRepository.update = jest.fn();
+
+      // then
+      await expect(
+        journeyService.updatePiki(PIKIS_UPDATE_DTO_NO_ID, JOURNEY_ID, USER_ID),
+      ).rejects.toThrow(new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG));
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.update).toBeCalledTimes(0);
+    });
+
     it('해당하는 저니가 없으면 JourneyNotExistException을 throw한다.', async () => {
       // given
+      userRepository.findOne = jest.fn().mockResolvedValue(USER);
       journeyRepository.get = jest.fn().mockResolvedValue(null);
       journeyRepository.update = jest.fn();
 
       // then
       await expect(
-        journeyService.updatePiki(PIKIS_UPDATE_DTO_NO_ID, JOURNEY_ID),
+        journeyService.updatePiki(PIKIS_UPDATE_DTO_NO_ID, JOURNEY_ID, USER_ID),
       ).rejects.toThrow(new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG));
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.update).toBeCalledTimes(0);
+    });
+
+    it('저니에 유저가 소속되어 있지 않으면 UnauthenticatedException을 throw한다.', async () => {
+      // given
+      const journeyWithoutUser = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER2],
+        TAGS,
+        [],
+        [[], [], []],
+      ) as JourneyDocument;
+      journeyRepository.get = jest.fn().mockResolvedValue(journeyWithoutUser);
+      userRepository.findOne = jest.fn().mockResolvedValue(USER);
+      journeyRepository.update = jest.fn();
+
+      // then
+      await expect(
+        journeyService.updatePiki(PIKIS_UPDATE_DTO_NO_ID, JOURNEY_ID, USER_ID),
+      ).rejects.toThrow(new UnauthenticatedException(USER_NOT_IN_JOURNEY_MSG));
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
       expect(journeyRepository.get).toBeCalledTimes(1);
       expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
       expect(journeyRepository.update).toBeCalledTimes(0);
@@ -449,6 +530,7 @@ describe('JourneyService', () => {
 
     it('index가 범위를 초과하면 IndexOutOfRangeException을 throw한다.', async () => {
       // given
+      userRepository.findOne = jest.fn().mockResolvedValue(USER);
       const journeyForUpdate = structuredClone(JOURNEY);
       journeyRepository.get = jest.fn().mockResolvedValue(journeyForUpdate);
       journeyRepository.update = jest.fn();
@@ -460,7 +542,11 @@ describe('JourneyService', () => {
 
       // then
       await expect(
-        journeyService.updatePiki(pikisUpdateDtoWithInvalidIndex, JOURNEY_ID),
+        journeyService.updatePiki(
+          pikisUpdateDtoWithInvalidIndex,
+          JOURNEY_ID,
+          USER_ID,
+        ),
       ).rejects.toThrow(new IndexOutOfRangeException(INDEX_OUT_OF_RANGE_MSG));
       expect(journeyRepository.get).toBeCalledTimes(1);
       expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
@@ -646,6 +732,37 @@ describe('JourneyService', () => {
       await expect(
         journeyService.updateTags(tagsUpdateDto, JOURNEY_ID, USER_ID),
       ).rejects.toThrow(new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG));
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.update).toBeCalledTimes(0);
+    });
+
+    it('저니에 유저가 소속되어 있지 않으면 UnauthenticatedException을 throw한다.', async () => {
+      // given
+      const journeyWithoutUser = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER2],
+        TAGS,
+        [],
+        [[], [], []],
+      ) as JourneyDocument;
+      journeyRepository.get = jest.fn().mockResolvedValue(journeyWithoutUser);
+      userRepository.findOne = jest.fn().mockResolvedValue(USER);
+      journeyRepository.update = jest.fn();
+
+      // then
+      const tagsUpdateDto = new TagsUpdateDTO([
+        new TagCreateDTO(FIRST_TOPIC, FIRST_ORIENT),
+        new TagCreateDTO(FOURTH_TOPIC, FOURTH_ORIENT),
+      ]);
+      await expect(
+        journeyService.updateTags(tagsUpdateDto, JOURNEY_ID, USER_ID),
+      ).rejects.toThrow(new UnauthenticatedException(USER_NOT_IN_JOURNEY_MSG));
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
       expect(journeyRepository.get).toBeCalledTimes(1);
       expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
       expect(journeyRepository.update).toBeCalledTimes(0);

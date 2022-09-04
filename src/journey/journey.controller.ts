@@ -94,8 +94,13 @@ export class JourneyController {
   public async updatePiki(
     @Param('journeyId') journeyId: string,
     @Body() pikisUpdateDto: PikisUpdateDTO,
+    @Request() req,
   ): Promise<IdsResponseDTO> {
-    return await this.journeyService.updatePiki(pikisUpdateDto, journeyId);
+    return await this.journeyService.updatePiki(
+      pikisUpdateDto,
+      journeyId,
+      req.user.id,
+    );
   }
 
   @ApiOperation({

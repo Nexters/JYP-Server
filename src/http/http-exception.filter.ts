@@ -12,6 +12,7 @@ import {
   InvalidJwtPayloadException,
   JourneyNotExistException,
   LimitExceededException,
+  UnauthenticatedException,
 } from '../common/exceptions';
 import { DEFAULT_MSG } from '../common/validation/validation.messages';
 
@@ -54,6 +55,19 @@ export class InvalidJwtPayloadExceptionFilter implements ExceptionFilter {
     const status = exception.getStatus();
     response.status(status).json({
       code: String(status) + '01',
+      message: exception.message,
+    });
+  }
+}
+
+@Catch(UnauthenticatedException)
+export class UnauthenticatedExceptionFilter implements ExceptionFilter {
+  catch(exception: UnauthenticatedException, host: ArgumentsHost) {
+    const ctx = host.switchToHttp();
+    const response = ctx.getResponse<Response>();
+    const status = exception.getStatus();
+    response.status(status).json({
+      code: String(status) + '02',
       message: exception.message,
     });
   }

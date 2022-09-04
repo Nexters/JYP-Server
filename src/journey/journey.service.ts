@@ -7,12 +7,14 @@ import {
   JOURNEY_EXCEEDED_MSG,
   JOURNEY_NOT_EXIST_MSG,
   PIKMI_EXCEEDED_MSG,
+  USER_NOT_IN_JOURNEY_MSG,
 } from '../common/validation/validation.messages';
 import {
   IndexOutOfRangeException,
   InvalidJwtPayloadException,
   JourneyNotExistException,
   LimitExceededException,
+  UnauthenticatedException,
 } from '../common/exceptions';
 import { createEmptyNestedArray, getDayDiff } from '../common/util';
 import { UserRepository } from '../user/user.repository';
@@ -99,6 +101,9 @@ export class JourneyService {
     if (journey == null) {
       throw new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG);
     }
+    if (this.getUserIndex(user, journey.users) == -1) {
+      throw new UnauthenticatedException(USER_NOT_IN_JOURNEY_MSG);
+    }
     if (journey.pikmis.length >= MAX_PIKMI_PER_JOURNEY) {
       throw new LimitExceededException(PIKMI_EXCEEDED_MSG);
     }
@@ -116,10 +121,21 @@ export class JourneyService {
     return new IdResponseDTO(pikmi._id.toString());
   }
 
-  public async updatePiki(pikisUpdateDto: PikisUpdateDTO, journeyId: string) {
+  public async updatePiki(
+    pikisUpdateDto: PikisUpdateDTO,
+    journeyId: string,
+    userId: string,
+  ) {
+    const user = await this.userRepository.findOne(userId);
+    if (user == null) {
+      throw new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG);
+    }
     const journey = await this.journeyRepository.get(journeyId, false);
     if (journey == null) {
       throw new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG);
+    }
+    if (this.getUserIndex(user, journey.users) == -1) {
+      throw new UnauthenticatedException(USER_NOT_IN_JOURNEY_MSG);
     }
     if (pikisUpdateDto.index >= journey.pikis.length) {
       throw new IndexOutOfRangeException(INDEX_OUT_OF_RANGE_MSG);
@@ -165,6 +181,9 @@ export class JourneyService {
     const journey = await this.journeyRepository.get(journeyId, false);
     if (journey == null) {
       throw new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG);
+    }
+    if (this.getUserIndex(user, journey.users) == -1) {
+      throw new UnauthenticatedException(USER_NOT_IN_JOURNEY_MSG);
     }
     const tagsForUpdate = tagsUpdateDto.tags;
     for (const tag of journey.tags) {
@@ -214,7 +233,7 @@ export class JourneyService {
     if (users.length == 0) {
       return false;
     }
-    return users[0] instanceof User;
+    return !(typeof users[0] == 'string');
   }
 
   private cleanTagsWithNoUser(tags: Tag[]): Tag[] {

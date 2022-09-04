@@ -7,3 +7,5 @@ export class InvalidJwtPayloadException extends UnauthorizedException {}
 export class JourneyNotExistException extends BadRequestException {}
 
 export class IndexOutOfRangeException extends BadRequestException {}
+
+export class UnauthenticatedException extends UnauthorizedException {}
