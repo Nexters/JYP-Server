@@ -5,6 +5,7 @@ import {
   MAX_JOURNEY_PER_USER,
   MAX_LATITUDE,
   MAX_LONGITUDE,
+  MAX_PIKI_PER_DAY,
   MAX_PIKMI_PER_JOURNEY,
   MAX_TAGS,
   MAX_TAG_TOPIC_LENGTH,
@@ -49,5 +50,11 @@ export const LONGITUDE_INVALID_MSG = `경도 값은 ${MIN_LONGITUDE}~${MAX_LONGI
 export const LATITUDE_INVALID_MSG = `위도 값은 ${MIN_LATITUDE}~${MAX_LATITUDE} 사이의 값이어야 해요!`;
 
 export const INDEX_OUT_OF_RANGE_MSG = `인덱스 값이 범위를 벗어났어요!`;
+
+export const INDEX_NOT_INT_MSG = '인덱스 값은 정수여야 해요!';
+
+export const INDEX_NEGATIVE_MSG = '인덱스 값은 음수일 수 없어요!';
+
+export const PIKI_EXCEEDED_MSG = `여행 장소는 최대 ${MAX_PIKI_PER_DAY}개까지 가능해요!`;
 
 export const DEFAULT_MSG = '잘못된 요청입니다.';

@@ -3,7 +3,9 @@ import { Type } from 'class-transformer';
 import {
   ArrayMaxSize,
   IsIn,
+  IsInt,
   IsNotEmpty,
+  IsOptional,
   Max,
   MaxLength,
   Min,
@@ -13,18 +15,22 @@ import {
   MAX_JOURNEY_NAME_LENGTH,
   MAX_LATITUDE,
   MAX_LONGITUDE,
+  MAX_PIKI_PER_DAY,
   MAX_TAGS,
   MAX_TAG_TOPIC_LENGTH,
   MIN_LATITUDE,
   MIN_LONGITUDE,
 } from '../../common/validation/validation.constants';
 import {
+  INDEX_NEGATIVE_MSG,
+  INDEX_NOT_INT_MSG,
   IS_IN_MSG,
   IS_NOT_EMPTY_KIND_MSG,
   IS_NOT_EMPTY_MSG,
   JOURNEY_NAME_LENGTH_EXCEEDED_MSG,
   LATITUDE_INVALID_MSG,
   LONGITUDE_INVALID_MSG,
+  PIKI_EXCEEDED_MSG,
   TAG_EXCEEDED_MSG,
   TAG_TOPIC_LENGTH_EXCEEDED_MSG,
 } from '../../common/validation/validation.messages';
@@ -146,12 +152,37 @@ export class PikmiCreateDTO implements PikmiCreate {
 }
 
 export class PikiUpdateDTO implements PikiUpdate {
+  @ApiProperty({ description: '피키 ID' })
+  @IsOptional()
   readonly id: string;
+
+  @ApiProperty({ description: '피키 이름' })
+  @IsNotEmpty({ message: IS_NOT_EMPTY_MSG })
   readonly name: string;
+
+  @ApiProperty({ description: '피키 주소' })
+  @IsNotEmpty({ message: IS_NOT_EMPTY_MSG })
   readonly address: string;
+
+  @ApiProperty({ description: '피키 카테고리' })
+  @IsIn(Object.values(CATEGORY), { message: IS_IN_MSG })
+  @IsNotEmpty({ message: IS_NOT_EMPTY_MSG })
   readonly category: string;
+
+  @ApiProperty({ description: '피키 경도 값' })
+  @Min(MIN_LONGITUDE, { message: LONGITUDE_INVALID_MSG })
+  @Max(MAX_LONGITUDE, { message: LONGITUDE_INVALID_MSG })
+  @IsNotEmpty({ message: IS_NOT_EMPTY_MSG })
   readonly longitude: number;
+
+  @ApiProperty({ description: '피키 위도 값' })
+  @Min(MIN_LATITUDE, { message: LATITUDE_INVALID_MSG })
+  @Max(MAX_LATITUDE, { message: LATITUDE_INVALID_MSG })
+  @IsNotEmpty({ message: IS_NOT_EMPTY_MSG })
   readonly latitude: number;
+
+  @ApiProperty({ description: '피키 자세한 정보 링크' })
+  @IsNotEmpty({ message: IS_NOT_EMPTY_MSG })
   readonly link: string;
 
   constructor(
@@ -174,7 +205,15 @@ export class PikiUpdateDTO implements PikiUpdate {
 }
 
 export class PikisUpdateDTO implements PikisUpdate {
+  @ApiProperty({ description: '피키 수정 일자 (몇번째 날인지), 0-based' })
+  @Min(0, { message: INDEX_NEGATIVE_MSG })
+  @IsInt({ message: INDEX_NOT_INT_MSG })
   readonly index: number;
+
+  @ApiProperty({ type: [PikiUpdateDTO], description: '피키 목록' })
+  @ArrayMaxSize(MAX_PIKI_PER_DAY, { message: PIKI_EXCEEDED_MSG })
+  @ValidateNested({ each: true })
+  @Type(() => PikiUpdateDTO)
   readonly pikis: PikiUpdateDTO[];
 
   constructor(index: number, pikis: PikiUpdateDTO[]) {
@@ -193,6 +232,7 @@ export class IdResponseDTO implements IdResponse {
 }
 
 export class IdsResponseDTO implements IdsResponse {
+  @ApiProperty({ description: '변동된 다큐먼트들의 ID 리스트' })
   readonly ids: string[];
 
   constructor(...ids: string[]) {
