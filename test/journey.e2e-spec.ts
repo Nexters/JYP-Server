@@ -33,6 +33,10 @@ const FIRST_TOPIC = 'topic1';
 const FIRST_ORIENT = 'like';
 const SECOND_TOPIC = 'topic2';
 const SECOND_ORIENT = 'dislike';
+const THIRD_TOPIC = 'topic3';
+const THIRD_ORIENT = 'nomatter';
+const FOURTH_TOPIC = 'topic4';
+const FOURTH_ORIENT = 'like';
 const USER_ID = 'kakao-1234';
 const USER_NAME = 'username';
 const USER_IMG = '/user/img';
@@ -51,7 +55,7 @@ const JOURNEY = new Journey(
   TAGS,
   [],
   [[], [], []],
-) as JourneyDocument;
+);
 const SAVED_JOURNEY = structuredClone(JOURNEY);
 const JOURNEY_ID = '630b28c08abfc3f96130789c';
 SAVED_JOURNEY._id = new mongoose.Types.ObjectId(JOURNEY_ID);
@@ -76,6 +80,8 @@ const PIKI2_CATEGORY = 'S';
 const PIKI2_LON = 131.4;
 const PIKI2_LAT = 38.7;
 const PIKI2_LINK = '/piki2/link';
+const USER2 = new User('user2', 'name2', 'img2', 'ME');
+const USER3 = new User('user3', 'name3', 'img3', 'ME');
 
 describe('Journeys controller', () => {
   let app: NestApplication;
@@ -483,6 +489,69 @@ describe('Journeys controller', () => {
         })
         .type('application/json');
       expect(response.statusCode).toBe(400);
+    });
+  });
+
+  describe('POST /journeys/:journeyId/tags', () => {
+    it('success', async () => {
+      const tags = [
+        new Tag(FIRST_TOPIC, FIRST_ORIENT, [USER2]),
+        new Tag(SECOND_TOPIC, SECOND_ORIENT, [USER3]),
+        new Tag(THIRD_TOPIC, THIRD_ORIENT, [USER]),
+      ];
+      const journey = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER, USER2, USER3],
+        tags,
+        [],
+        [[], [], []],
+      );
+      const journeyDoc = new journeyModel(journey);
+      const journeyId = journeyDoc._id.toString();
+      await journeyDoc.save();
+      const user = new userModel(USER);
+      await user.save();
+      const user2 = new userModel(USER2);
+      await user2.save();
+      const user3 = new userModel(USER3);
+      await user3.save();
+      const response = await request(app.getHttpServer())
+        .post(`/journeys/${journeyId}/tags`)
+        .send({
+          tags: [
+            {
+              topic: FIRST_TOPIC,
+              orientation: FIRST_ORIENT,
+            },
+            {
+              topic: SECOND_TOPIC,
+              orientation: SECOND_ORIENT,
+            },
+            {
+              topic: FOURTH_TOPIC,
+              orientation: FOURTH_ORIENT,
+            },
+          ],
+        })
+        .type('application/json');
+      expect(response.statusCode).toBe(200);
+      const updatedJourney = await journeyModel
+        .findById(new mongoose.Types.ObjectId(journeyId))
+        .populate({
+          path: 'tags',
+          populate: { path: 'users' },
+        })
+        .exec();
+      const updatedTags = updatedJourney.tags;
+      expect(updatedTags.length).toBe(3);
+      expect(updatedTags[0].users).toMatchObject([USER2, USER]);
+      expect(updatedTags[1].users).toMatchObject([USER3, USER]);
+      expect(updatedTags[2].topic).toBe(FOURTH_TOPIC);
+      expect(updatedTags[2].orient).toBe(FOURTH_ORIENT);
+      expect(updatedTags[2].users).toMatchObject([USER]);
     });
   });
 

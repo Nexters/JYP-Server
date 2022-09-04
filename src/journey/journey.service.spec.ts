@@ -12,6 +12,7 @@ import {
   PikiUpdateDTO,
   PikmiCreateDTO,
   TagCreateDTO,
+  TagsUpdateDTO,
 } from './dtos/journey.dto';
 import { User } from '../user/schemas/user.schema';
 import {
@@ -45,6 +46,10 @@ const FIRST_TOPIC = 'topic1';
 const FIRST_ORIENT = 'like';
 const SECOND_TOPIC = 'topic2';
 const SECOND_ORIENT = 'dislike';
+const THIRD_TOPIC = 'topic3';
+const THIRD_ORIENT = 'nomatter';
+const FOURTH_TOPIC = 'topic4';
+const FOURTH_ORIENT = 'like';
 const TAG_CREATE_DTOS = [
   new TagCreateDTO(FIRST_TOPIC, FIRST_ORIENT),
   new TagCreateDTO(SECOND_TOPIC, SECOND_ORIENT),
@@ -156,6 +161,8 @@ const PIKIS_UPDATE_DTO_WITH_ID = new PikisUpdateDTO(
   PIKI_INDEX,
   PIKI_UPDATE_DTOS_WITH_ID,
 );
+const USER2 = new User('user2', 'name2', 'img2', 'ME');
+const USER3 = new User('user3', 'name3', 'img3', 'ME');
 
 describe('JourneyService', () => {
   let journeyService: JourneyService;
@@ -455,6 +462,194 @@ describe('JourneyService', () => {
       await expect(
         journeyService.updatePiki(pikisUpdateDtoWithInvalidIndex, JOURNEY_ID),
       ).rejects.toThrow(new IndexOutOfRangeException(INDEX_OUT_OF_RANGE_MSG));
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.update).toBeCalledTimes(0);
+    });
+  });
+
+  describe('updateTags', () => {
+    it('기존에 유저의 태그가 존재하지 않을 때 태그를 추가한다.', async () => {
+      // given
+      userRepository.findOne = jest.fn().mockResolvedValue(USER);
+      const tags = [
+        new Tag(FIRST_TOPIC, FIRST_ORIENT, [USER2, USER3]),
+        new Tag(SECOND_TOPIC, SECOND_ORIENT, [USER2]),
+        new Tag(THIRD_TOPIC, THIRD_ORIENT, [USER3]),
+      ];
+      const journey = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER, USER2, USER3],
+        tags,
+        [],
+        [[], [], []],
+      ) as JourneyDocument;
+      journey.populate = () => void 0;
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
+      journeyRepository.update = jest.fn();
+
+      // when
+      const tagsUpdateDto = new TagsUpdateDTO([
+        new TagCreateDTO(FIRST_TOPIC, FIRST_ORIENT),
+        new TagCreateDTO(SECOND_TOPIC, SECOND_ORIENT),
+        new TagCreateDTO(FOURTH_TOPIC, FOURTH_ORIENT),
+      ]);
+      await journeyService.updateTags(tagsUpdateDto, JOURNEY_ID, USER_ID);
+
+      // then
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.update).toBeCalledTimes(1);
+      expect(journeyRepository.update).toBeCalledWith(journey);
+      const updatedTags = journey.tags;
+      expect(updatedTags.length).toBe(4);
+      expect(updatedTags[0].users).toEqual([USER2, USER3, USER]);
+      expect(updatedTags[1].users).toEqual([USER2, USER]);
+      expect(updatedTags[2].users).toEqual([USER3]);
+      expect(updatedTags[3].users).toEqual([USER]);
+    });
+
+    it('기존에 유저의 태그가 존재할 때 기존 태그를 삭제하고 태그를 추가한다.', async () => {
+      // given
+      userRepository.findOne = jest.fn().mockResolvedValue(USER);
+      const tags = [
+        new Tag(FIRST_TOPIC, FIRST_ORIENT, [USER2, USER3]),
+        new Tag(SECOND_TOPIC, SECOND_ORIENT, [USER, USER2]),
+        new Tag(THIRD_TOPIC, THIRD_ORIENT, [USER, USER3]),
+      ];
+      const journey = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER, USER2, USER3],
+        tags,
+        [],
+        [[], [], []],
+      ) as JourneyDocument;
+      journey.populate = () => void 0;
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
+      journeyRepository.update = jest.fn();
+
+      // when
+      const tagsUpdateDto = new TagsUpdateDTO([
+        new TagCreateDTO(FIRST_TOPIC, FIRST_ORIENT),
+        new TagCreateDTO(SECOND_TOPIC, SECOND_ORIENT),
+        new TagCreateDTO(FOURTH_TOPIC, FOURTH_ORIENT),
+      ]);
+      await journeyService.updateTags(tagsUpdateDto, JOURNEY_ID, USER_ID);
+
+      // then
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.update).toBeCalledTimes(1);
+      expect(journeyRepository.update).toBeCalledWith(journey);
+      const updatedTags = journey.tags;
+      expect(updatedTags.length).toBe(4);
+      expect(updatedTags[0].users).toEqual([USER2, USER3, USER]);
+      expect(updatedTags[1].users).toEqual([USER, USER2]);
+      expect(updatedTags[2].users).toEqual([USER3]);
+      expect(updatedTags[3].users).toEqual([USER]);
+    });
+
+    it('태그 업데이트 후 유저가 존재하지 않는 태그는 삭제된다.', async () => {
+      // given
+      userRepository.findOne = jest.fn().mockResolvedValue(USER);
+      const tags = [
+        new Tag(FIRST_TOPIC, FIRST_ORIENT, [USER2, USER3]),
+        new Tag(SECOND_TOPIC, SECOND_ORIENT, [USER]),
+        new Tag(THIRD_TOPIC, THIRD_ORIENT, [USER]),
+      ];
+      const journey = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER, USER2, USER3],
+        tags,
+        [],
+        [[], [], []],
+      ) as JourneyDocument;
+      journey.populate = () => void 0;
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
+      journeyRepository.update = jest.fn();
+
+      // when
+      const tagsUpdateDto = new TagsUpdateDTO([
+        new TagCreateDTO(FIRST_TOPIC, FIRST_ORIENT),
+        new TagCreateDTO(FOURTH_TOPIC, FOURTH_ORIENT),
+      ]);
+      await journeyService.updateTags(tagsUpdateDto, JOURNEY_ID, USER_ID);
+
+      // then
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.update).toBeCalledTimes(1);
+      expect(journeyRepository.update).toBeCalledWith(journey);
+      const updatedTags = journey.tags;
+      expect(updatedTags.length).toBe(2);
+      expect(updatedTags[0].users).toEqual([USER2, USER3, USER]);
+      expect(updatedTags[1].users).toEqual([USER]);
+    });
+
+    it('userId에 해당하는 user가 없을 경우 InvalidJwtPayloadException을 throw한다.', async () => {
+      // given
+      userRepository.findOne = jest.fn().mockResolvedValue(null);
+      const tags = [
+        new Tag(FIRST_TOPIC, FIRST_ORIENT, [USER2, USER3]),
+        new Tag(SECOND_TOPIC, SECOND_ORIENT, [USER]),
+        new Tag(THIRD_TOPIC, THIRD_ORIENT, [USER]),
+      ];
+      const journey = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER, USER2, USER3],
+        tags,
+        [],
+        [[], [], []],
+      ) as JourneyDocument;
+      journey.populate = () => void 0;
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
+      journeyRepository.update = jest.fn();
+
+      // then
+      const tagsUpdateDto = new TagsUpdateDTO([
+        new TagCreateDTO(FIRST_TOPIC, FIRST_ORIENT),
+        new TagCreateDTO(FOURTH_TOPIC, FOURTH_ORIENT),
+      ]);
+      await expect(
+        journeyService.updateTags(tagsUpdateDto, JOURNEY_ID, USER_ID),
+      ).rejects.toThrow(new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG));
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.update).toBeCalledTimes(0);
+    });
+
+    it('해당하는 저니가 없으면 JourneyNotExistException을 throw한다.', async () => {
+      // given
+      userRepository.findOne = jest.fn().mockResolvedValue(USER);
+      journeyRepository.get = jest.fn().mockResolvedValue(null);
+      journeyRepository.update = jest.fn();
+
+      // then
+      const tagsUpdateDto = new TagsUpdateDTO([
+        new TagCreateDTO(FIRST_TOPIC, FIRST_ORIENT),
+        new TagCreateDTO(FOURTH_TOPIC, FOURTH_ORIENT),
+      ]);
+      await expect(
+        journeyService.updateTags(tagsUpdateDto, JOURNEY_ID, USER_ID),
+      ).rejects.toThrow(new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG));
       expect(journeyRepository.get).toBeCalledTimes(1);
       expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
       expect(journeyRepository.update).toBeCalledTimes(0);

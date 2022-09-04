@@ -23,6 +23,8 @@ import {
   PikiUpdateDTO,
   PikisUpdateDTO,
   IdsResponseDTO,
+  TagsUpdateDTO,
+  TagCreateDTO,
 } from './dtos/journey.dto';
 import { JourneyRepository } from './journey.repository';
 import {
@@ -36,6 +38,7 @@ import {
   MAX_JOURNEY_PER_USER,
   MAX_PIKMI_PER_JOURNEY,
 } from '../common/validation/validation.constants';
+import { User } from '../user/schemas/user.schema';
 
 @Injectable()
 export class JourneyService {
@@ -148,5 +151,79 @@ export class JourneyService {
         pikiUpdateDto.link,
       );
     }
+  }
+
+  public async updateTags(
+    tagsUpdateDto: TagsUpdateDTO,
+    journeyId: string,
+    userId: string,
+  ) {
+    const user = await this.userRepository.findOne(userId);
+    if (user == null) {
+      throw new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG);
+    }
+    const journey = await this.journeyRepository.get(journeyId, false);
+    if (journey == null) {
+      throw new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG);
+    }
+    await journey.populate({
+      path: 'tags',
+      populate: { path: 'users' },
+    });
+    const tagsForUpdate = tagsUpdateDto.tags;
+    for (const tag of journey.tags) {
+      const tagIndex = this.getTagIndex(tag, tagsForUpdate);
+      const userIndex = this.getUserIndex(user, tag.users);
+      if (tagIndex != -1) {
+        if (userIndex == -1) {
+          tag.users.push(user);
+        }
+        tagsForUpdate.splice(tagIndex, 1);
+      } else {
+        if (userIndex != -1) {
+          tag.users.splice(userIndex, 1);
+        }
+      }
+    }
+    for (const tagForUpdate of tagsForUpdate) {
+      const tag = new Tag(tagForUpdate.topic, tagForUpdate.orientation, [user]);
+      journey.tags.push(tag);
+    }
+    journey.tags = this.cleanTagsWithNoUser(journey.tags);
+    await this.journeyRepository.update(journey);
+  }
+
+  private getTagIndex(tag: Tag, tagsForUpdate: TagCreateDTO[]): number {
+    for (let i = 0; i < tagsForUpdate.length; i++) {
+      if (
+        tag.topic == tagsForUpdate[i].topic &&
+        tag.orient == tagsForUpdate[i].orientation
+      ) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  private getUserIndex(user: User, users: User[]): number {
+    for (let i = 0; i < users.length; i++) {
+      if (users[i]._id == user._id) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  private cleanTagsWithNoUser(tags: Tag[]): Tag[] {
+    const tagIdxToClean = [];
+    for (let i = tags.length - 1; i >= 0; i--) {
+      if (tags[i].users.length == 0) {
+        tagIdxToClean.push(i);
+      }
+    }
+    for (const idx of tagIdxToClean) {
+      tags.splice(idx, 1);
+    }
+    return tags;
   }
 }

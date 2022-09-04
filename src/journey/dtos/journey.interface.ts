@@ -34,6 +34,10 @@ export interface PikisUpdate {
   pikis: PikiUpdate[];
 }
 
+export interface TagsUpdate {
+  tags: TagCreate[];
+}
+
 export interface IdResponse {
   id: string;
 }

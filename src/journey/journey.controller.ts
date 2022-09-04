@@ -25,6 +25,7 @@ import {
   PikmiCreateDTO,
   PikisUpdateDTO,
   IdsResponseDTO,
+  TagsUpdateDTO,
 } from './dtos/journey.dto';
 import { JourneyService } from './journey.service';
 
@@ -95,5 +96,25 @@ export class JourneyController {
     @Body() pikisUpdateDto: PikisUpdateDTO,
   ): Promise<IdsResponseDTO> {
     return await this.journeyService.updatePiki(pikisUpdateDto, journeyId);
+  }
+
+  @ApiOperation({
+    summary: '태그 수정',
+    description: '유저가 추가 혹은 수정한 태그를 여행에 반영한다.',
+  })
+  @ApiCreatedResponse({ description: '성공' })
+  @ApiBadRequestResponse({ description: '요청 데이터가 잘못됨' })
+  @ApiUnauthorizedResponse({ description: '인증 실패' })
+  @ApiInternalServerErrorResponse({ description: '서버 오류' })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(200)
+  @Post(':journeyId/tags')
+  public async updateTags(
+    @Param('journeyId') journeyId: string,
+    @Body() tagsUpdateDto: TagsUpdateDTO,
+    @Request() req,
+  ): Promise<void> {
+    await this.journeyService.updateTags(tagsUpdateDto, journeyId, req.user.id);
   }
 }

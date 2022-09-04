@@ -44,6 +44,7 @@ import {
   PikiUpdate,
   PikmiCreate,
   TagCreate,
+  TagsUpdate,
 } from './journey.interface';
 
 export class TagCreateDTO implements TagCreate {
@@ -219,6 +220,18 @@ export class PikisUpdateDTO implements PikisUpdate {
   constructor(index: number, pikis: PikiUpdateDTO[]) {
     this.index = index;
     this.pikis = pikis;
+  }
+}
+
+export class TagsUpdateDTO implements TagsUpdate {
+  @ApiProperty({ type: [TagCreateDTO], description: '태그 목록' })
+  @ArrayMaxSize(MAX_TAGS, { message: TAG_EXCEEDED_MSG })
+  @ValidateNested({ each: true })
+  @Type(() => TagCreateDTO)
+  readonly tags: TagCreateDTO[];
+
+  constructor(tags: TagCreateDTO[]) {
+    this.tags = tags;
   }
 }
 
