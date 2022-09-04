@@ -48,4 +48,6 @@ export const LONGITUDE_INVALID_MSG = `경도 값은 ${MIN_LONGITUDE}~${MAX_LONGI
 
 export const LATITUDE_INVALID_MSG = `위도 값은 ${MIN_LATITUDE}~${MAX_LATITUDE} 사이의 값이어야 해요!`;
 
+export const INDEX_OUT_OF_RANGE_MSG = `인덱스 값이 범위를 벗어났어요!`;
+
 export const DEFAULT_MSG = '잘못된 요청입니다.';

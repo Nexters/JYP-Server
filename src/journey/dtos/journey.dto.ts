@@ -32,7 +32,10 @@ import { CATEGORY } from '../schemas/category';
 import { ORIENTATION } from '../schemas/orientation';
 import {
   IdResponse,
+  IdsResponse,
   JourneyCreate,
+  PikisUpdate,
+  PikiUpdate,
   PikmiCreate,
   TagCreate,
 } from './journey.interface';
@@ -142,11 +145,57 @@ export class PikmiCreateDTO implements PikmiCreate {
   }
 }
 
+export class PikiUpdateDTO implements PikiUpdate {
+  readonly id: string;
+  readonly name: string;
+  readonly address: string;
+  readonly category: string;
+  readonly longitude: number;
+  readonly latitude: number;
+  readonly link: string;
+
+  constructor(
+    id: string,
+    name: string,
+    address: string,
+    category: string,
+    longitude: number,
+    latitude: number,
+    link: string,
+  ) {
+    this.id = id;
+    this.name = name;
+    this.address = address;
+    this.category = category;
+    this.longitude = longitude;
+    this.latitude = latitude;
+    this.link = link;
+  }
+}
+
+export class PikisUpdateDTO implements PikisUpdate {
+  readonly index: number;
+  readonly pikis: PikiUpdateDTO[];
+
+  constructor(index: number, pikis: PikiUpdateDTO[]) {
+    this.index = index;
+    this.pikis = pikis;
+  }
+}
+
 export class IdResponseDTO implements IdResponse {
   @ApiProperty({ description: '변동된 다큐먼트의 ID' })
   readonly id: string;
 
   constructor(id: string) {
     this.id = id;
+  }
+}
+
+export class IdsResponseDTO implements IdsResponse {
+  readonly ids: string[];
+
+  constructor(...ids: string[]) {
+    this.ids = ids;
   }
 }

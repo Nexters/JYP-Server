@@ -4,6 +4,9 @@ import {
   JourneyCreateDTO,
   IdResponseDTO,
   PikmiCreateDTO,
+  PikisUpdateDTO,
+  PikiUpdateDTO,
+  IdsResponseDTO,
 } from './dtos/journey.dto';
 import { JourneyController } from './journey.controller';
 import { JourneyService } from './journey.service';
@@ -49,6 +52,46 @@ const PIKMI_CREATE_DTO = new PikmiCreateDTO(
 );
 const PIKMI_ID = '6312e10b0c2efac2742417bd';
 const PIKMI_ID_RESPONSE_DTO = new IdResponseDTO(PIKMI_ID);
+const PIKI_INDEX = 0;
+const PIKI1_ID = '63136a1e02efbf949b847f8c';
+const PIKI1_NAME = 'piki1';
+const PIKI1_ADDR = 'piki1 addr';
+const PIKI1_CATEGORY = 'T';
+const PIKI1_LON = 130.4;
+const PIKI1_LAT = 37.7;
+const PIKI1_LINK = '/piki2/link';
+const PIKI2_ID = '63136a1e02efbf949b847f8d';
+const PIKI2_NAME = 'piki2';
+const PIKI2_ADDR = 'piki2 addr';
+const PIKI2_CATEGORY = 'S';
+const PIKI2_LON = 131.4;
+const PIKI2_LAT = 38.7;
+const PIKI2_LINK = '/piki2/link';
+const PIKI_UPDATE_DTOS_NO_ID = [
+  new PikiUpdateDTO(
+    undefined,
+    PIKI1_NAME,
+    PIKI1_ADDR,
+    PIKI1_CATEGORY,
+    PIKI1_LON,
+    PIKI1_LAT,
+    PIKI1_LINK,
+  ),
+  new PikiUpdateDTO(
+    undefined,
+    PIKI2_NAME,
+    PIKI2_ADDR,
+    PIKI2_CATEGORY,
+    PIKI2_LON,
+    PIKI2_LAT,
+    PIKI2_LINK,
+  ),
+];
+const PIKIS_UPDATE_DTO_NO_ID = new PikisUpdateDTO(
+  PIKI_INDEX,
+  PIKI_UPDATE_DTOS_NO_ID,
+);
+const PIKIS_IDS_RESPONSE_DTO = new IdsResponseDTO(PIKI1_ID, PIKI2_ID);
 
 describe('JourneyController', () => {
   let journeyController: JourneyController;
@@ -115,5 +158,26 @@ describe('JourneyController', () => {
       USER_ID,
     );
     expect(result).toEqual(PIKMI_ID_RESPONSE_DTO);
+  });
+
+  it('updatePiki는 JourneyService.updatePiki를 호출해 리턴한다.', async () => {
+    // given
+    journeyService.updatePiki = jest
+      .fn()
+      .mockResolvedValue(PIKIS_IDS_RESPONSE_DTO);
+
+    // when
+    const result = await journeyController.updatePiki(
+      JOURNEY_ID,
+      PIKIS_UPDATE_DTO_NO_ID,
+    );
+
+    // then
+    expect(journeyService.updatePiki).toBeCalledTimes(1);
+    expect(journeyService.updatePiki).toBeCalledWith(
+      PIKIS_UPDATE_DTO_NO_ID,
+      JOURNEY_ID,
+    );
+    expect(result).toStrictEqual(PIKIS_IDS_RESPONSE_DTO);
   });
 });

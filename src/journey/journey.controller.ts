@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  HttpCode,
   Param,
   Post,
   Request,
@@ -22,6 +23,8 @@ import {
   JourneyCreateDTO,
   IdResponseDTO,
   PikmiCreateDTO,
+  PikisUpdateDTO,
+  IdsResponseDTO,
 } from './dtos/journey.dto';
 import { JourneyService } from './journey.service';
 
@@ -73,5 +76,15 @@ export class JourneyController {
       journeyId,
       req.user.id,
     );
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(200)
+  @Post(':journeyId/pikis')
+  public async updatePiki(
+    @Param('journeyId') journeyId: string,
+    @Body() pikisUpdateDto: PikisUpdateDTO,
+  ): Promise<IdsResponseDTO> {
+    return await this.journeyService.updatePiki(pikisUpdateDto, journeyId);
   }
 }

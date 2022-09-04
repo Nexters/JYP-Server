@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import {
+  IndexOutOfRangeException,
   InvalidJwtPayloadException,
   JourneyNotExistException,
   LimitExceededException,
@@ -90,6 +91,18 @@ export class JourneyNotExistExceptionFliter implements ExceptionFilter {
     const status = exception.getStatus();
     response.status(status).json({
       code: String(status) + '03',
+      message: exception.message,
+    });
+  }
+}
+
+@Catch(IndexOutOfRangeException)
+export class IndexOutOfRangeExceptionFilter implements ExceptionFilter {
+  catch(exception: IndexOutOfRangeException, host: ArgumentsHost) {
+    const response = getResponse(host);
+    const status = exception.getStatus();
+    response.status(status).json({
+      code: String(status) + '04',
       message: exception.message,
     });
   }

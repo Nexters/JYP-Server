@@ -7,6 +7,7 @@ import {
   BadRequestExceptionFilter,
   ErrorFilter,
   HttpExceptionFilter,
+  IndexOutOfRangeExceptionFilter,
   InvalidJwtPayloadExceptionFilter,
   JourneyNotExistExceptionFliter,
   LimitExceededExceptionFilter,
@@ -24,6 +25,7 @@ async function bootstrap() {
     new BadRequestExceptionFilter(),
     new LimitExceededExceptionFilter(),
     new JourneyNotExistExceptionFliter(),
+    new IndexOutOfRangeExceptionFilter(),
   );
   app.useGlobalInterceptors(new TransformInterceptor());
 

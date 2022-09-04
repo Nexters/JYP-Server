@@ -61,6 +61,21 @@ const PIKMI_CATEGORY = 'P';
 const PIKMI_LON = 129.4;
 const PIKMI_LAT = 36.7;
 const PIKMI_LINK = '/pikmi/link';
+const PIKI_INDEX = 0;
+const PIKI1_ID = '63136a1e02efbf949b847f8c';
+const PIKI1_NAME = 'piki1';
+const PIKI1_ADDR = 'piki1 addr';
+const PIKI1_CATEGORY = 'T';
+const PIKI1_LON = 130.4;
+const PIKI1_LAT = 37.7;
+const PIKI1_LINK = '/piki2/link';
+const PIKI2_ID = '63136a1e02efbf949b847f8d';
+const PIKI2_NAME = 'piki2';
+const PIKI2_ADDR = 'piki2 addr';
+const PIKI2_CATEGORY = 'S';
+const PIKI2_LON = 131.4;
+const PIKI2_LAT = 38.7;
+const PIKI2_LINK = '/piki2/link';
 
 describe('Journeys controller', () => {
   let app: NestApplication;
@@ -290,6 +305,181 @@ describe('Journeys controller', () => {
           longitude: PIKMI_LON,
           latitude: PIKMI_LAT,
           link: PIKMI_LINK,
+        })
+        .type('application/json');
+      expect(response.statusCode).toBe(400);
+    });
+  });
+
+  describe('POST /journeys/:journeyId/pikis', () => {
+    it('success, piki ID X', async () => {
+      const journey = new journeyModel(JOURNEY);
+      const journeyId = journey._id.toString();
+      await journey.save();
+      const user = new userModel(USER);
+      await user.save();
+      const response = await request(app.getHttpServer())
+        .post(`/journeys/${journeyId}/pikis`)
+        .send({
+          index: PIKI_INDEX,
+          pikis: [
+            {
+              name: PIKI1_NAME,
+              address: PIKI1_ADDR,
+              category: PIKI1_CATEGORY,
+              longitude: PIKI1_LON,
+              latitude: PIKI1_LAT,
+              link: PIKI1_LINK,
+            },
+            {
+              name: PIKI2_NAME,
+              address: PIKI2_ADDR,
+              category: PIKI2_CATEGORY,
+              longitude: PIKI2_LON,
+              latitude: PIKI2_LAT,
+              link: PIKI2_LINK,
+            },
+          ],
+        })
+        .type('application/json');
+      expect(response.statusCode).toBe(200);
+      const updatedJourney = await journeyModel
+        .findById(new mongoose.Types.ObjectId(journeyId))
+        .populate('pikis')
+        .exec();
+      const updatedPikis = updatedJourney.pikis[PIKI_INDEX];
+      expect(updatedPikis[0]._id.toString()).toBe(response.body.ids[0]);
+      expect(updatedPikis[0].name).toBe(PIKI1_NAME);
+      expect(updatedPikis[0].addr).toBe(PIKI1_ADDR);
+      expect(updatedPikis[0].cate).toBe(PIKI1_CATEGORY);
+      expect(updatedPikis[0].lon).toBe(PIKI1_LON);
+      expect(updatedPikis[0].lat).toBe(PIKI1_LAT);
+      expect(updatedPikis[0].link).toBe(PIKI1_LINK);
+      expect(updatedPikis[1]._id.toString()).toBe(response.body.ids[1]);
+      expect(updatedPikis[1].name).toBe(PIKI2_NAME);
+      expect(updatedPikis[1].addr).toBe(PIKI2_ADDR);
+      expect(updatedPikis[1].cate).toBe(PIKI2_CATEGORY);
+      expect(updatedPikis[1].lon).toBe(PIKI2_LON);
+      expect(updatedPikis[1].lat).toBe(PIKI2_LAT);
+      expect(updatedPikis[1].link).toBe(PIKI2_LINK);
+    });
+
+    it('success, piki ID O', async () => {
+      const journey = new journeyModel(JOURNEY);
+      const journeyId = journey._id.toString();
+      await journey.save();
+      const user = new userModel(USER);
+      await user.save();
+      const response = await request(app.getHttpServer())
+        .post(`/journeys/${journeyId}/pikis`)
+        .send({
+          index: PIKI_INDEX,
+          pikis: [
+            {
+              id: PIKI1_ID,
+              name: PIKI1_NAME,
+              address: PIKI1_ADDR,
+              category: PIKI1_CATEGORY,
+              longitude: PIKI1_LON,
+              latitude: PIKI1_LAT,
+              link: PIKI1_LINK,
+            },
+            {
+              id: PIKI2_ID,
+              name: PIKI2_NAME,
+              address: PIKI2_ADDR,
+              category: PIKI2_CATEGORY,
+              longitude: PIKI2_LON,
+              latitude: PIKI2_LAT,
+              link: PIKI2_LINK,
+            },
+          ],
+        })
+        .type('application/json');
+      expect(response.statusCode).toBe(200);
+      const updatedJourney = await journeyModel
+        .findById(new mongoose.Types.ObjectId(journeyId))
+        .populate('pikis')
+        .exec();
+      const updatedPikis = updatedJourney.pikis[PIKI_INDEX];
+      expect(updatedPikis[0]._id.toString()).toBe(response.body.ids[0]);
+      expect(updatedPikis[0]._id.toString()).toBe(PIKI1_ID);
+      expect(updatedPikis[0].name).toBe(PIKI1_NAME);
+      expect(updatedPikis[0].addr).toBe(PIKI1_ADDR);
+      expect(updatedPikis[0].cate).toBe(PIKI1_CATEGORY);
+      expect(updatedPikis[0].lon).toBe(PIKI1_LON);
+      expect(updatedPikis[0].lat).toBe(PIKI1_LAT);
+      expect(updatedPikis[0].link).toBe(PIKI1_LINK);
+      expect(updatedPikis[1]._id.toString()).toBe(response.body.ids[1]);
+      expect(updatedPikis[1]._id.toString()).toBe(PIKI2_ID);
+      expect(updatedPikis[1].name).toBe(PIKI2_NAME);
+      expect(updatedPikis[1].addr).toBe(PIKI2_ADDR);
+      expect(updatedPikis[1].cate).toBe(PIKI2_CATEGORY);
+      expect(updatedPikis[1].lon).toBe(PIKI2_LON);
+      expect(updatedPikis[1].lat).toBe(PIKI2_LAT);
+      expect(updatedPikis[1].link).toBe(PIKI2_LINK);
+    });
+
+    it('저니가 존재하지 않을 때 400 응답', async () => {
+      const user = new userModel(USER);
+      await user.save();
+      const nonExistingJourneyId = '630b28c08abfc3f96130789f';
+      const response = await request(app.getHttpServer())
+        .post(`/journeys/${nonExistingJourneyId}/pikis`)
+        .send({
+          index: PIKI_INDEX,
+          pikis: [
+            {
+              name: PIKI1_NAME,
+              address: PIKI1_ADDR,
+              category: PIKI1_CATEGORY,
+              longitude: PIKI1_LON,
+              latitude: PIKI1_LAT,
+              link: PIKI1_LINK,
+            },
+            {
+              name: PIKI2_NAME,
+              address: PIKI2_ADDR,
+              category: PIKI2_CATEGORY,
+              longitude: PIKI2_LON,
+              latitude: PIKI2_LAT,
+              link: PIKI2_LINK,
+            },
+          ],
+        })
+        .type('application/json');
+      expect(response.statusCode).toBe(400);
+    });
+
+    it('index가 범위를 벗어났을 때 400 응답', async () => {
+      const journey = new journeyModel(JOURNEY);
+      const journeyId = journey._id.toString();
+      await journey.save();
+      const user = new userModel(USER);
+      await user.save();
+      const invalidIndex = journey.pikis.length;
+      const response = await request(app.getHttpServer())
+        .post(`/journeys/${journeyId}/pikis`)
+        .send({
+          index: invalidIndex,
+          pikis: [
+            {
+              name: PIKI1_NAME,
+              address: PIKI1_ADDR,
+              category: PIKI1_CATEGORY,
+              longitude: PIKI1_LON,
+              latitude: PIKI1_LAT,
+              link: PIKI1_LINK,
+            },
+            {
+              name: PIKI2_NAME,
+              address: PIKI2_ADDR,
+              category: PIKI2_CATEGORY,
+              longitude: PIKI2_LON,
+              latitude: PIKI2_LAT,
+              link: PIKI2_LINK,
+            },
+          ],
         })
         .type('application/json');
       expect(response.statusCode).toBe(400);
