@@ -106,7 +106,7 @@ export class JourneyService {
       pikmiCreateDto.name,
       pikmiCreateDto.address,
       pikmiCreateDto.category,
-      [user],
+      [],
       pikmiCreateDto.longitude,
       pikmiCreateDto.latitude,
       pikmiCreateDto.link,

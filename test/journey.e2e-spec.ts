@@ -242,7 +242,8 @@ describe('Journeys controller', () => {
       expect(createdPikmi.name).toBe(PIKMI_NAME);
       expect(createdPikmi.addr).toBe(PIKMI_ADDR);
       expect(createdPikmi.cate).toBe(PIKMI_CATEGORY);
-      expect(toPlainObject(createdPikmi.likeBy, [USER])).toEqual([USER]);
+      expect(Array.isArray(createdPikmi.likeBy)).toBe(true);
+      expect(createdPikmi.likeBy.length).toBe(0);
       expect(createdPikmi.lon).toBe(PIKMI_LON);
       expect(createdPikmi.lat).toBe(PIKMI_LAT);
       expect(createdPikmi.link).toBe(PIKMI_LINK);

@@ -299,7 +299,7 @@ describe('JourneyService', () => {
       expect(pikmiWithId.name).toBe(PIKMI_NAME);
       expect(pikmiWithId.addr).toBe(PIKMI_ADDR);
       expect(pikmiWithId.cate).toBe(PIKMI_CATEGORY);
-      expect(pikmiWithId.likeBy).toEqual([USER]);
+      expect(pikmiWithId.likeBy).toEqual([]);
       expect(pikmiWithId.lon).toBe(PIKMI_LON);
       expect(pikmiWithId.lat).toBe(PIKMI_LAT);
       expect(pikmiWithId.link).toBe(PIKMI_LINK);
