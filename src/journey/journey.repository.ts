@@ -28,7 +28,7 @@ export class JourneyRepository {
         .populate('pikis')
         .exec();
     } else {
-      return this.journeyModel.findById(objectId).exec();
+      return await this.journeyModel.findById(objectId).exec();
     }
   }
 
@@ -51,15 +51,15 @@ export class JourneyRepository {
         .populate('pikis')
         .exec();
     } else {
-      return this.journeyModel.find({ users: user }).exec();
+      return await this.journeyModel.find({ users: user }).exec();
     }
   }
 
   public async insert(journey: JourneyDocument): Promise<JourneyDocument> {
-    return journey.save();
+    return await journey.save();
   }
 
   public async update(journey: JourneyDocument): Promise<JourneyDocument> {
-    return journey.save();
+    return await journey.save();
   }
 }

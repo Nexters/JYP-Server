@@ -37,6 +37,6 @@ export class UserRepository {
       img: profileImagePath,
       psn: personality,
     });
-    return user.save();
+    return await user.save();
   }
 }
