@@ -487,7 +487,6 @@ describe('JourneyService', () => {
         [],
         [[], [], []],
       ) as JourneyDocument;
-      journey.populate = () => void 0;
       journeyRepository.get = jest.fn().mockResolvedValue(journey);
       journeyRepository.update = jest.fn();
 
@@ -532,7 +531,6 @@ describe('JourneyService', () => {
         [],
         [[], [], []],
       ) as JourneyDocument;
-      journey.populate = () => void 0;
       journeyRepository.get = jest.fn().mockResolvedValue(journey);
       journeyRepository.update = jest.fn();
 
@@ -577,7 +575,6 @@ describe('JourneyService', () => {
         [],
         [[], [], []],
       ) as JourneyDocument;
-      journey.populate = () => void 0;
       journeyRepository.get = jest.fn().mockResolvedValue(journey);
       journeyRepository.update = jest.fn();
 
@@ -619,7 +616,6 @@ describe('JourneyService', () => {
         [],
         [[], [], []],
       ) as JourneyDocument;
-      journey.populate = () => void 0;
       journeyRepository.get = jest.fn().mockResolvedValue(journey);
       journeyRepository.update = jest.fn();
 

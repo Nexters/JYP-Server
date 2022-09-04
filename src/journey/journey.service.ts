@@ -166,10 +166,6 @@ export class JourneyService {
     if (journey == null) {
       throw new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG);
     }
-    await journey.populate({
-      path: 'tags',
-      populate: { path: 'users' },
-    });
     const tagsForUpdate = tagsUpdateDto.tags;
     for (const tag of journey.tags) {
       const tagIndex = this.getTagIndex(tag, tagsForUpdate);
@@ -205,13 +201,20 @@ export class JourneyService {
     return -1;
   }
 
-  private getUserIndex(user: User, users: User[]): number {
-    for (let i = 0; i < users.length; i++) {
-      if (users[i]._id == user._id) {
-        return i;
-      }
+  private getUserIndex(user: User, users: User[] | string[]): number {
+    if (this.isPopulated(users)) {
+      const userIds = users.map((_) => _._id);
+      return userIds.indexOf(user._id);
+    } else {
+      return users.indexOf(user._id);
     }
-    return -1;
+  }
+
+  private isPopulated(users: User[] | string[]): users is User[] {
+    if (users.length == 0) {
+      return false;
+    }
+    return users[0] instanceof User;
   }
 
   private cleanTagsWithNoUser(tags: Tag[]): Tag[] {
