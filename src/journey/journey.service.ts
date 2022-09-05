@@ -101,7 +101,7 @@ export class JourneyService {
     if (journey == null) {
       throw new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG);
     }
-    if (this.getUserIndex(user, journey.users) == -1) {
+    if (JourneyService.getUserIndex(user, journey.users) == -1) {
       throw new UnauthenticatedException(USER_NOT_IN_JOURNEY_MSG);
     }
     if (journey.pikmis.length >= MAX_PIKMI_PER_JOURNEY) {
@@ -134,19 +134,19 @@ export class JourneyService {
     if (journey == null) {
       throw new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG);
     }
-    if (this.getUserIndex(user, journey.users) == -1) {
+    if (JourneyService.getUserIndex(user, journey.users) == -1) {
       throw new UnauthenticatedException(USER_NOT_IN_JOURNEY_MSG);
     }
     if (pikisUpdateDto.index >= journey.pikis.length) {
       throw new IndexOutOfRangeException(INDEX_OUT_OF_RANGE_MSG);
     }
-    const idGeneratedPikis = pikisUpdateDto.pikis.map(this.toPiki);
+    const idGeneratedPikis = pikisUpdateDto.pikis.map(JourneyService.toPiki);
     journey.pikis[pikisUpdateDto.index] = idGeneratedPikis;
     await this.journeyRepository.update(journey);
     return new IdsResponseDTO(...idGeneratedPikis.map((_) => _._id.toString()));
   }
 
-  private toPiki(pikiUpdateDto: PikiUpdateDTO) {
+  private static toPiki(pikiUpdateDto: PikiUpdateDTO) {
     if (pikiUpdateDto.id) {
       return new Piki(
         pikiUpdateDto.id,
@@ -182,13 +182,13 @@ export class JourneyService {
     if (journey == null) {
       throw new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG);
     }
-    if (this.getUserIndex(user, journey.users) == -1) {
+    if (JourneyService.getUserIndex(user, journey.users) == -1) {
       throw new UnauthenticatedException(USER_NOT_IN_JOURNEY_MSG);
     }
     const tagsForUpdate = tagsUpdateDto.tags;
     for (const tag of journey.tags) {
-      const tagIndex = this.getTagIndex(tag, tagsForUpdate);
-      const userIndex = this.getUserIndex(user, tag.users);
+      const tagIndex = JourneyService.getTagIndex(tag, tagsForUpdate);
+      const userIndex = JourneyService.getUserIndex(user, tag.users);
       if (tagIndex != -1) {
         if (userIndex == -1) {
           tag.users.push(user);
@@ -204,11 +204,11 @@ export class JourneyService {
       const tag = new Tag(tagForUpdate.topic, tagForUpdate.orientation, [user]);
       journey.tags.push(tag);
     }
-    journey.tags = this.cleanTagsWithNoUser(journey.tags);
+    journey.tags = JourneyService.cleanTagsWithNoUser(journey.tags);
     await this.journeyRepository.update(journey);
   }
 
-  private getTagIndex(tag: Tag, tagsForUpdate: TagCreateDTO[]): number {
+  private static getTagIndex(tag: Tag, tagsForUpdate: TagCreateDTO[]): number {
     for (let i = 0; i < tagsForUpdate.length; i++) {
       if (
         tag.topic == tagsForUpdate[i].topic &&
@@ -220,7 +220,7 @@ export class JourneyService {
     return -1;
   }
 
-  private getUserIndex(user: User, users: User[] | string[]): number {
+  private static getUserIndex(user: User, users: User[] | string[]): number {
     if (this.isPopulated(users)) {
       const userIds = users.map((_) => _._id);
       return userIds.indexOf(user._id);
@@ -229,14 +229,14 @@ export class JourneyService {
     }
   }
 
-  private isPopulated(users: User[] | string[]): users is User[] {
+  private static isPopulated(users: User[] | string[]): users is User[] {
     if (users.length == 0) {
       return false;
     }
     return !(typeof users[0] == 'string');
   }
 
-  private cleanTagsWithNoUser(tags: Tag[]): Tag[] {
+  private static cleanTagsWithNoUser(tags: Tag[]): Tag[] {
     const tagIdxToClean = [];
     for (let i = tags.length - 1; i >= 0; i--) {
       if (tags[i].users.length == 0) {
