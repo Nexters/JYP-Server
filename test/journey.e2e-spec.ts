@@ -756,6 +756,142 @@ describe('Journeys controller', () => {
     });
   });
 
+  describe('POST /journeys/:journeyId/join', () => {
+    it('success', async () => {
+      const tags = [
+        new Tag(FIRST_TOPIC, FIRST_ORIENT, USER2),
+        new Tag(SECOND_TOPIC, SECOND_ORIENT, USER2),
+      ];
+      const journey = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER2],
+        tags,
+        [],
+        [[], [], []],
+      );
+      const journeyDoc = new journeyModel(journey);
+      const journeyId = journeyDoc._id.toString();
+      await journeyDoc.save();
+      const user = new userModel(USER);
+      await user.save();
+      const user2 = new userModel(USER2);
+      await user2.save();
+      const response = await request(app.getHttpServer())
+        .post(`/journeys/${journeyId}/join`)
+        .send({
+          tags: [
+            {
+              topic: FIRST_TOPIC,
+              orientation: FIRST_ORIENT,
+            },
+            {
+              topic: SECOND_TOPIC,
+              orientation: SECOND_ORIENT,
+            },
+            {
+              topic: FOURTH_TOPIC,
+              orientation: FOURTH_ORIENT,
+            },
+          ],
+        })
+        .type('application/json');
+      expect(response.statusCode).toBe(200);
+      const updatedJourney = await journeyModel
+        .findById(new mongoose.Types.ObjectId(journeyId))
+        .populate('users')
+        .populate({
+          path: 'tags',
+          populate: { path: 'user' },
+        })
+        .exec();
+      const expectedUsers = [USER2, USER];
+      const expectedTags = [
+        new Tag(FIRST_TOPIC, FIRST_ORIENT, USER2),
+        new Tag(SECOND_TOPIC, SECOND_ORIENT, USER2),
+        new Tag(FIRST_TOPIC, FIRST_ORIENT, USER),
+        new Tag(SECOND_TOPIC, SECOND_ORIENT, USER),
+        new Tag(FOURTH_TOPIC, FOURTH_ORIENT, USER),
+      ];
+      const updatedUsers = toPlainObject(updatedJourney.users, expectedUsers);
+      const updatedTags = toPlainObject(updatedJourney.tags, expectedTags);
+      expect(updatedUsers).toEqual(expectedUsers);
+      expect(updatedTags).toEqual(expectedTags);
+    });
+
+    it('payload로 전달된 회원 ID가 존재하지 않는 회원 ID일 때 401 응답', async () => {
+      const tags = [
+        new Tag(FIRST_TOPIC, FIRST_ORIENT, USER2),
+        new Tag(SECOND_TOPIC, SECOND_ORIENT, USER2),
+      ];
+      const journey = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER2],
+        tags,
+        [],
+        [[], [], []],
+      );
+      const journeyDoc = new journeyModel(journey);
+      const journeyId = journeyDoc._id.toString();
+      await journeyDoc.save();
+      const user2 = new userModel(USER2);
+      await user2.save();
+      const response = await request(app.getHttpServer())
+        .post(`/journeys/${journeyId}/join`)
+        .send({
+          tags: [
+            {
+              topic: FIRST_TOPIC,
+              orientation: FIRST_ORIENT,
+            },
+            {
+              topic: SECOND_TOPIC,
+              orientation: SECOND_ORIENT,
+            },
+            {
+              topic: FOURTH_TOPIC,
+              orientation: FOURTH_ORIENT,
+            },
+          ],
+        })
+        .type('application/json');
+      expect(response.statusCode).toBe(401);
+    });
+
+    it('저니가 존재하지 않을 때 400 응답', async () => {
+      const user = new userModel(USER);
+      await user.save();
+      const user2 = new userModel(USER2);
+      await user2.save();
+      const nonExistingJourneyId = '630b28c08abfc3f96130789f';
+      const response = await request(app.getHttpServer())
+        .post(`/journeys/${nonExistingJourneyId}/join`)
+        .send({
+          tags: [
+            {
+              topic: FIRST_TOPIC,
+              orientation: FIRST_ORIENT,
+            },
+            {
+              topic: SECOND_TOPIC,
+              orientation: SECOND_ORIENT,
+            },
+            {
+              topic: FOURTH_TOPIC,
+              orientation: FOURTH_ORIENT,
+            },
+          ],
+        })
+        .type('application/json');
+      expect(response.statusCode).toBe(400);
+    });
+  });
+
   afterEach(async () => {
     await userModel.deleteMany({});
     await journeyModel.deleteMany({});

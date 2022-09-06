@@ -7,6 +7,7 @@ import {
   PikisUpdateDTO,
   PikiUpdateDTO,
   IdsResponseDTO,
+  TagsUpdateDTO,
 } from './dtos/journey.dto';
 import { JourneyController } from './journey.controller';
 import { JourneyService } from './journey.service';
@@ -92,6 +93,7 @@ const PIKIS_UPDATE_DTO_NO_ID = new PikisUpdateDTO(
   PIKI_UPDATE_DTOS_NO_ID,
 );
 const PIKIS_IDS_RESPONSE_DTO = new IdsResponseDTO(PIKI1_ID, PIKI2_ID);
+const TAGS_UPDATE_DTO = new TagsUpdateDTO(TAG_CREATE_DTOS);
 
 describe('JourneyController', () => {
   let journeyController: JourneyController;
@@ -181,5 +183,40 @@ describe('JourneyController', () => {
       USER_ID,
     );
     expect(result).toStrictEqual(PIKIS_IDS_RESPONSE_DTO);
+  });
+
+  it('updateTags는 JourneyService.updateTags를 호출한다.', async () => {
+    // given
+    journeyService.updateTags = jest.fn();
+
+    // when
+    await journeyController.updateTags(JOURNEY_ID, TAGS_UPDATE_DTO, REQ);
+
+    // then
+    expect(journeyService.updateTags).toBeCalledTimes(1);
+    expect(journeyService.updateTags).toBeCalledWith(
+      TAGS_UPDATE_DTO,
+      JOURNEY_ID,
+      USER_ID,
+    );
+  });
+
+  it('addUserToJourney는 JourneyService.addUserToJourney와 JourneyService.updateTags를 호출한다.', async () => {
+    // given
+    journeyService.addUserToJourney = jest.fn();
+    journeyService.updateTags = jest.fn();
+
+    // when
+    await journeyController.addUserToJourney(JOURNEY_ID, TAGS_UPDATE_DTO, REQ);
+
+    // then
+    expect(journeyService.addUserToJourney).toBeCalledTimes(1);
+    expect(journeyService.addUserToJourney).toBeCalledWith(JOURNEY_ID, USER_ID);
+    expect(journeyService.updateTags).toBeCalledTimes(1);
+    expect(journeyService.updateTags).toBeCalledWith(
+      TAGS_UPDATE_DTO,
+      JOURNEY_ID,
+      USER_ID,
+    );
   });
 });

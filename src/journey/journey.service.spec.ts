@@ -574,7 +574,9 @@ describe('JourneyService', () => {
       ) as JourneyDocument;
       const tagDeletedJourney = structuredClone(journey);
       journeyRepository.get = jest.fn().mockResolvedValue(journey);
-      journeyRepository.deleteTags = jest.fn().mockResolvedValue(tagDeletedJourney);
+      journeyRepository.deleteTags = jest
+        .fn()
+        .mockResolvedValue(tagDeletedJourney);
       journeyRepository.update = jest.fn();
 
       // when
@@ -683,6 +685,62 @@ describe('JourneyService', () => {
       ).rejects.toThrow(new UnauthenticatedException(USER_NOT_IN_JOURNEY_MSG));
       expect(userRepository.findOne).toBeCalledTimes(1);
       expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.update).toBeCalledTimes(0);
+    });
+  });
+
+  describe('addUserToJourney', () => {
+    it('저니에 유저를 추가해 저장한다.', async () => {
+      // given
+      userRepository.findOne = jest.fn().mockResolvedValue(USER2);
+      const journeyForUpdate = structuredClone(JOURNEY);
+      journeyRepository.get = jest.fn().mockResolvedValue(journeyForUpdate);
+      journeyRepository.update = jest.fn().mockResolvedValue(journeyForUpdate);
+
+      // when
+      const result = await journeyService.addUserToJourney(
+        JOURNEY_ID,
+        USER2._id,
+      );
+
+      // then
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER2._id);
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.update).toBeCalledTimes(1);
+      expect(journeyRepository.update).toBeCalledWith(journeyForUpdate);
+      expect(result.users).toEqual([USER, USER2]);
+    });
+
+    it('userId에 해당하는 user가 없을 경우 InvalidJwtPayloadException을 throw한다.', async () => {
+      // given
+      userRepository.findOne = jest.fn().mockResolvedValue(null);
+      const journeyForUpdate = structuredClone(JOURNEY);
+      journeyRepository.get = jest.fn().mockResolvedValue(journeyForUpdate);
+      journeyRepository.update = jest.fn().mockResolvedValue(journeyForUpdate);
+
+      // then
+      await expect(
+        journeyService.addUserToJourney(JOURNEY_ID, USER2._id),
+      ).rejects.toThrow(new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG));
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER2._id);
+      expect(journeyRepository.update).toBeCalledTimes(0);
+    });
+
+    it('해당하는 저니가 없으면 JourneyNotExistException을 throw한다.', async () => {
+      // given
+      userRepository.findOne = jest.fn().mockResolvedValue(USER2);
+      journeyRepository.get = jest.fn().mockResolvedValue(null);
+      journeyRepository.update = jest.fn();
+
+      // then
+      await expect(
+        journeyService.addUserToJourney(JOURNEY_ID, USER2._id),
+      ).rejects.toThrow(new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG));
       expect(journeyRepository.get).toBeCalledTimes(1);
       expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
       expect(journeyRepository.update).toBeCalledTimes(0);

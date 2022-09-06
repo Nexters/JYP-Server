@@ -122,4 +122,25 @@ export class JourneyController {
   ): Promise<void> {
     await this.journeyService.updateTags(tagsUpdateDto, journeyId, req.user.id);
   }
+
+  @ApiOperation({
+    summary: '저니에 유저 추가',
+    description: '새로운 유저를 저니에 추가한다.',
+  })
+  @ApiCreatedResponse({ description: '성공' })
+  @ApiBadRequestResponse({ description: '요청 데이터가 잘못됨' })
+  @ApiUnauthorizedResponse({ description: '인증 실패' })
+  @ApiInternalServerErrorResponse({ description: '서버 오류' })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(200)
+  @Post(':journeyId/join')
+  public async addUserToJourney(
+    @Param('journeyId') journeyId: string,
+    @Body() tagsUpdateDto: TagsUpdateDTO,
+    @Request() req,
+  ): Promise<void> {
+    await this.journeyService.addUserToJourney(journeyId, req.user.id);
+    await this.journeyService.updateTags(tagsUpdateDto, journeyId, req.user.id);
+  }
 }

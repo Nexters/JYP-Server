@@ -171,14 +171,25 @@ export class JourneyService {
     await this.journeyRepository.update(tagDeletedJourney);
   }
 
-  private static preCheck(user: User, journey: Journey) {
+  public async addUserToJourney(journeyId: string, userId: string) {
+    const user = await this.userRepository.findOne(userId);
+    const journey = await this.journeyRepository.get(journeyId, false);
+    JourneyService.preCheck(user, journey, false);
+    journey.users.push(user);
+    return await this.journeyRepository.update(journey);
+  }
+
+  private static preCheck(user: User, journey: Journey, userInJourney = true) {
     if (user == null) {
       throw new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG);
     }
     if (journey == null) {
       throw new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG);
     }
-    if (JourneyService.getUserIndex(user, journey.users) == -1) {
+    if (
+      userInJourney &&
+      JourneyService.getUserIndex(user, journey.users) == -1
+    ) {
       throw new UnauthenticatedException(USER_NOT_IN_JOURNEY_MSG);
     }
   }
