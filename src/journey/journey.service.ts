@@ -93,16 +93,8 @@ export class JourneyService {
     userId: string,
   ) {
     const user = await this.userRepository.findOne(userId);
-    if (user == null) {
-      throw new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG);
-    }
     const journey = await this.journeyRepository.get(journeyId, false);
-    if (journey == null) {
-      throw new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG);
-    }
-    if (JourneyService.getUserIndex(user, journey.users) == -1) {
-      throw new UnauthenticatedException(USER_NOT_IN_JOURNEY_MSG);
-    }
+    JourneyService.preCheck(user, journey);
     if (journey.pikmis.length >= MAX_PIKMI_PER_JOURNEY) {
       throw new LimitExceededException(PIKMI_EXCEEDED_MSG);
     }
@@ -126,16 +118,8 @@ export class JourneyService {
     userId: string,
   ) {
     const user = await this.userRepository.findOne(userId);
-    if (user == null) {
-      throw new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG);
-    }
     const journey = await this.journeyRepository.get(journeyId, false);
-    if (journey == null) {
-      throw new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG);
-    }
-    if (JourneyService.getUserIndex(user, journey.users) == -1) {
-      throw new UnauthenticatedException(USER_NOT_IN_JOURNEY_MSG);
-    }
+    JourneyService.preCheck(user, journey);
     if (pikisUpdateDto.index >= journey.pikis.length) {
       throw new IndexOutOfRangeException(INDEX_OUT_OF_RANGE_MSG);
     }
@@ -174,16 +158,8 @@ export class JourneyService {
     userId: string,
   ) {
     const user = await this.userRepository.findOne(userId);
-    if (user == null) {
-      throw new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG);
-    }
     const journey = await this.journeyRepository.get(journeyId, false);
-    if (journey == null) {
-      throw new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG);
-    }
-    if (JourneyService.getUserIndex(user, journey.users) == -1) {
-      throw new UnauthenticatedException(USER_NOT_IN_JOURNEY_MSG);
-    }
+    JourneyService.preCheck(user, journey);
     const tagDeletedJourney = await this.journeyRepository.deleteTags(
       journeyId,
       userId,
@@ -193,6 +169,18 @@ export class JourneyService {
       tagDeletedJourney.tags.push(tag);
     }
     await this.journeyRepository.update(tagDeletedJourney);
+  }
+
+  private static preCheck(user: User, journey: Journey) {
+    if (user == null) {
+      throw new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG);
+    }
+    if (journey == null) {
+      throw new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG);
+    }
+    if (JourneyService.getUserIndex(user, journey.users) == -1) {
+      throw new UnauthenticatedException(USER_NOT_IN_JOURNEY_MSG);
+    }
   }
 
   private static getUserIndex(user: User, users: User[] | string[]): number {
