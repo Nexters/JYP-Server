@@ -69,8 +69,8 @@ const USER_IMG = '/user/img';
 const USER_PSN_ID = 'ME';
 const USER = new User(USER_ID, USER_NAME, USER_IMG, USER_PSN_ID);
 const TAGS = [
-  new Tag(FIRST_TOPIC, FIRST_ORIENT, [USER]),
-  new Tag(SECOND_TOPIC, SECOND_ORIENT, [USER]),
+  new Tag(FIRST_TOPIC, FIRST_ORIENT, USER),
+  new Tag(SECOND_TOPIC, SECOND_ORIENT, USER),
 ];
 const JOURNEY = new Journey(
   JOURNEY_NAME,
@@ -555,13 +555,12 @@ describe('JourneyService', () => {
   });
 
   describe('updateTags', () => {
-    it('기존에 유저의 태그가 존재하지 않을 때 태그를 추가한다.', async () => {
+    it('태그를 추가한다.', async () => {
       // given
       userRepository.findOne = jest.fn().mockResolvedValue(USER);
       const tags = [
-        new Tag(FIRST_TOPIC, FIRST_ORIENT, [USER2, USER3]),
-        new Tag(SECOND_TOPIC, SECOND_ORIENT, [USER2]),
-        new Tag(THIRD_TOPIC, THIRD_ORIENT, [USER3]),
+        new Tag(FIRST_TOPIC, FIRST_ORIENT, USER2),
+        new Tag(SECOND_TOPIC, SECOND_ORIENT, USER3),
       ];
       const journey = new Journey(
         JOURNEY_NAME,
@@ -573,7 +572,9 @@ describe('JourneyService', () => {
         [],
         [[], [], []],
       ) as JourneyDocument;
+      const tagDeletedJourney = structuredClone(journey);
       journeyRepository.get = jest.fn().mockResolvedValue(journey);
+      journeyRepository.deleteTags = jest.fn().mockResolvedValue(tagDeletedJourney);
       journeyRepository.update = jest.fn();
 
       // when
@@ -589,108 +590,27 @@ describe('JourneyService', () => {
       expect(userRepository.findOne).toBeCalledWith(USER_ID);
       expect(journeyRepository.get).toBeCalledTimes(1);
       expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.deleteTags).toBeCalledTimes(1);
+      expect(journeyRepository.deleteTags).toBeCalledWith(JOURNEY_ID, USER_ID);
       expect(journeyRepository.update).toBeCalledTimes(1);
-      expect(journeyRepository.update).toBeCalledWith(journey);
-      const updatedTags = journey.tags;
-      expect(updatedTags.length).toBe(4);
-      expect(updatedTags[0].users).toEqual([USER2, USER3, USER]);
-      expect(updatedTags[1].users).toEqual([USER2, USER]);
-      expect(updatedTags[2].users).toEqual([USER3]);
-      expect(updatedTags[3].users).toEqual([USER]);
-    });
-
-    it('기존에 유저의 태그가 존재할 때 기존 태그를 삭제하고 태그를 추가한다.', async () => {
-      // given
-      userRepository.findOne = jest.fn().mockResolvedValue(USER);
-      const tags = [
-        new Tag(FIRST_TOPIC, FIRST_ORIENT, [USER2, USER3]),
-        new Tag(SECOND_TOPIC, SECOND_ORIENT, [USER, USER2]),
-        new Tag(THIRD_TOPIC, THIRD_ORIENT, [USER, USER3]),
+      expect(journeyRepository.update).toBeCalledWith(tagDeletedJourney);
+      const expectedTags = [
+        new Tag(FIRST_TOPIC, FIRST_ORIENT, USER2),
+        new Tag(SECOND_TOPIC, SECOND_ORIENT, USER3),
+        new Tag(FIRST_TOPIC, FIRST_ORIENT, USER),
+        new Tag(SECOND_TOPIC, SECOND_ORIENT, USER),
+        new Tag(FOURTH_TOPIC, FOURTH_ORIENT, USER),
       ];
-      const journey = new Journey(
-        JOURNEY_NAME,
-        START_DATE,
-        END_DATE,
-        THEME_PATH,
-        [USER, USER2, USER3],
-        tags,
-        [],
-        [[], [], []],
-      ) as JourneyDocument;
-      journeyRepository.get = jest.fn().mockResolvedValue(journey);
-      journeyRepository.update = jest.fn();
-
-      // when
-      const tagsUpdateDto = new TagsUpdateDTO([
-        new TagCreateDTO(FIRST_TOPIC, FIRST_ORIENT),
-        new TagCreateDTO(SECOND_TOPIC, SECOND_ORIENT),
-        new TagCreateDTO(FOURTH_TOPIC, FOURTH_ORIENT),
-      ]);
-      await journeyService.updateTags(tagsUpdateDto, JOURNEY_ID, USER_ID);
-
-      // then
-      expect(userRepository.findOne).toBeCalledTimes(1);
-      expect(userRepository.findOne).toBeCalledWith(USER_ID);
-      expect(journeyRepository.get).toBeCalledTimes(1);
-      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
-      expect(journeyRepository.update).toBeCalledTimes(1);
-      expect(journeyRepository.update).toBeCalledWith(journey);
-      const updatedTags = journey.tags;
-      expect(updatedTags.length).toBe(4);
-      expect(updatedTags[0].users).toEqual([USER2, USER3, USER]);
-      expect(updatedTags[1].users).toEqual([USER, USER2]);
-      expect(updatedTags[2].users).toEqual([USER3]);
-      expect(updatedTags[3].users).toEqual([USER]);
-    });
-
-    it('태그 업데이트 후 유저가 존재하지 않는 태그는 삭제된다.', async () => {
-      // given
-      userRepository.findOne = jest.fn().mockResolvedValue(USER);
-      const tags = [
-        new Tag(FIRST_TOPIC, FIRST_ORIENT, [USER2, USER3]),
-        new Tag(SECOND_TOPIC, SECOND_ORIENT, [USER]),
-        new Tag(THIRD_TOPIC, THIRD_ORIENT, [USER]),
-      ];
-      const journey = new Journey(
-        JOURNEY_NAME,
-        START_DATE,
-        END_DATE,
-        THEME_PATH,
-        [USER, USER2, USER3],
-        tags,
-        [],
-        [[], [], []],
-      ) as JourneyDocument;
-      journeyRepository.get = jest.fn().mockResolvedValue(journey);
-      journeyRepository.update = jest.fn();
-
-      // when
-      const tagsUpdateDto = new TagsUpdateDTO([
-        new TagCreateDTO(FIRST_TOPIC, FIRST_ORIENT),
-        new TagCreateDTO(FOURTH_TOPIC, FOURTH_ORIENT),
-      ]);
-      await journeyService.updateTags(tagsUpdateDto, JOURNEY_ID, USER_ID);
-
-      // then
-      expect(userRepository.findOne).toBeCalledTimes(1);
-      expect(userRepository.findOne).toBeCalledWith(USER_ID);
-      expect(journeyRepository.get).toBeCalledTimes(1);
-      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
-      expect(journeyRepository.update).toBeCalledTimes(1);
-      expect(journeyRepository.update).toBeCalledWith(journey);
-      const updatedTags = journey.tags;
-      expect(updatedTags.length).toBe(2);
-      expect(updatedTags[0].users).toEqual([USER2, USER3, USER]);
-      expect(updatedTags[1].users).toEqual([USER]);
+      const updatedTags = tagDeletedJourney.tags;
+      expect(updatedTags).toEqual(expectedTags);
     });
 
     it('userId에 해당하는 user가 없을 경우 InvalidJwtPayloadException을 throw한다.', async () => {
       // given
       userRepository.findOne = jest.fn().mockResolvedValue(null);
       const tags = [
-        new Tag(FIRST_TOPIC, FIRST_ORIENT, [USER2, USER3]),
-        new Tag(SECOND_TOPIC, SECOND_ORIENT, [USER]),
-        new Tag(THIRD_TOPIC, THIRD_ORIENT, [USER]),
+        new Tag(FIRST_TOPIC, FIRST_ORIENT, USER2),
+        new Tag(SECOND_TOPIC, SECOND_ORIENT, USER3),
       ];
       const journey = new Journey(
         JOURNEY_NAME,

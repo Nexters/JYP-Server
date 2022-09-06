@@ -43,8 +43,8 @@ const USER_IMG = '/user/img';
 const USER_PSN = 'ME';
 const USER = new User(USER_ID, USER_NAME, USER_IMG, USER_PSN);
 const TAGS = [
-  new Tag(FIRST_TOPIC, FIRST_ORIENT, [USER]),
-  new Tag(SECOND_TOPIC, SECOND_ORIENT, [USER]),
+  new Tag(FIRST_TOPIC, FIRST_ORIENT, USER),
+  new Tag(SECOND_TOPIC, SECOND_ORIENT, USER),
 ];
 const JOURNEY = new Journey(
   JOURNEY_NAME,
@@ -148,7 +148,7 @@ describe('Journeys controller', () => {
         .findById({ _id: journeyId })
         .populate({
           path: 'tags',
-          populate: { path: 'users' },
+          populate: { path: 'user' },
         })
         .populate('users')
         .exec();
@@ -602,9 +602,11 @@ describe('Journeys controller', () => {
   describe('POST /journeys/:journeyId/tags', () => {
     it('success', async () => {
       const tags = [
-        new Tag(FIRST_TOPIC, FIRST_ORIENT, [USER2]),
-        new Tag(SECOND_TOPIC, SECOND_ORIENT, [USER3]),
-        new Tag(THIRD_TOPIC, THIRD_ORIENT, [USER]),
+        new Tag(FIRST_TOPIC, FIRST_ORIENT, USER),
+        new Tag(FIRST_TOPIC, FIRST_ORIENT, USER2),
+        new Tag(SECOND_TOPIC, SECOND_ORIENT, USER),
+        new Tag(SECOND_TOPIC, SECOND_ORIENT, USER3),
+        new Tag(THIRD_TOPIC, THIRD_ORIENT, USER),
       ];
       const journey = new Journey(
         JOURNEY_NAME,
@@ -649,16 +651,18 @@ describe('Journeys controller', () => {
         .findById(new mongoose.Types.ObjectId(journeyId))
         .populate({
           path: 'tags',
-          populate: { path: 'users' },
+          populate: { path: 'user' },
         })
         .exec();
-      const updatedTags = updatedJourney.tags;
-      expect(updatedTags.length).toBe(3);
-      expect(updatedTags[0].users).toMatchObject([USER2, USER]);
-      expect(updatedTags[1].users).toMatchObject([USER3, USER]);
-      expect(updatedTags[2].topic).toBe(FOURTH_TOPIC);
-      expect(updatedTags[2].orient).toBe(FOURTH_ORIENT);
-      expect(updatedTags[2].users).toMatchObject([USER]);
+      const expectedTags = [
+        new Tag(FIRST_TOPIC, FIRST_ORIENT, USER2),
+        new Tag(SECOND_TOPIC, SECOND_ORIENT, USER3),
+        new Tag(FIRST_TOPIC, FIRST_ORIENT, USER),
+        new Tag(SECOND_TOPIC, SECOND_ORIENT, USER),
+        new Tag(FOURTH_TOPIC, FOURTH_ORIENT, USER),
+      ];
+      const updatedTags = toPlainObject(updatedJourney.tags, expectedTags);
+      expect(updatedTags).toEqual(expectedTags);
     });
 
     it('payload로 전달된 회원 ID가 존재하지 않는 회원 ID일 때 401 응답', async () => {

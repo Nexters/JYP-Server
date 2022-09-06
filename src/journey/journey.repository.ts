@@ -19,7 +19,7 @@ export class JourneyRepository {
         .populate('users')
         .populate({
           path: 'tags',
-          populate: { path: 'users' },
+          populate: { path: 'user' },
         })
         .populate({
           path: 'pikmis',
@@ -42,7 +42,7 @@ export class JourneyRepository {
         .populate('users')
         .populate({
           path: 'tags',
-          populate: { path: 'users' },
+          populate: { path: 'user' },
         })
         .populate({
           path: 'pikmis',
@@ -61,5 +61,12 @@ export class JourneyRepository {
 
   public async update(journey: JourneyDocument): Promise<JourneyDocument> {
     return await journey.save();
+  }
+
+  public async deleteTags(journeyId: string, userId: string) {
+    const journeyObjectId = new mongoose.Types.ObjectId(journeyId);
+    return await this.journeyModel.findByIdAndUpdate(journeyObjectId, {
+      $pull: { tags: { user: userId } },
+    });
   }
 }

@@ -25,16 +25,16 @@ export class Tag {
   orient: string;
 
   @Prop({
-    type: [String],
+    type: String,
     ref: 'User',
     required: true,
   })
-  users: User[];
+  user: User;
 
-  constructor(topic: string, orient: string, users: User[]) {
+  constructor(topic: string, orient: string, user: User) {
     this.topic = topic;
     this.orient = orient;
-    this.users = users;
+    this.user = user;
   }
 }
 export const TagSchema = generateSchemaWithoutId(Tag);

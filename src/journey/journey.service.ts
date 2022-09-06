@@ -26,7 +26,6 @@ import {
   PikisUpdateDTO,
   IdsResponseDTO,
   TagsUpdateDTO,
-  TagCreateDTO,
 } from './dtos/journey.dto';
 import { JourneyRepository } from './journey.repository';
 import {
@@ -67,7 +66,7 @@ export class JourneyService {
       throw new LimitExceededException(JOURNEY_EXCEEDED_MSG);
     }
     const tags: Tag[] = journeyCreateDto.tags.map((tagCreateDto) => {
-      return new Tag(tagCreateDto.topic, tagCreateDto.orientation, [user]);
+      return new Tag(tagCreateDto.topic, tagCreateDto.orientation, user);
     });
     const dayDiff = getDayDiff(
       journeyCreateDto.startDate,
@@ -185,39 +184,15 @@ export class JourneyService {
     if (JourneyService.getUserIndex(user, journey.users) == -1) {
       throw new UnauthenticatedException(USER_NOT_IN_JOURNEY_MSG);
     }
-    const tagsForUpdate = tagsUpdateDto.tags;
-    for (const tag of journey.tags) {
-      const tagIndex = JourneyService.getTagIndex(tag, tagsForUpdate);
-      const userIndex = JourneyService.getUserIndex(user, tag.users);
-      if (tagIndex != -1) {
-        if (userIndex == -1) {
-          tag.users.push(user);
-        }
-        tagsForUpdate.splice(tagIndex, 1);
-      } else {
-        if (userIndex != -1) {
-          tag.users.splice(userIndex, 1);
-        }
-      }
+    const tagDeletedJourney = await this.journeyRepository.deleteTags(
+      journeyId,
+      userId,
+    );
+    for (const tagUpdateDto of tagsUpdateDto.tags) {
+      const tag = new Tag(tagUpdateDto.topic, tagUpdateDto.orientation, user);
+      tagDeletedJourney.tags.push(tag);
     }
-    for (const tagForUpdate of tagsForUpdate) {
-      const tag = new Tag(tagForUpdate.topic, tagForUpdate.orientation, [user]);
-      journey.tags.push(tag);
-    }
-    journey.tags = JourneyService.cleanTagsWithNoUser(journey.tags);
-    await this.journeyRepository.update(journey);
-  }
-
-  private static getTagIndex(tag: Tag, tagsForUpdate: TagCreateDTO[]): number {
-    for (let i = 0; i < tagsForUpdate.length; i++) {
-      if (
-        tag.topic == tagsForUpdate[i].topic &&
-        tag.orient == tagsForUpdate[i].orientation
-      ) {
-        return i;
-      }
-    }
-    return -1;
+    await this.journeyRepository.update(tagDeletedJourney);
   }
 
   private static getUserIndex(user: User, users: User[] | string[]): number {
@@ -234,18 +209,5 @@ export class JourneyService {
       return false;
     }
     return !(typeof users[0] == 'string');
-  }
-
-  private static cleanTagsWithNoUser(tags: Tag[]): Tag[] {
-    const tagIdxToClean = [];
-    for (let i = tags.length - 1; i >= 0; i--) {
-      if (tags[i].users.length == 0) {
-        tagIdxToClean.push(i);
-      }
-    }
-    for (const idx of tagIdxToClean) {
-      tags.splice(idx, 1);
-    }
-    return tags;
   }
 }
