@@ -28,6 +28,7 @@ import {
   JOURNEY_EXCEEDED_MSG,
   JOURNEY_NOT_EXIST_MSG,
   PIKMI_EXCEEDED_MSG,
+  USER_EXCEEDED_MSG,
   USER_NOT_IN_JOURNEY_MSG,
 } from '../common/validation/validation.messages';
 import {
@@ -38,6 +39,7 @@ import {
 jest.mock('../common/validation/validation.constants', () => ({
   MAX_JOURNEY_PER_USER: 5,
   MAX_PIKMI_PER_JOURNEY: 5,
+  MAX_USER_PER_JOURNEY: 2,
 }));
 
 const JOURNEY_NAME = 'name';
@@ -741,6 +743,33 @@ describe('JourneyService', () => {
       await expect(
         journeyService.addUserToJourney(JOURNEY_ID, USER2._id),
       ).rejects.toThrow(new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG));
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.update).toBeCalledTimes(0);
+    });
+
+    it('저니에 정원이 찼을 경우 LimitExceededException을 throw한다.', async () => {
+      // given
+      userRepository.findOne = jest.fn().mockResolvedValue(USER3);
+      const journeyWithFullUser = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER, USER2],
+        TAGS,
+        [],
+        [[], [], []],
+      ) as JourneyDocument;
+      journeyRepository.get = jest.fn().mockResolvedValue(journeyWithFullUser);
+      journeyRepository.update = jest
+        .fn()
+        .mockResolvedValue(journeyWithFullUser);
+
+      // then
+      await expect(
+        journeyService.addUserToJourney(JOURNEY_ID, USER3._id),
+      ).rejects.toThrow(new LimitExceededException(USER_EXCEEDED_MSG));
       expect(journeyRepository.get).toBeCalledTimes(1);
       expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
       expect(journeyRepository.update).toBeCalledTimes(0);

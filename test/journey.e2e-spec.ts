@@ -23,6 +23,7 @@ import { toPlainObject } from '../src/common/util';
 jest.mock('../src/common/validation/validation.constants', () => ({
   MAX_JOURNEY_PER_USER: 5,
   MAX_PIKMI_PER_JOURNEY: 5,
+  MAX_USER_PER_JOURNEY: 2,
 }));
 
 const JOURNEY_NAME = 'name';
@@ -871,6 +872,52 @@ describe('Journeys controller', () => {
       const nonExistingJourneyId = '630b28c08abfc3f96130789f';
       const response = await request(app.getHttpServer())
         .post(`/journeys/${nonExistingJourneyId}/join`)
+        .send({
+          tags: [
+            {
+              topic: FIRST_TOPIC,
+              orientation: FIRST_ORIENT,
+            },
+            {
+              topic: SECOND_TOPIC,
+              orientation: SECOND_ORIENT,
+            },
+            {
+              topic: FOURTH_TOPIC,
+              orientation: FOURTH_ORIENT,
+            },
+          ],
+        })
+        .type('application/json');
+      expect(response.statusCode).toBe(400);
+    });
+
+    it('저니에 정원이 찼을 때 400 응답', async () => {
+      const tags = [
+        new Tag(FIRST_TOPIC, FIRST_ORIENT, USER2),
+        new Tag(SECOND_TOPIC, SECOND_ORIENT, USER2),
+      ];
+      const journey = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER2, USER3],
+        tags,
+        [],
+        [[], [], []],
+      );
+      const journeyDoc = new journeyModel(journey);
+      const journeyId = journeyDoc._id.toString();
+      await journeyDoc.save();
+      const user = new userModel(USER);
+      await user.save();
+      const user2 = new userModel(USER2);
+      await user2.save();
+      const user3 = new userModel(USER3);
+      await user3.save();
+      const response = await request(app.getHttpServer())
+        .post(`/journeys/${journeyId}/join`)
         .send({
           tags: [
             {

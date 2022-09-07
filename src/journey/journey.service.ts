@@ -7,6 +7,7 @@ import {
   JOURNEY_EXCEEDED_MSG,
   JOURNEY_NOT_EXIST_MSG,
   PIKMI_EXCEEDED_MSG,
+  USER_EXCEEDED_MSG,
   USER_NOT_IN_JOURNEY_MSG,
 } from '../common/validation/validation.messages';
 import {
@@ -38,6 +39,7 @@ import {
 import {
   MAX_JOURNEY_PER_USER,
   MAX_PIKMI_PER_JOURNEY,
+  MAX_USER_PER_JOURNEY,
 } from '../common/validation/validation.constants';
 import { User } from '../user/schemas/user.schema';
 
@@ -175,6 +177,9 @@ export class JourneyService {
     const user = await this.userRepository.findOne(userId);
     const journey = await this.journeyRepository.get(journeyId, false);
     JourneyService.preCheck(user, journey, false);
+    if (journey.users.length >= MAX_USER_PER_JOURNEY) {
+      throw new LimitExceededException(USER_EXCEEDED_MSG);
+    }
     journey.users.push(user);
     return await this.journeyRepository.update(journey);
   }

@@ -3,7 +3,6 @@ import {
   NestInterceptor,
   ExecutionContext,
   CallHandler,
-  RequestMethod,
 } from '@nestjs/common';
 import { map, Observable } from 'rxjs';
 

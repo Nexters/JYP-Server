@@ -59,4 +59,6 @@ export const PIKI_EXCEEDED_MSG = `여행 장소는 최대 ${MAX_PIKI_PER_DAY}개
 
 export const USER_NOT_IN_JOURNEY_MSG = `여행에 소속되지 않은 회원의 요청이에요!`;
 
+export const USER_EXCEEDED_MSG = `정원이 차서 여행에 참여할 수 없어요!`;
+
 export const DEFAULT_MSG = '잘못된 요청입니다.';

@@ -9,3 +9,4 @@ export const MAX_LONGITUDE = 132;
 export const MIN_LATITUDE = 33;
 export const MAX_LATITUDE = 43;
 export const MAX_PIKI_PER_DAY = 5;
+export const MAX_USER_PER_JOURNEY = 8;

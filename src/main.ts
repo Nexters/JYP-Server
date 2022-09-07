@@ -2,7 +2,10 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
-import { CustomHeaderInterceptor, TransformInterceptor } from './http/http.interceptor';
+import {
+  CustomHeaderInterceptor,
+  TransformInterceptor,
+} from './http/http.interceptor';
 import {
   BadRequestExceptionFilter,
   ErrorFilter,
