@@ -84,7 +84,7 @@ export class JourneyController {
     summary: '피키 수정',
     description: '추가 혹은 수정된 피키 목록을 여행에 반영한다.',
   })
-  @ApiCreatedResponse({ description: '성공', type: IdsResponseDTO })
+  @ApiOkResponse({ description: '성공' })
   @ApiBadRequestResponse({ description: '요청 데이터가 잘못됨' })
   @ApiUnauthorizedResponse({ description: '인증 실패' })
   @ApiInternalServerErrorResponse({ description: '서버 오류' })
@@ -108,7 +108,7 @@ export class JourneyController {
     summary: '태그 수정',
     description: '유저가 추가 혹은 수정한 태그를 여행에 반영한다.',
   })
-  @ApiCreatedResponse({ description: '성공' })
+  @ApiOkResponse({ description: '성공' })
   @ApiBadRequestResponse({ description: '요청 데이터가 잘못됨' })
   @ApiUnauthorizedResponse({ description: '인증 실패' })
   @ApiInternalServerErrorResponse({ description: '서버 오류' })
@@ -128,7 +128,7 @@ export class JourneyController {
     summary: '저니에 유저 추가',
     description: '새로운 유저를 저니에 추가한다.',
   })
-  @ApiCreatedResponse({ description: '성공' })
+  @ApiOkResponse({ description: '성공' })
   @ApiBadRequestResponse({ description: '요청 데이터가 잘못됨' })
   @ApiUnauthorizedResponse({ description: '인증 실패' })
   @ApiInternalServerErrorResponse({ description: '서버 오류' })
