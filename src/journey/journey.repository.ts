@@ -65,8 +65,32 @@ export class JourneyRepository {
 
   public async deleteTags(journeyId: string, userId: string) {
     const journeyObjectId = new mongoose.Types.ObjectId(journeyId);
-    return await this.journeyModel.findByIdAndUpdate(journeyObjectId, {
-      $pull: { tags: { user: userId } },
-    });
+    return await this.journeyModel.findByIdAndUpdate(
+      journeyObjectId,
+      { $pull: { tags: { user: userId } } },
+      { new: true },
+    );
+  }
+
+  public async deleteUser(journeyId: string, userId: string) {
+    const journeyObjectId = new mongoose.Types.ObjectId(journeyId);
+    return await this.journeyModel.findByIdAndUpdate(
+      journeyObjectId,
+      { $pull: { users: userId } },
+      { new: true },
+    );
+  }
+
+  public async deleteAllPikmiLikeBy(journeyId: string, userId: string) {
+    const journeyObjectId = new mongoose.Types.ObjectId(journeyId);
+    return await this.journeyModel.findByIdAndUpdate(
+      journeyObjectId,
+      { $pull: { 'pikmis.$[].likeBy': userId } },
+      { new: true },
+    );
+  }
+
+  public async delete(journey: JourneyDocument) {
+    return await this.journeyModel.deleteOne({ _id: journey._id });
   }
 }

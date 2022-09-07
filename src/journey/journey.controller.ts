@@ -14,6 +14,7 @@ import {
   ApiBearerAuth,
   ApiCreatedResponse,
   ApiInternalServerErrorResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiTags,
   ApiUnauthorizedResponse,
@@ -142,5 +143,25 @@ export class JourneyController {
   ): Promise<void> {
     await this.journeyService.addUserToJourney(journeyId, req.user.id);
     await this.journeyService.updateTags(tagsUpdateDto, journeyId, req.user.id);
+  }
+
+  @ApiOperation({
+    summary: '저니에서 유저 삭제',
+    description:
+      '저니에서 유저를 삭제한다. 유저가 추가한 태그 및 피키 좋아요도 삭제된다.',
+  })
+  @ApiOkResponse({ description: '성공' })
+  @ApiBadRequestResponse({ description: '요청 데이터가 잘못됨' })
+  @ApiUnauthorizedResponse({ description: '인증 실패' })
+  @ApiInternalServerErrorResponse({ description: '서버 오류' })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(200)
+  @Post(':journeyId/drop')
+  public async deleteUserFromJourney(
+    @Param('journeyId') journeyId: string,
+    @Request() req,
+  ): Promise<void> {
+    await this.journeyService.deleteUserFromJourney(journeyId, req.user.id);
   }
 }

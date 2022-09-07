@@ -184,6 +184,21 @@ export class JourneyService {
     return await this.journeyRepository.update(journey);
   }
 
+  public async deleteUserFromJourney(journeyId: string, userId: string) {
+    const user = await this.userRepository.findOne(userId);
+    const journey = await this.journeyRepository.get(journeyId, false);
+    JourneyService.preCheck(user, journey, true);
+    await this.journeyRepository.deleteTags(journeyId, userId);
+    await this.journeyRepository.deleteAllPikmiLikeBy(journeyId, userId);
+    const userDeletedJourney = await this.journeyRepository.deleteUser(
+      journeyId,
+      userId,
+    );
+    if (userDeletedJourney.users.length == 0) {
+      await this.journeyRepository.delete(userDeletedJourney);
+    }
+  }
+
   private static preCheck(user: User, journey: Journey, userInJourney = true) {
     if (user == null) {
       throw new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG);

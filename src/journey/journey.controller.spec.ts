@@ -219,4 +219,19 @@ describe('JourneyController', () => {
       USER_ID,
     );
   });
+
+  it('deleteUserFromJourney는 JourneyService.deleteUserFromJourney를 호출한다.', async () => {
+    // given
+    journeyService.deleteUserFromJourney = jest.fn();
+
+    // when
+    await journeyController.deleteUserFromJourney(JOURNEY_ID, REQ);
+
+    // then
+    expect(journeyService.deleteUserFromJourney).toBeCalledTimes(1);
+    expect(journeyService.deleteUserFromJourney).toBeCalledWith(
+      JOURNEY_ID,
+      USER_ID,
+    );
+  });
 });

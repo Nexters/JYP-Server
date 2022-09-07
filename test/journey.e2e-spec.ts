@@ -939,6 +939,281 @@ describe('Journeys controller', () => {
     });
   });
 
+  describe('POST /journeys/:journeyId/drop', () => {
+    it('success, 저니를 삭제하지 않는 경우', async () => {
+      const tags = [
+        new Tag(FIRST_TOPIC, FIRST_ORIENT, USER2),
+        new Tag(SECOND_TOPIC, SECOND_ORIENT, USER2),
+        new Tag(FIRST_TOPIC, FIRST_ORIENT, USER),
+        new Tag(SECOND_TOPIC, SECOND_ORIENT, USER),
+        new Tag(FOURTH_TOPIC, FOURTH_ORIENT, USER),
+      ];
+      const pikmiId1 = '63136a1e02efbf949b847f8c';
+      const pikmiId2 = '63136a1e02efbf949b847f8d';
+      const pikmis = [
+        new Pikmi(
+          pikmiId1,
+          PIKMI_NAME,
+          PIKMI_ADDR,
+          PIKMI_CATEGORY,
+          [USER, USER2],
+          PIKI1_LON,
+          PIKMI_LAT,
+          PIKI1_LINK,
+        ),
+        new Pikmi(
+          pikmiId2,
+          PIKMI_NAME,
+          PIKMI_ADDR,
+          PIKMI_CATEGORY,
+          [USER, USER2],
+          PIKI1_LON,
+          PIKMI_LAT,
+          PIKI1_LINK,
+        ),
+      ];
+      const journey = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER, USER2],
+        tags,
+        pikmis,
+        [[], [], []],
+      );
+      const journeyDoc = new journeyModel(journey);
+      const journeyId = journeyDoc._id.toString();
+      await journeyDoc.save();
+      const user = new userModel(USER);
+      await user.save();
+      const user2 = new userModel(USER2);
+      await user2.save();
+      const response = await request(app.getHttpServer()).post(
+        `/journeys/${journeyId}/drop`,
+      );
+      expect(response.statusCode).toBe(200);
+      const updatedJourney = await journeyModel
+        .findById(new mongoose.Types.ObjectId(journeyId))
+        .populate('users')
+        .populate({
+          path: 'tags',
+          populate: { path: 'user' },
+        })
+        .populate({
+          path: 'pikmis',
+          populate: { path: 'likeBy' },
+        })
+        .exec();
+      const expectedTags = [
+        new Tag(FIRST_TOPIC, FIRST_ORIENT, USER2),
+        new Tag(SECOND_TOPIC, SECOND_ORIENT, USER2),
+      ];
+      const expectedPikmis = [
+        new Pikmi(
+          pikmiId1,
+          PIKMI_NAME,
+          PIKMI_ADDR,
+          PIKMI_CATEGORY,
+          [USER2],
+          PIKI1_LON,
+          PIKMI_LAT,
+          PIKI1_LINK,
+        ),
+        new Pikmi(
+          pikmiId2,
+          PIKMI_NAME,
+          PIKMI_ADDR,
+          PIKMI_CATEGORY,
+          [USER2],
+          PIKI1_LON,
+          PIKMI_LAT,
+          PIKI1_LINK,
+        ),
+      ];
+      const expectedJourney = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER2],
+        expectedTags,
+        expectedPikmis,
+        [[], [], []],
+      );
+      expect(toPlainObject(updatedJourney, expectedJourney)).toMatchObject(
+        expectedJourney,
+      );
+    });
+
+    it('success, 저니를 삭제하는 경우', async () => {
+      const tags = [
+        new Tag(FIRST_TOPIC, FIRST_ORIENT, USER),
+        new Tag(SECOND_TOPIC, SECOND_ORIENT, USER),
+        new Tag(FOURTH_TOPIC, FOURTH_ORIENT, USER),
+      ];
+      const pikmiId1 = '63136a1e02efbf949b847f8c';
+      const pikmiId2 = '63136a1e02efbf949b847f8d';
+      const pikmis = [
+        new Pikmi(
+          pikmiId1,
+          PIKMI_NAME,
+          PIKMI_ADDR,
+          PIKMI_CATEGORY,
+          [USER],
+          PIKI1_LON,
+          PIKMI_LAT,
+          PIKI1_LINK,
+        ),
+        new Pikmi(
+          pikmiId2,
+          PIKMI_NAME,
+          PIKMI_ADDR,
+          PIKMI_CATEGORY,
+          [USER],
+          PIKI1_LON,
+          PIKMI_LAT,
+          PIKI1_LINK,
+        ),
+      ];
+      const journey = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER],
+        tags,
+        pikmis,
+        [[], [], []],
+      );
+      const journeyDoc = new journeyModel(journey);
+      const journeyId = journeyDoc._id.toString();
+      await journeyDoc.save();
+      const user = new userModel(USER);
+      await user.save();
+      const response = await request(app.getHttpServer()).post(
+        `/journeys/${journeyId}/drop`,
+      );
+      expect(response.statusCode).toBe(200);
+      const updatedJourney = await journeyModel
+        .findById(new mongoose.Types.ObjectId(journeyId))
+        .exec();
+      expect(updatedJourney).toBeNull();
+    });
+
+    it('payload로 전달된 회원 ID가 존재하지 않는 회원 ID일 때 401 응답', async () => {
+      const tags = [
+        new Tag(FIRST_TOPIC, FIRST_ORIENT, USER),
+        new Tag(SECOND_TOPIC, SECOND_ORIENT, USER),
+        new Tag(FOURTH_TOPIC, FOURTH_ORIENT, USER),
+      ];
+      const pikmiId1 = '63136a1e02efbf949b847f8c';
+      const pikmiId2 = '63136a1e02efbf949b847f8d';
+      const pikmis = [
+        new Pikmi(
+          pikmiId1,
+          PIKMI_NAME,
+          PIKMI_ADDR,
+          PIKMI_CATEGORY,
+          [USER],
+          PIKI1_LON,
+          PIKMI_LAT,
+          PIKI1_LINK,
+        ),
+        new Pikmi(
+          pikmiId2,
+          PIKMI_NAME,
+          PIKMI_ADDR,
+          PIKMI_CATEGORY,
+          [USER],
+          PIKI1_LON,
+          PIKMI_LAT,
+          PIKI1_LINK,
+        ),
+      ];
+      const journey = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER],
+        tags,
+        pikmis,
+        [[], [], []],
+      );
+      const journeyDoc = new journeyModel(journey);
+      const journeyId = journeyDoc._id.toString();
+      await journeyDoc.save();
+      const response = await request(app.getHttpServer()).post(
+        `/journeys/${journeyId}/drop`,
+      );
+      expect(response.statusCode).toBe(401);
+    });
+
+    it('저니가 존재하지 않을 때 400 응답', async () => {
+      const user = new userModel(USER);
+      await user.save();
+      const nonExistingJourneyId = '630b28c08abfc3f96130789f';
+      const response = await request(app.getHttpServer()).post(
+        `/journeys/${nonExistingJourneyId}/drop`,
+      );
+      expect(response.statusCode).toBe(400);
+    });
+
+    it('유저가 저니에 소속되어 있지 않을 때 401 응답', async () => {
+      const tags = [
+        new Tag(FIRST_TOPIC, FIRST_ORIENT, USER),
+        new Tag(SECOND_TOPIC, SECOND_ORIENT, USER),
+        new Tag(FOURTH_TOPIC, FOURTH_ORIENT, USER),
+      ];
+      const pikmiId1 = '63136a1e02efbf949b847f8c';
+      const pikmiId2 = '63136a1e02efbf949b847f8d';
+      const pikmis = [
+        new Pikmi(
+          pikmiId1,
+          PIKMI_NAME,
+          PIKMI_ADDR,
+          PIKMI_CATEGORY,
+          [USER],
+          PIKI1_LON,
+          PIKMI_LAT,
+          PIKI1_LINK,
+        ),
+        new Pikmi(
+          pikmiId2,
+          PIKMI_NAME,
+          PIKMI_ADDR,
+          PIKMI_CATEGORY,
+          [USER],
+          PIKI1_LON,
+          PIKMI_LAT,
+          PIKI1_LINK,
+        ),
+      ];
+      const journey = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER2],
+        tags,
+        pikmis,
+        [[], [], []],
+      );
+      const journeyDoc = new journeyModel(journey);
+      const journeyId = journeyDoc._id.toString();
+      await journeyDoc.save();
+      const user = new userModel(USER);
+      await user.save();
+      const user2 = new userModel(USER2);
+      await user2.save();
+      const response = await request(app.getHttpServer()).post(
+        `/journeys/${journeyId}/drop`,
+      );
+      expect(response.statusCode).toBe(401);
+    });
+  });
+
   afterEach(async () => {
     await userModel.deleteMany({});
     await journeyModel.deleteMany({});
