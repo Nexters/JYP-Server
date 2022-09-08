@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
@@ -7,6 +7,7 @@ import {
   JOURNEY_EXCEEDED_MSG,
   JOURNEY_NOT_EXIST_MSG,
   PIKMI_EXCEEDED_MSG,
+  PIKMI_NOT_EXIST_MSG,
   USER_EXCEEDED_MSG,
   USER_NOT_IN_JOURNEY_MSG,
 } from '../common/validation/validation.messages';
@@ -15,6 +16,7 @@ import {
   InvalidJwtPayloadException,
   JourneyNotExistException,
   LimitExceededException,
+  PikmiNotExistException,
   UnauthenticatedException,
 } from '../common/exceptions';
 import { createEmptyNestedArray, getDayDiff } from '../common/util';
@@ -199,6 +201,25 @@ export class JourneyService {
     }
   }
 
+  public async addLikesToPikmi(
+    journeyId: string,
+    pikmiId: string,
+    userId: string,
+  ) {
+    const user = await this.userRepository.findOne(userId);
+    const journey = await this.journeyRepository.get(journeyId, false);
+    JourneyService.preCheck(user, journey, true);
+    const pikmiIndex = JourneyService.getPikmiIndex(pikmiId, journey.pikmis);
+    if (pikmiIndex == -1) {
+      throw new PikmiNotExistException(PIKMI_NOT_EXIST_MSG);
+    }
+    if (
+      JourneyService.getUserIndex(user, journey.pikmis[pikmiIndex].likeBy) == -1
+    ) {
+      await this.journeyRepository.addLikeBy(journeyId, pikmiId, userId);
+    }
+  }
+
   private static preCheck(user: User, journey: Journey, userInJourney = true) {
     if (user == null) {
       throw new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG);
@@ -215,7 +236,7 @@ export class JourneyService {
   }
 
   private static getUserIndex(user: User, users: User[] | string[]): number {
-    if (this.isPopulated(users)) {
+    if (this.isUserPopulated(users)) {
       const userIds = users.map((_) => _._id);
       return userIds.indexOf(user._id);
     } else {
@@ -223,10 +244,31 @@ export class JourneyService {
     }
   }
 
-  private static isPopulated(users: User[] | string[]): users is User[] {
+  private static getPikmiIndex(
+    pikmiId: string,
+    pikmis: Pikmi[] | string[],
+  ): number {
+    if (this.isPikmiPopulated(pikmis)) {
+      const pikmiIds = pikmis.map((_) => _._id.toString());
+      return pikmiIds.indexOf(pikmiId);
+    } else {
+      return pikmis.indexOf(pikmiId);
+    }
+  }
+
+  private static isUserPopulated(users: User[] | string[]): users is User[] {
     if (users.length == 0) {
       return false;
     }
     return !(typeof users[0] == 'string');
+  }
+
+  private static isPikmiPopulated(
+    pikmis: Pikmi[] | string[],
+  ): pikmis is Pikmi[] {
+    if (pikmis.length == 0) {
+      return false;
+    }
+    return !(typeof pikmis[0] == 'string');
   }
 }

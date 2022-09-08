@@ -61,4 +61,6 @@ export const USER_NOT_IN_JOURNEY_MSG = `여행에 소속되지 않은 회원의 
 
 export const USER_EXCEEDED_MSG = `정원이 차서 여행에 참여할 수 없어요!`;
 
+export const PIKMI_NOT_EXIST_MSG = `해당 여행 후보 장소가 존재하지 않아요!`;
+
 export const DEFAULT_MSG = '잘못된 요청입니다.';

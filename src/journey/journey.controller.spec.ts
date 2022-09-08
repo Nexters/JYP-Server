@@ -234,4 +234,20 @@ describe('JourneyController', () => {
       USER_ID,
     );
   });
+
+  it('addLikesToPikmi는 JourneyService.addLikesToPikmi를 호출한다.', async () => {
+    // given
+    journeyService.addLikesToPikmi = jest.fn();
+
+    // when
+    await journeyController.addLikesToPikmi(JOURNEY_ID, PIKMI_ID, REQ);
+
+    // then
+    expect(journeyService.addLikesToPikmi).toBeCalledTimes(1);
+    expect(journeyService.addLikesToPikmi).toBeCalledWith(
+      JOURNEY_ID,
+      PIKMI_ID,
+      USER_ID,
+    );
+  });
 });

@@ -9,3 +9,5 @@ export class JourneyNotExistException extends BadRequestException {}
 export class IndexOutOfRangeException extends BadRequestException {}
 
 export class UnauthenticatedException extends UnauthorizedException {}
+
+export class PikmiNotExistException extends BadRequestException {}
