@@ -210,13 +210,15 @@ describe('JourneyService', () => {
   });
 
   describe('createJourney', () => {
-    it('JourneyDocument 인스턴스를 생성해서 JourneyRepository.insert를 호출한다.', async () => {
+    beforeEach(async () => {
       // given
       userRepository.findOne = jest.fn().mockResolvedValue(USER);
       journeyModel.constructor = jest.fn().mockReturnValue(JOURNEY);
       journeyRepository.listByUser = jest.fn().mockResolvedValue([[]]);
       journeyRepository.insert = jest.fn().mockResolvedValue(SAVED_JOURNEY);
+    });
 
+    it('JourneyDocument 인스턴스를 생성해서 JourneyRepository.insert를 호출한다.', async () => {
       // when
       const result = await journeyService.createJourney(
         JOURNEY_CREATE_DTO,
@@ -241,12 +243,9 @@ describe('JourneyService', () => {
       for (const _ of Array(MAX_JOURNEY_PER_USER).keys()) {
         existingJourneys.push([]);
       }
-      userRepository.findOne = jest.fn().mockResolvedValue(USER);
       journeyRepository.listByUser = jest
         .fn()
         .mockResolvedValue(existingJourneys);
-      journeyModel.constructor = jest.fn().mockReturnValue(JOURNEY);
-      journeyRepository.insert = jest.fn().mockResolvedValue(SAVED_JOURNEY);
 
       // then
       await expect(
@@ -260,16 +259,7 @@ describe('JourneyService', () => {
 
     it('userId에 해당하는 user가 없을 경우 InvalidJwtPayloadException을 throw한다.', async () => {
       // given
-      const existingJourneys = [];
-      for (const _ of Array(MAX_JOURNEY_PER_USER).keys()) {
-        existingJourneys.push([]);
-      }
       userRepository.findOne = jest.fn().mockResolvedValue(null);
-      journeyRepository.listByUser = jest
-        .fn()
-        .mockResolvedValue(existingJourneys);
-      journeyModel.constructor = jest.fn().mockReturnValue(JOURNEY);
-      journeyRepository.insert = jest.fn().mockResolvedValue(SAVED_JOURNEY);
 
       // then
       await expect(
@@ -281,13 +271,17 @@ describe('JourneyService', () => {
   });
 
   describe('createPikmi', () => {
-    it('Pikmi 인스턴스를 생성해서 journey에 넣고 journeyRepository.update를 호출한다.', async () => {
+    let journey: JourneyDocument;
+
+    beforeEach(async () => {
       // given
-      const journeyForUpdate = structuredClone(JOURNEY);
-      journeyRepository.get = jest.fn().mockResolvedValue(journeyForUpdate);
+      journey = structuredClone(JOURNEY);
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
       userRepository.findOne = jest.fn().mockResolvedValue(USER);
       journeyRepository.update = jest.fn();
+    });
 
+    it('Pikmi 인스턴스를 생성해서 journey에 넣고 journeyRepository.update를 호출한다.', async () => {
       // when
       const result = await journeyService.createPikmi(
         PIKMI_CREATE_DTO,
@@ -301,10 +295,9 @@ describe('JourneyService', () => {
       expect(journeyRepository.get).toBeCalledTimes(1);
       expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
       expect(journeyRepository.update).toBeCalledTimes(1);
-      expect(journeyRepository.update).toBeCalledWith(journeyForUpdate);
-      expect(JOURNEY.pikmis.length + 1).toBe(journeyForUpdate.pikmis.length);
-      const pikmiWithId =
-        journeyForUpdate.pikmis[journeyForUpdate.pikmis.length - 1];
+      expect(journeyRepository.update).toBeCalledWith(journey);
+      expect(JOURNEY.pikmis.length + 1).toBe(journey.pikmis.length);
+      const pikmiWithId = journey.pikmis[journey.pikmis.length - 1];
       expect(pikmiWithId.name).toBe(PIKMI_NAME);
       expect(pikmiWithId.addr).toBe(PIKMI_ADDR);
       expect(pikmiWithId.cate).toBe(PIKMI_CATEGORY);
@@ -318,10 +311,7 @@ describe('JourneyService', () => {
 
     it('해당하는 유저가 없으면 InvalidJwtPayloadException을 throw한다.', async () => {
       // given
-      const journeyForUpdate = structuredClone(JOURNEY);
       userRepository.findOne = jest.fn().mockResolvedValue(null);
-      journeyRepository.get = jest.fn().mockResolvedValue(journeyForUpdate);
-      journeyRepository.update = jest.fn();
 
       // then
       await expect(
@@ -334,9 +324,7 @@ describe('JourneyService', () => {
 
     it('해당하는 저니가 없으면 JourneyNotExistException을 throw한다.', async () => {
       // given
-      userRepository.findOne = jest.fn().mockResolvedValue(USER);
       journeyRepository.get = jest.fn().mockResolvedValue(null);
-      journeyRepository.update = jest.fn();
 
       // then
       await expect(
@@ -349,7 +337,7 @@ describe('JourneyService', () => {
 
     it('저니에 유저가 소속되어 있지 않으면 UnauthenticatedException을 throw한다.', async () => {
       // given
-      const journeyWithoutUser = new Journey(
+      journey = new Journey(
         JOURNEY_NAME,
         START_DATE,
         END_DATE,
@@ -359,9 +347,7 @@ describe('JourneyService', () => {
         [],
         [[], [], []],
       ) as JourneyDocument;
-      journeyRepository.get = jest.fn().mockResolvedValue(journeyWithoutUser);
-      userRepository.findOne = jest.fn().mockResolvedValue(USER);
-      journeyRepository.update = jest.fn();
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
 
       // then
       await expect(
@@ -376,12 +362,22 @@ describe('JourneyService', () => {
 
     it('저니에 픽미 갯수가 MAX_PIKMI_PER_JOURNEY를 초과할 경우 LimitExceededException을 throw한다.', async () => {
       // given
-      const journeyForUpdate = structuredClone(JOURNEY);
+      journey = structuredClone(JOURNEY);
+      const pikmi = new Pikmi(
+        PIKMI1_ID,
+        PIKMI_NAME,
+        PIKI1_ADDR,
+        PIKI1_CATEGORY,
+        [],
+        PIKMI_LON,
+        PIKMI_LAT,
+        PIKMI_LINK,
+      );
       for (const _ of Array(MAX_PIKMI_PER_JOURNEY).keys()) {
-        journeyForUpdate.pikmis.push({});
+        journey.pikmis.push(pikmi);
       }
       userRepository.findOne = jest.fn().mockResolvedValue(USER);
-      journeyRepository.get = jest.fn().mockResolvedValue(journeyForUpdate);
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
       journeyRepository.update = jest.fn();
 
       // then
@@ -395,13 +391,17 @@ describe('JourneyService', () => {
   });
 
   describe('updatePiki', () => {
-    it('piki에 id가 없을 경우 직접 생성해서 journey의 올바른 인덱스에 넣고 journeyRepository.update를 호출한다.', async () => {
+    let journey: JourneyDocument;
+
+    beforeEach(async () => {
       // given
       userRepository.findOne = jest.fn().mockResolvedValue(USER);
-      const journeyForUpdate = structuredClone(JOURNEY);
-      journeyRepository.get = jest.fn().mockResolvedValue(journeyForUpdate);
+      journey = structuredClone(JOURNEY);
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
       journeyRepository.update = jest.fn();
+    });
 
+    it('piki에 id가 없을 경우 직접 생성해서 journey의 올바른 인덱스에 넣고 journeyRepository.update를 호출한다.', async () => {
       // when
       const result = await journeyService.updatePiki(
         PIKIS_UPDATE_DTO_NO_ID,
@@ -415,8 +415,8 @@ describe('JourneyService', () => {
       expect(journeyRepository.get).toBeCalledTimes(1);
       expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
       expect(journeyRepository.update).toBeCalledTimes(1);
-      expect(journeyRepository.update).toBeCalledWith(journeyForUpdate);
-      const pikis = journeyForUpdate.pikis[PIKI_INDEX];
+      expect(journeyRepository.update).toBeCalledWith(journey);
+      const pikis = journey.pikis[PIKI_INDEX];
       const piki1 = pikis[0];
       expect(piki1._id.toString()).toBe(result.ids[0]);
       expect(piki1.name).toBe(PIKI1_NAME);
@@ -436,12 +436,6 @@ describe('JourneyService', () => {
     });
 
     it('piki에 id가 존재할 경우 그대로 사용해서 journey의 올바른 인덱스에 넣고 journeyRepository.update를 호출한다.', async () => {
-      // given
-      userRepository.findOne = jest.fn().mockResolvedValue(USER);
-      const journeyForUpdate = structuredClone(JOURNEY);
-      journeyRepository.get = jest.fn().mockResolvedValue(journeyForUpdate);
-      journeyRepository.update = jest.fn();
-
       // when
       const result = await journeyService.updatePiki(
         PIKIS_UPDATE_DTO_WITH_ID,
@@ -455,8 +449,8 @@ describe('JourneyService', () => {
       expect(journeyRepository.get).toBeCalledTimes(1);
       expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
       expect(journeyRepository.update).toBeCalledTimes(1);
-      expect(journeyRepository.update).toBeCalledWith(journeyForUpdate);
-      const pikis = journeyForUpdate.pikis[PIKI_INDEX];
+      expect(journeyRepository.update).toBeCalledWith(journey);
+      const pikis = journey.pikis[PIKI_INDEX];
       const piki1 = pikis[0];
       expect(piki1._id.toString()).toBe(result.ids[0]);
       expect(piki1._id.toString()).toBe(PIKI1_ID);
@@ -479,10 +473,7 @@ describe('JourneyService', () => {
 
     it('해당하는 유저가 없으면 InvalidJwtPayloadException을 throw한다.', async () => {
       // given
-      const journeyForUpdate = structuredClone(JOURNEY);
       userRepository.findOne = jest.fn().mockResolvedValue(null);
-      journeyRepository.get = jest.fn().mockResolvedValue(journeyForUpdate);
-      journeyRepository.update = jest.fn();
 
       // then
       await expect(
@@ -510,7 +501,7 @@ describe('JourneyService', () => {
 
     it('저니에 유저가 소속되어 있지 않으면 UnauthenticatedException을 throw한다.', async () => {
       // given
-      const journeyWithoutUser = new Journey(
+      journey = new Journey(
         JOURNEY_NAME,
         START_DATE,
         END_DATE,
@@ -520,9 +511,7 @@ describe('JourneyService', () => {
         [],
         [[], [], []],
       ) as JourneyDocument;
-      journeyRepository.get = jest.fn().mockResolvedValue(journeyWithoutUser);
-      userRepository.findOne = jest.fn().mockResolvedValue(USER);
-      journeyRepository.update = jest.fn();
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
 
       // then
       await expect(
@@ -537,10 +526,6 @@ describe('JourneyService', () => {
 
     it('index가 범위를 초과하면 IndexOutOfRangeException을 throw한다.', async () => {
       // given
-      userRepository.findOne = jest.fn().mockResolvedValue(USER);
-      const journeyForUpdate = structuredClone(JOURNEY);
-      journeyRepository.get = jest.fn().mockResolvedValue(journeyForUpdate);
-      journeyRepository.update = jest.fn();
       const invalidIndex = JOURNEY.pikis.length;
       const pikisUpdateDtoWithInvalidIndex = new PikisUpdateDTO(
         invalidIndex,
@@ -562,14 +547,18 @@ describe('JourneyService', () => {
   });
 
   describe('updateTags', () => {
-    it('태그를 추가한다.', async () => {
+    let journey: JourneyDocument;
+    let tagDeletedJourney: JourneyDocument;
+    let tagsUpdateDto: TagsUpdateDTO;
+
+    beforeEach(async () => {
       // given
       userRepository.findOne = jest.fn().mockResolvedValue(USER);
       const tags = [
         new Tag(FIRST_TOPIC, FIRST_ORIENT, USER2),
         new Tag(SECOND_TOPIC, SECOND_ORIENT, USER3),
       ];
-      const journey = new Journey(
+      journey = new Journey(
         JOURNEY_NAME,
         START_DATE,
         END_DATE,
@@ -579,19 +568,21 @@ describe('JourneyService', () => {
         [],
         [[], [], []],
       ) as JourneyDocument;
-      const tagDeletedJourney = structuredClone(journey);
+      tagDeletedJourney = structuredClone(journey);
       journeyRepository.get = jest.fn().mockResolvedValue(journey);
       journeyRepository.deleteTags = jest
         .fn()
         .mockResolvedValue(tagDeletedJourney);
       journeyRepository.update = jest.fn();
-
-      // when
-      const tagsUpdateDto = new TagsUpdateDTO([
+      tagsUpdateDto = new TagsUpdateDTO([
         new TagCreateDTO(FIRST_TOPIC, FIRST_ORIENT),
-        new TagCreateDTO(SECOND_TOPIC, SECOND_ORIENT),
+        new TagCreateDTO(THIRD_TOPIC, THIRD_ORIENT),
         new TagCreateDTO(FOURTH_TOPIC, FOURTH_ORIENT),
       ]);
+    });
+
+    it('태그를 추가한다.', async () => {
+      // when
       await journeyService.updateTags(tagsUpdateDto, JOURNEY_ID, USER_ID);
 
       // then
@@ -607,7 +598,7 @@ describe('JourneyService', () => {
         new Tag(FIRST_TOPIC, FIRST_ORIENT, USER2),
         new Tag(SECOND_TOPIC, SECOND_ORIENT, USER3),
         new Tag(FIRST_TOPIC, FIRST_ORIENT, USER),
-        new Tag(SECOND_TOPIC, SECOND_ORIENT, USER),
+        new Tag(THIRD_TOPIC, THIRD_ORIENT, USER),
         new Tag(FOURTH_TOPIC, FOURTH_ORIENT, USER),
       ];
       const updatedTags = tagDeletedJourney.tags;
@@ -617,28 +608,8 @@ describe('JourneyService', () => {
     it('userId에 해당하는 user가 없을 경우 InvalidJwtPayloadException을 throw한다.', async () => {
       // given
       userRepository.findOne = jest.fn().mockResolvedValue(null);
-      const tags = [
-        new Tag(FIRST_TOPIC, FIRST_ORIENT, USER2),
-        new Tag(SECOND_TOPIC, SECOND_ORIENT, USER3),
-      ];
-      const journey = new Journey(
-        JOURNEY_NAME,
-        START_DATE,
-        END_DATE,
-        THEME_PATH,
-        [USER, USER2, USER3],
-        tags,
-        [],
-        [[], [], []],
-      ) as JourneyDocument;
-      journeyRepository.get = jest.fn().mockResolvedValue(journey);
-      journeyRepository.update = jest.fn();
 
       // then
-      const tagsUpdateDto = new TagsUpdateDTO([
-        new TagCreateDTO(FIRST_TOPIC, FIRST_ORIENT),
-        new TagCreateDTO(FOURTH_TOPIC, FOURTH_ORIENT),
-      ]);
       await expect(
         journeyService.updateTags(tagsUpdateDto, JOURNEY_ID, USER_ID),
       ).rejects.toThrow(new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG));
@@ -649,15 +620,9 @@ describe('JourneyService', () => {
 
     it('해당하는 저니가 없으면 JourneyNotExistException을 throw한다.', async () => {
       // given
-      userRepository.findOne = jest.fn().mockResolvedValue(USER);
       journeyRepository.get = jest.fn().mockResolvedValue(null);
-      journeyRepository.update = jest.fn();
 
       // then
-      const tagsUpdateDto = new TagsUpdateDTO([
-        new TagCreateDTO(FIRST_TOPIC, FIRST_ORIENT),
-        new TagCreateDTO(FOURTH_TOPIC, FOURTH_ORIENT),
-      ]);
       await expect(
         journeyService.updateTags(tagsUpdateDto, JOURNEY_ID, USER_ID),
       ).rejects.toThrow(new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG));
@@ -668,7 +633,7 @@ describe('JourneyService', () => {
 
     it('저니에 유저가 소속되어 있지 않으면 UnauthenticatedException을 throw한다.', async () => {
       // given
-      const journeyWithoutUser = new Journey(
+      journey = new Journey(
         JOURNEY_NAME,
         START_DATE,
         END_DATE,
@@ -678,15 +643,9 @@ describe('JourneyService', () => {
         [],
         [[], [], []],
       ) as JourneyDocument;
-      journeyRepository.get = jest.fn().mockResolvedValue(journeyWithoutUser);
-      userRepository.findOne = jest.fn().mockResolvedValue(USER);
-      journeyRepository.update = jest.fn();
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
 
       // then
-      const tagsUpdateDto = new TagsUpdateDTO([
-        new TagCreateDTO(FIRST_TOPIC, FIRST_ORIENT),
-        new TagCreateDTO(FOURTH_TOPIC, FOURTH_ORIENT),
-      ]);
       await expect(
         journeyService.updateTags(tagsUpdateDto, JOURNEY_ID, USER_ID),
       ).rejects.toThrow(new UnauthenticatedException(USER_NOT_IN_JOURNEY_MSG));
@@ -699,13 +658,17 @@ describe('JourneyService', () => {
   });
 
   describe('addUserToJourney', () => {
-    it('저니에 유저를 추가해 저장한다.', async () => {
+    let journey: JourneyDocument;
+
+    beforeEach(async () => {
       // given
       userRepository.findOne = jest.fn().mockResolvedValue(USER2);
-      const journeyForUpdate = structuredClone(JOURNEY);
-      journeyRepository.get = jest.fn().mockResolvedValue(journeyForUpdate);
-      journeyRepository.update = jest.fn().mockResolvedValue(journeyForUpdate);
+      journey = structuredClone(JOURNEY);
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
+      journeyRepository.update = jest.fn().mockResolvedValue(journey);
+    });
 
+    it('저니에 유저를 추가해 저장한다.', async () => {
       // when
       const result = await journeyService.addUserToJourney(
         JOURNEY_ID,
@@ -718,16 +681,13 @@ describe('JourneyService', () => {
       expect(journeyRepository.get).toBeCalledTimes(1);
       expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
       expect(journeyRepository.update).toBeCalledTimes(1);
-      expect(journeyRepository.update).toBeCalledWith(journeyForUpdate);
+      expect(journeyRepository.update).toBeCalledWith(journey);
       expect(result.users).toEqual([USER, USER2]);
     });
 
     it('userId에 해당하는 user가 없을 경우 InvalidJwtPayloadException을 throw한다.', async () => {
       // given
       userRepository.findOne = jest.fn().mockResolvedValue(null);
-      const journeyForUpdate = structuredClone(JOURNEY);
-      journeyRepository.get = jest.fn().mockResolvedValue(journeyForUpdate);
-      journeyRepository.update = jest.fn().mockResolvedValue(journeyForUpdate);
 
       // then
       await expect(
@@ -740,9 +700,7 @@ describe('JourneyService', () => {
 
     it('해당하는 저니가 없으면 JourneyNotExistException을 throw한다.', async () => {
       // given
-      userRepository.findOne = jest.fn().mockResolvedValue(USER2);
       journeyRepository.get = jest.fn().mockResolvedValue(null);
-      journeyRepository.update = jest.fn();
 
       // then
       await expect(
@@ -755,25 +713,22 @@ describe('JourneyService', () => {
 
     it('저니에 정원이 찼을 경우 LimitExceededException을 throw한다.', async () => {
       // given
-      userRepository.findOne = jest.fn().mockResolvedValue(USER3);
-      const journeyWithFullUser = new Journey(
+      journey = new Journey(
         JOURNEY_NAME,
         START_DATE,
         END_DATE,
         THEME_PATH,
-        [USER, USER2],
+        [USER, USER3],
         TAGS,
         [],
         [[], [], []],
       ) as JourneyDocument;
-      journeyRepository.get = jest.fn().mockResolvedValue(journeyWithFullUser);
-      journeyRepository.update = jest
-        .fn()
-        .mockResolvedValue(journeyWithFullUser);
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
+      journeyRepository.update = jest.fn().mockResolvedValue(journey);
 
       // then
       await expect(
-        journeyService.addUserToJourney(JOURNEY_ID, USER3._id),
+        journeyService.addUserToJourney(JOURNEY_ID, USER2._id),
       ).rejects.toThrow(new LimitExceededException(USER_EXCEEDED_MSG));
       expect(journeyRepository.get).toBeCalledTimes(1);
       expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
@@ -782,10 +737,13 @@ describe('JourneyService', () => {
   });
 
   describe('deleteUserFromJourney', () => {
-    it('저니에서 유저 및 유저가 추가한 태그와 픽미 좋아요를 삭제한다. 저니에 유저가 남아있다면 저니는 삭제하지 않는다.', async () => {
+    let journey: JourneyDocument;
+    let userDeletedJourney: JourneyDocument;
+
+    beforeEach(async () => {
       // given
       userRepository.findOne = jest.fn().mockResolvedValue(USER);
-      const journey = new Journey(
+      journey = new Journey(
         JOURNEY_NAME,
         START_DATE,
         END_DATE,
@@ -795,7 +753,7 @@ describe('JourneyService', () => {
         [],
         [[], [], []],
       ) as JourneyDocument;
-      const userDeletedJourney = new Journey(
+      userDeletedJourney = new Journey(
         JOURNEY_NAME,
         START_DATE,
         END_DATE,
@@ -812,7 +770,9 @@ describe('JourneyService', () => {
         .fn()
         .mockResolvedValue(userDeletedJourney);
       journeyRepository.delete = jest.fn();
+    });
 
+    it('저니에서 유저 및 유저가 추가한 태그와 픽미 좋아요를 삭제한다. 저니에 유저가 남아있다면 저니는 삭제하지 않는다.', async () => {
       // when
       await journeyService.deleteUserFromJourney(JOURNEY_ID, USER_ID);
 
@@ -835,8 +795,7 @@ describe('JourneyService', () => {
 
     it('저니에서 유저 및 유저가 추가한 태그와 픽미 좋아요를 삭제한다. 저니에 유저가 남아있지 않으면 저니를 삭제한다.', async () => {
       // given
-      userRepository.findOne = jest.fn().mockResolvedValue(USER);
-      const journey = new Journey(
+      journey = new Journey(
         JOURNEY_NAME,
         START_DATE,
         END_DATE,
@@ -846,7 +805,7 @@ describe('JourneyService', () => {
         [],
         [[], [], []],
       ) as JourneyDocument;
-      const userDeletedJourney = new Journey(
+      userDeletedJourney = new Journey(
         JOURNEY_NAME,
         START_DATE,
         END_DATE,
@@ -857,12 +816,9 @@ describe('JourneyService', () => {
         [[], [], []],
       ) as JourneyDocument;
       journeyRepository.get = jest.fn().mockResolvedValue(journey);
-      journeyRepository.deleteTags = jest.fn();
-      journeyRepository.deleteAllPikmiLikeBy = jest.fn();
       journeyRepository.deleteUser = jest
         .fn()
         .mockResolvedValue(userDeletedJourney);
-      journeyRepository.delete = jest.fn();
 
       // when
       await journeyService.deleteUserFromJourney(JOURNEY_ID, USER_ID);
@@ -888,33 +844,6 @@ describe('JourneyService', () => {
     it('userId에 해당하는 user가 없을 경우 InvalidJwtPayloadException을 throw한다.', async () => {
       // given
       userRepository.findOne = jest.fn().mockResolvedValue(null);
-      const journey = new Journey(
-        JOURNEY_NAME,
-        START_DATE,
-        END_DATE,
-        THEME_PATH,
-        [USER],
-        TAGS,
-        [],
-        [[], [], []],
-      ) as JourneyDocument;
-      const userDeletedJourney = new Journey(
-        JOURNEY_NAME,
-        START_DATE,
-        END_DATE,
-        THEME_PATH,
-        [],
-        TAGS,
-        [],
-        [[], [], []],
-      ) as JourneyDocument;
-      journeyRepository.get = jest.fn().mockResolvedValue(journey);
-      journeyRepository.deleteTags = jest.fn();
-      journeyRepository.deleteAllPikmiLikeBy = jest.fn();
-      journeyRepository.deleteUser = jest
-        .fn()
-        .mockResolvedValue(userDeletedJourney);
-      journeyRepository.delete = jest.fn();
 
       // then
       await expect(
@@ -930,12 +859,7 @@ describe('JourneyService', () => {
 
     it('해당하는 저니가 없으면 JourneyNotExistException을 throw한다.', async () => {
       // given
-      userRepository.findOne = jest.fn().mockResolvedValue(USER);
       journeyRepository.get = jest.fn().mockResolvedValue(null);
-      journeyRepository.deleteTags = jest.fn();
-      journeyRepository.deleteAllPikmiLikeBy = jest.fn();
-      journeyRepository.deleteUser = jest.fn().mockResolvedValue(null);
-      journeyRepository.delete = jest.fn();
 
       // then
       await expect(
@@ -951,8 +875,7 @@ describe('JourneyService', () => {
 
     it('저니에 유저가 소속되어 있지 않으면 UnauthenticatedException을 throw한다.', async () => {
       // given
-      userRepository.findOne = jest.fn().mockResolvedValue(USER);
-      const journey = new Journey(
+      journey = new Journey(
         JOURNEY_NAME,
         START_DATE,
         END_DATE,
@@ -963,10 +886,6 @@ describe('JourneyService', () => {
         [[], [], []],
       ) as JourneyDocument;
       journeyRepository.get = jest.fn().mockResolvedValue(journey);
-      journeyRepository.deleteTags = jest.fn();
-      journeyRepository.deleteAllPikmiLikeBy = jest.fn();
-      journeyRepository.deleteUser = jest.fn().mockResolvedValue(journey);
-      journeyRepository.delete = jest.fn();
 
       // then
       await expect(
@@ -984,10 +903,15 @@ describe('JourneyService', () => {
   });
 
   describe('addLikesToPikmi', () => {
-    it('픽미에 유저의 좋아요가 없을 경우 추가한다.', async () => {
+    let pikmi1: Pikmi;
+    let pikmi2: Pikmi;
+    let pikmi3: Pikmi;
+    let journey: JourneyDocument;
+
+    beforeEach(async () => {
       // given
       userRepository.findOne = jest.fn().mockResolvedValue(USER);
-      const pikmi1 = new Pikmi(
+      pikmi1 = new Pikmi(
         PIKMI1_ID,
         PIKMI_NAME,
         PIKMI_ADDR,
@@ -997,7 +921,7 @@ describe('JourneyService', () => {
         PIKMI_LAT,
         PIKMI_LINK,
       );
-      const pikmi2 = new Pikmi(
+      pikmi2 = new Pikmi(
         PIKMI2_ID,
         PIKMI_NAME,
         PIKMI_ADDR,
@@ -1007,7 +931,7 @@ describe('JourneyService', () => {
         PIKMI_LAT,
         PIKMI_LINK,
       );
-      const pikmi3 = new Pikmi(
+      pikmi3 = new Pikmi(
         PIKMI3_ID,
         PIKMI_NAME,
         PIKMI_ADDR,
@@ -1017,7 +941,7 @@ describe('JourneyService', () => {
         PIKMI_LAT,
         PIKMI_LINK,
       );
-      const journey = new Journey(
+      journey = new Journey(
         JOURNEY_NAME,
         START_DATE,
         END_DATE,
@@ -1029,7 +953,9 @@ describe('JourneyService', () => {
       ) as JourneyDocument;
       journeyRepository.get = jest.fn().mockResolvedValue(journey);
       journeyRepository.addLikeBy = jest.fn();
+    });
 
+    it('픽미에 유저의 좋아요가 없을 경우 추가한다.', async () => {
       // when
       await journeyService.addLikesToPikmi(JOURNEY_ID, PIKMI1_ID, USER_ID);
 
@@ -1048,8 +974,7 @@ describe('JourneyService', () => {
 
     it('픽미에 유저의 좋아요가 있을 경우 추가하지 않는다.', async () => {
       // given
-      userRepository.findOne = jest.fn().mockResolvedValue(USER);
-      const pikmi1 = new Pikmi(
+      pikmi1 = new Pikmi(
         PIKMI1_ID,
         PIKMI_NAME,
         PIKMI_ADDR,
@@ -1059,27 +984,7 @@ describe('JourneyService', () => {
         PIKMI_LAT,
         PIKMI_LINK,
       );
-      const pikmi2 = new Pikmi(
-        PIKMI2_ID,
-        PIKMI_NAME,
-        PIKMI_ADDR,
-        PIKMI_CATEGORY,
-        [USER2],
-        PIKMI_LON,
-        PIKMI_LAT,
-        PIKMI_LINK,
-      );
-      const pikmi3 = new Pikmi(
-        PIKMI3_ID,
-        PIKMI_NAME,
-        PIKMI_ADDR,
-        PIKMI_CATEGORY,
-        [USER],
-        PIKMI_LON,
-        PIKMI_LAT,
-        PIKMI_LINK,
-      );
-      const journey = new Journey(
+      journey = new Journey(
         JOURNEY_NAME,
         START_DATE,
         END_DATE,
@@ -1090,7 +995,6 @@ describe('JourneyService', () => {
         [[], [], []],
       ) as JourneyDocument;
       journeyRepository.get = jest.fn().mockResolvedValue(journey);
-      journeyRepository.addLikeBy = jest.fn();
 
       // when
       await journeyService.addLikesToPikmi(JOURNEY_ID, PIKMI1_ID, USER_ID);
@@ -1106,48 +1010,6 @@ describe('JourneyService', () => {
     it('userId에 해당하는 user가 없을 경우 InvalidJwtPayloadException을 throw한다.', async () => {
       // given
       userRepository.findOne = jest.fn().mockResolvedValue(null);
-      const pikmi1 = new Pikmi(
-        PIKMI1_ID,
-        PIKMI_NAME,
-        PIKMI_ADDR,
-        PIKMI_CATEGORY,
-        [USER2],
-        PIKMI_LON,
-        PIKMI_LAT,
-        PIKMI_LINK,
-      );
-      const pikmi2 = new Pikmi(
-        PIKMI2_ID,
-        PIKMI_NAME,
-        PIKMI_ADDR,
-        PIKMI_CATEGORY,
-        [USER2],
-        PIKMI_LON,
-        PIKMI_LAT,
-        PIKMI_LINK,
-      );
-      const pikmi3 = new Pikmi(
-        PIKMI3_ID,
-        PIKMI_NAME,
-        PIKMI_ADDR,
-        PIKMI_CATEGORY,
-        [],
-        PIKMI_LON,
-        PIKMI_LAT,
-        PIKMI_LINK,
-      );
-      const journey = new Journey(
-        JOURNEY_NAME,
-        START_DATE,
-        END_DATE,
-        THEME_PATH,
-        [USER2],
-        TAGS,
-        [pikmi1, pikmi2, pikmi3],
-        [[], [], []],
-      ) as JourneyDocument;
-      journeyRepository.get = jest.fn().mockResolvedValue(journey);
-      journeyRepository.addLikeBy = jest.fn();
 
       // then
       await expect(
@@ -1160,9 +1022,7 @@ describe('JourneyService', () => {
 
     it('해당하는 저니가 없으면 JourneyNotExistException을 throw한다.', async () => {
       // given
-      userRepository.findOne = jest.fn().mockResolvedValue(USER);
       journeyRepository.get = jest.fn().mockResolvedValue(null);
-      journeyRepository.addLikeBy = jest.fn();
 
       // then
       await expect(
@@ -1175,38 +1035,7 @@ describe('JourneyService', () => {
 
     it('저니에 유저가 소속되어 있지 않으면 UnauthenticatedException을 throw한다.', async () => {
       // given
-      userRepository.findOne = jest.fn().mockResolvedValue(USER);
-      const pikmi1 = new Pikmi(
-        PIKMI1_ID,
-        PIKMI_NAME,
-        PIKMI_ADDR,
-        PIKMI_CATEGORY,
-        [USER2],
-        PIKMI_LON,
-        PIKMI_LAT,
-        PIKMI_LINK,
-      );
-      const pikmi2 = new Pikmi(
-        PIKMI2_ID,
-        PIKMI_NAME,
-        PIKMI_ADDR,
-        PIKMI_CATEGORY,
-        [USER2],
-        PIKMI_LON,
-        PIKMI_LAT,
-        PIKMI_LINK,
-      );
-      const pikmi3 = new Pikmi(
-        PIKMI3_ID,
-        PIKMI_NAME,
-        PIKMI_ADDR,
-        PIKMI_CATEGORY,
-        [],
-        PIKMI_LON,
-        PIKMI_LAT,
-        PIKMI_LINK,
-      );
-      const journey = new Journey(
+      journey = new Journey(
         JOURNEY_NAME,
         START_DATE,
         END_DATE,
@@ -1217,7 +1046,6 @@ describe('JourneyService', () => {
         [[], [], []],
       ) as JourneyDocument;
       journeyRepository.get = jest.fn().mockResolvedValue(journey);
-      journeyRepository.addLikeBy = jest.fn();
 
       // then
       await expect(
@@ -1232,28 +1060,7 @@ describe('JourneyService', () => {
 
     it('해당하는 픽미가 없으면 PikmiNotExistException을 throw한다.', async () => {
       // given
-      userRepository.findOne = jest.fn().mockResolvedValue(USER);
-      const pikmi2 = new Pikmi(
-        PIKMI2_ID,
-        PIKMI_NAME,
-        PIKMI_ADDR,
-        PIKMI_CATEGORY,
-        [USER2],
-        PIKMI_LON,
-        PIKMI_LAT,
-        PIKMI_LINK,
-      );
-      const pikmi3 = new Pikmi(
-        PIKMI3_ID,
-        PIKMI_NAME,
-        PIKMI_ADDR,
-        PIKMI_CATEGORY,
-        [USER],
-        PIKMI_LON,
-        PIKMI_LAT,
-        PIKMI_LINK,
-      );
-      const journey = new Journey(
+      journey = new Journey(
         JOURNEY_NAME,
         START_DATE,
         END_DATE,
@@ -1264,7 +1071,6 @@ describe('JourneyService', () => {
         [[], [], []],
       ) as JourneyDocument;
       journeyRepository.get = jest.fn().mockResolvedValue(journey);
-      journeyRepository.addLikeBy = jest.fn();
 
       // then
       await expect(
