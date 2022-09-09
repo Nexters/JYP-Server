@@ -1,13 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import {
-  TagCreateDTO,
-  JourneyCreateDTO,
+  TagUpdateRequestDTO,
+  JourneyCreateRequestDTO,
   IdResponseDTO,
-  PikmiCreateDTO,
-  PikisUpdateDTO,
-  PikiUpdateDTO,
+  PikmiCreateRequestDTO,
+  PikisUpdateRequestDTO,
+  PikiUpdateRequestDTO,
   IdsResponseDTO,
-  TagsUpdateDTO,
+  TagsUpdateRequestDTO,
 } from './dtos/journey.dto';
 import { JourneyController } from './journey.controller';
 import { JourneyService } from './journey.service';
@@ -21,10 +21,10 @@ const FIRST_ORIENT = 'like';
 const SECOND_TOPIC = 'topic2';
 const SECOND_ORIENT = 'dislike';
 const TAG_CREATE_DTOS = [
-  new TagCreateDTO(FIRST_TOPIC, FIRST_ORIENT),
-  new TagCreateDTO(SECOND_TOPIC, SECOND_ORIENT),
+  new TagUpdateRequestDTO(FIRST_TOPIC, FIRST_ORIENT),
+  new TagUpdateRequestDTO(SECOND_TOPIC, SECOND_ORIENT),
 ];
-const JOURNEY_CREATE_DTO = new JourneyCreateDTO(
+const JOURNEY_CREATE_DTO = new JourneyCreateRequestDTO(
   JOURNEY_NAME,
   START_DATE,
   END_DATE,
@@ -43,7 +43,7 @@ const PIKMI_CATEGORY = 'P';
 const PIKMI_LON = 129.4;
 const PIKMI_LAT = 36.7;
 const PIKMI_LINK = '/pikmi/link';
-const PIKMI_CREATE_DTO = new PikmiCreateDTO(
+const PIKMI_CREATE_DTO = new PikmiCreateRequestDTO(
   PIKMI_NAME,
   PIKMI_ADDR,
   PIKMI_CATEGORY,
@@ -69,7 +69,7 @@ const PIKI2_LON = 131.4;
 const PIKI2_LAT = 38.7;
 const PIKI2_LINK = '/piki2/link';
 const PIKI_UPDATE_DTOS_NO_ID = [
-  new PikiUpdateDTO(
+  new PikiUpdateRequestDTO(
     undefined,
     PIKI1_NAME,
     PIKI1_ADDR,
@@ -78,7 +78,7 @@ const PIKI_UPDATE_DTOS_NO_ID = [
     PIKI1_LAT,
     PIKI1_LINK,
   ),
-  new PikiUpdateDTO(
+  new PikiUpdateRequestDTO(
     undefined,
     PIKI2_NAME,
     PIKI2_ADDR,
@@ -88,12 +88,12 @@ const PIKI_UPDATE_DTOS_NO_ID = [
     PIKI2_LINK,
   ),
 ];
-const PIKIS_UPDATE_DTO_NO_ID = new PikisUpdateDTO(
+const PIKIS_UPDATE_DTO_NO_ID = new PikisUpdateRequestDTO(
   PIKI_INDEX,
   PIKI_UPDATE_DTOS_NO_ID,
 );
 const PIKIS_IDS_RESPONSE_DTO = new IdsResponseDTO(PIKI1_ID, PIKI2_ID);
-const TAGS_UPDATE_DTO = new TagsUpdateDTO(TAG_CREATE_DTOS);
+const TAGS_UPDATE_DTO = new TagsUpdateRequestDTO(TAG_CREATE_DTOS);
 
 describe('JourneyController', () => {
   let journeyController: JourneyController;

@@ -22,13 +22,13 @@ import {
 import { createEmptyNestedArray, getDayDiff } from '../common/util';
 import { UserRepository } from '../user/user.repository';
 import {
-  JourneyCreateDTO,
+  JourneyCreateRequestDTO,
   IdResponseDTO,
-  PikmiCreateDTO,
-  PikiUpdateDTO,
-  PikisUpdateDTO,
+  PikmiCreateRequestDTO,
+  PikiUpdateRequestDTO,
+  PikisUpdateRequestDTO,
   IdsResponseDTO,
-  TagsUpdateDTO,
+  TagsUpdateRequestDTO,
 } from './dtos/journey.dto';
 import { JourneyRepository } from './journey.repository';
 import {
@@ -55,7 +55,7 @@ export class JourneyService {
   ) {}
 
   public async createJourney(
-    journeyCreateDto: JourneyCreateDTO,
+    journeyCreateDto: JourneyCreateRequestDTO,
     userId: string,
   ): Promise<IdResponseDTO> {
     const user = await this.userRepository.findOne(userId);
@@ -92,7 +92,7 @@ export class JourneyService {
   }
 
   public async createPikmi(
-    pikmiCreateDto: PikmiCreateDTO,
+    pikmiCreateDto: PikmiCreateRequestDTO,
     journeyId: string,
     userId: string,
   ) {
@@ -117,7 +117,7 @@ export class JourneyService {
   }
 
   public async updatePiki(
-    pikisUpdateDto: PikisUpdateDTO,
+    pikisUpdateDto: PikisUpdateRequestDTO,
     journeyId: string,
     userId: string,
   ) {
@@ -133,7 +133,7 @@ export class JourneyService {
     return new IdsResponseDTO(...idGeneratedPikis.map((_) => _._id.toString()));
   }
 
-  private static toPiki(pikiUpdateDto: PikiUpdateDTO) {
+  private static toPiki(pikiUpdateDto: PikiUpdateRequestDTO) {
     if (pikiUpdateDto.id) {
       return new Piki(
         pikiUpdateDto.id,
@@ -157,7 +157,7 @@ export class JourneyService {
   }
 
   public async updateTags(
-    tagsUpdateDto: TagsUpdateDTO,
+    tagsUpdateDto: TagsUpdateRequestDTO,
     journeyId: string,
     userId: string,
   ) {

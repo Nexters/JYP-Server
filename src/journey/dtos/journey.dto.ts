@@ -39,15 +39,15 @@ import { ORIENTATION } from '../schemas/orientation';
 import {
   IdResponse,
   IdsResponse,
-  JourneyCreate,
-  PikisUpdate,
-  PikiUpdate,
-  PikmiCreate,
-  TagCreate,
-  TagsUpdate,
+  JourneyCreateRequest,
+  PikisUpdateRequest,
+  PikiUpdateRequest,
+  PikmiCreateRequest,
+  TagUpdateRequest,
+  TagsUpdateRequest,
 } from './journey.interface';
 
-export class TagCreateDTO implements TagCreate {
+export class TagUpdateRequestDTO implements TagUpdateRequest {
   @ApiProperty({ description: '태그 주제' })
   @MaxLength(MAX_TAG_TOPIC_LENGTH, { message: TAG_TOPIC_LENGTH_EXCEEDED_MSG })
   @IsNotEmpty({ message: IS_NOT_EMPTY_KIND_MSG('태그 이름') })
@@ -64,7 +64,7 @@ export class TagCreateDTO implements TagCreate {
   }
 }
 
-export class JourneyCreateDTO implements JourneyCreate {
+export class JourneyCreateRequestDTO implements JourneyCreateRequest {
   @ApiProperty({ description: '여행 이름' })
   @MaxLength(MAX_JOURNEY_NAME_LENGTH, {
     message: JOURNEY_NAME_LENGTH_EXCEEDED_MSG,
@@ -84,18 +84,18 @@ export class JourneyCreateDTO implements JourneyCreate {
   @IsNotEmpty({ message: IS_NOT_EMPTY_MSG })
   readonly themePath: string;
 
-  @ApiProperty({ type: [TagCreateDTO], description: '태그 목록' })
+  @ApiProperty({ type: [TagUpdateRequestDTO], description: '태그 목록' })
   @ArrayMaxSize(MAX_TAGS, { message: TAG_EXCEEDED_MSG })
   @ValidateNested({ each: true })
-  @Type(() => TagCreateDTO)
-  readonly tags: TagCreateDTO[];
+  @Type(() => TagUpdateRequestDTO)
+  readonly tags: TagUpdateRequestDTO[];
 
   constructor(
     name: string,
     startDate: number,
     endDate: number,
     themePath: string,
-    tags: TagCreateDTO[],
+    tags: TagUpdateRequestDTO[],
   ) {
     this.name = name;
     this.startDate = startDate;
@@ -105,7 +105,7 @@ export class JourneyCreateDTO implements JourneyCreate {
   }
 }
 
-export class PikmiCreateDTO implements PikmiCreate {
+export class PikmiCreateRequestDTO implements PikmiCreateRequest {
   @ApiProperty({ description: '픽미 이름' })
   @IsNotEmpty({ message: IS_NOT_EMPTY_MSG })
   readonly name: string;
@@ -152,7 +152,7 @@ export class PikmiCreateDTO implements PikmiCreate {
   }
 }
 
-export class PikiUpdateDTO implements PikiUpdate {
+export class PikiUpdateRequestDTO implements PikiUpdateRequest {
   @ApiProperty({ description: '피키 ID' })
   @IsOptional()
   readonly id: string;
@@ -205,32 +205,32 @@ export class PikiUpdateDTO implements PikiUpdate {
   }
 }
 
-export class PikisUpdateDTO implements PikisUpdate {
+export class PikisUpdateRequestDTO implements PikisUpdateRequest {
   @ApiProperty({ description: '피키 수정 일자 (몇번째 날인지), 0-based' })
   @Min(0, { message: INDEX_NEGATIVE_MSG })
   @IsInt({ message: INDEX_NOT_INT_MSG })
   readonly index: number;
 
-  @ApiProperty({ type: [PikiUpdateDTO], description: '피키 목록' })
+  @ApiProperty({ type: [PikiUpdateRequestDTO], description: '피키 목록' })
   @ArrayMaxSize(MAX_PIKI_PER_DAY, { message: PIKI_EXCEEDED_MSG })
   @ValidateNested({ each: true })
-  @Type(() => PikiUpdateDTO)
-  readonly pikis: PikiUpdateDTO[];
+  @Type(() => PikiUpdateRequestDTO)
+  readonly pikis: PikiUpdateRequestDTO[];
 
-  constructor(index: number, pikis: PikiUpdateDTO[]) {
+  constructor(index: number, pikis: PikiUpdateRequestDTO[]) {
     this.index = index;
     this.pikis = pikis;
   }
 }
 
-export class TagsUpdateDTO implements TagsUpdate {
-  @ApiProperty({ type: [TagCreateDTO], description: '태그 목록' })
+export class TagsUpdateRequestDTO implements TagsUpdateRequest {
+  @ApiProperty({ type: [TagUpdateRequestDTO], description: '태그 목록' })
   @ArrayMaxSize(MAX_TAGS, { message: TAG_EXCEEDED_MSG })
   @ValidateNested({ each: true })
-  @Type(() => TagCreateDTO)
-  readonly tags: TagCreateDTO[];
+  @Type(() => TagUpdateRequestDTO)
+  readonly tags: TagUpdateRequestDTO[];
 
-  constructor(tags: TagCreateDTO[]) {
+  constructor(tags: TagUpdateRequestDTO[]) {
     this.tags = tags;
   }
 }

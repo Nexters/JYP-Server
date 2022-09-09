@@ -21,12 +21,12 @@ import {
 } from '@nestjs/swagger';
 import { TimeRangeValidationPipe } from '../common/pipe/custom.validation.pipe';
 import {
-  JourneyCreateDTO,
+  JourneyCreateRequestDTO,
   IdResponseDTO,
-  PikmiCreateDTO,
-  PikisUpdateDTO,
+  PikmiCreateRequestDTO,
+  PikisUpdateRequestDTO,
   IdsResponseDTO,
-  TagsUpdateDTO,
+  TagsUpdateRequestDTO,
 } from './dtos/journey.dto';
 import { JourneyService } from './journey.service';
 
@@ -48,7 +48,7 @@ export class JourneyController {
   @UsePipes(new TimeRangeValidationPipe())
   @Post()
   public async createJourney(
-    @Body() journeyCreateDto: JourneyCreateDTO,
+    @Body() journeyCreateDto: JourneyCreateRequestDTO,
     @Request() req,
   ): Promise<IdResponseDTO> {
     return await this.journeyService.createJourney(
@@ -70,7 +70,7 @@ export class JourneyController {
   @Post(':journeyId/pikmis')
   public async createPikmi(
     @Param('journeyId') journeyId: string,
-    @Body() pikmiCreateDto: PikmiCreateDTO,
+    @Body() pikmiCreateDto: PikmiCreateRequestDTO,
     @Request() req,
   ): Promise<IdResponseDTO> {
     return await this.journeyService.createPikmi(
@@ -94,7 +94,7 @@ export class JourneyController {
   @Post(':journeyId/pikis')
   public async updatePiki(
     @Param('journeyId') journeyId: string,
-    @Body() pikisUpdateDto: PikisUpdateDTO,
+    @Body() pikisUpdateDto: PikisUpdateRequestDTO,
     @Request() req,
   ): Promise<IdsResponseDTO> {
     return await this.journeyService.updatePiki(
@@ -118,7 +118,7 @@ export class JourneyController {
   @Post(':journeyId/tags')
   public async updateTags(
     @Param('journeyId') journeyId: string,
-    @Body() tagsUpdateDto: TagsUpdateDTO,
+    @Body() tagsUpdateDto: TagsUpdateRequestDTO,
     @Request() req,
   ): Promise<void> {
     await this.journeyService.updateTags(tagsUpdateDto, journeyId, req.user.id);
@@ -138,7 +138,7 @@ export class JourneyController {
   @Post(':journeyId/join')
   public async addUserToJourney(
     @Param('journeyId') journeyId: string,
-    @Body() tagsUpdateDto: TagsUpdateDTO,
+    @Body() tagsUpdateDto: TagsUpdateRequestDTO,
     @Request() req,
   ): Promise<void> {
     await this.journeyService.addUserToJourney(journeyId, req.user.id);

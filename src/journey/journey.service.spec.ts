@@ -7,12 +7,12 @@ import { JourneyService } from './journey.service';
 import { Journey, JourneyDocument, Pikmi, Tag } from './schemas/journey.schema';
 import {
   IdResponseDTO,
-  JourneyCreateDTO,
-  PikisUpdateDTO,
-  PikiUpdateDTO,
-  PikmiCreateDTO,
-  TagCreateDTO,
-  TagsUpdateDTO,
+  JourneyCreateRequestDTO,
+  PikisUpdateRequestDTO,
+  PikiUpdateRequestDTO,
+  PikmiCreateRequestDTO,
+  TagUpdateRequestDTO,
+  TagsUpdateRequestDTO,
 } from './dtos/journey.dto';
 import { User } from '../user/schemas/user.schema';
 import {
@@ -57,10 +57,10 @@ const THIRD_ORIENT = 'nomatter';
 const FOURTH_TOPIC = 'topic4';
 const FOURTH_ORIENT = 'like';
 const TAG_CREATE_DTOS = [
-  new TagCreateDTO(FIRST_TOPIC, FIRST_ORIENT),
-  new TagCreateDTO(SECOND_TOPIC, SECOND_ORIENT),
+  new TagUpdateRequestDTO(FIRST_TOPIC, FIRST_ORIENT),
+  new TagUpdateRequestDTO(SECOND_TOPIC, SECOND_ORIENT),
 ];
-const JOURNEY_CREATE_DTO = new JourneyCreateDTO(
+const JOURNEY_CREATE_DTO = new JourneyCreateRequestDTO(
   JOURNEY_NAME,
   START_DATE,
   END_DATE,
@@ -99,7 +99,7 @@ const PIKMI_CATEGORY = 'P';
 const PIKMI_LON = 129.4;
 const PIKMI_LAT = 36.7;
 const PIKMI_LINK = '/pikmi/link';
-const PIKMI_CREATE_DTO = new PikmiCreateDTO(
+const PIKMI_CREATE_DTO = new PikmiCreateRequestDTO(
   PIKMI_NAME,
   PIKMI_ADDR,
   PIKMI_CATEGORY,
@@ -123,7 +123,7 @@ const PIKI2_LON = 131.4;
 const PIKI2_LAT = 38.7;
 const PIKI2_LINK = '/piki2/link';
 const PIKI_UPDATE_DTOS_NO_ID = [
-  new PikiUpdateDTO(
+  new PikiUpdateRequestDTO(
     undefined,
     PIKI1_NAME,
     PIKI1_ADDR,
@@ -132,7 +132,7 @@ const PIKI_UPDATE_DTOS_NO_ID = [
     PIKI1_LAT,
     PIKI1_LINK,
   ),
-  new PikiUpdateDTO(
+  new PikiUpdateRequestDTO(
     undefined,
     PIKI2_NAME,
     PIKI2_ADDR,
@@ -143,7 +143,7 @@ const PIKI_UPDATE_DTOS_NO_ID = [
   ),
 ];
 const PIKI_UPDATE_DTOS_WITH_ID = [
-  new PikiUpdateDTO(
+  new PikiUpdateRequestDTO(
     PIKI1_ID,
     PIKI1_NAME,
     PIKI1_ADDR,
@@ -152,7 +152,7 @@ const PIKI_UPDATE_DTOS_WITH_ID = [
     PIKI1_LAT,
     PIKI1_LINK,
   ),
-  new PikiUpdateDTO(
+  new PikiUpdateRequestDTO(
     PIKI2_ID,
     PIKI2_NAME,
     PIKI2_ADDR,
@@ -162,11 +162,11 @@ const PIKI_UPDATE_DTOS_WITH_ID = [
     PIKI2_LINK,
   ),
 ];
-const PIKIS_UPDATE_DTO_NO_ID = new PikisUpdateDTO(
+const PIKIS_UPDATE_DTO_NO_ID = new PikisUpdateRequestDTO(
   PIKI_INDEX,
   PIKI_UPDATE_DTOS_NO_ID,
 );
-const PIKIS_UPDATE_DTO_WITH_ID = new PikisUpdateDTO(
+const PIKIS_UPDATE_DTO_WITH_ID = new PikisUpdateRequestDTO(
   PIKI_INDEX,
   PIKI_UPDATE_DTOS_WITH_ID,
 );
@@ -527,7 +527,7 @@ describe('JourneyService', () => {
     it('index가 범위를 초과하면 IndexOutOfRangeException을 throw한다.', async () => {
       // given
       const invalidIndex = JOURNEY.pikis.length;
-      const pikisUpdateDtoWithInvalidIndex = new PikisUpdateDTO(
+      const pikisUpdateDtoWithInvalidIndex = new PikisUpdateRequestDTO(
         invalidIndex,
         PIKI_UPDATE_DTOS_NO_ID,
       );
@@ -549,7 +549,7 @@ describe('JourneyService', () => {
   describe('updateTags', () => {
     let journey: JourneyDocument;
     let tagDeletedJourney: JourneyDocument;
-    let tagsUpdateDto: TagsUpdateDTO;
+    let tagsUpdateDto: TagsUpdateRequestDTO;
 
     beforeEach(async () => {
       // given
@@ -574,10 +574,10 @@ describe('JourneyService', () => {
         .fn()
         .mockResolvedValue(tagDeletedJourney);
       journeyRepository.update = jest.fn();
-      tagsUpdateDto = new TagsUpdateDTO([
-        new TagCreateDTO(FIRST_TOPIC, FIRST_ORIENT),
-        new TagCreateDTO(THIRD_TOPIC, THIRD_ORIENT),
-        new TagCreateDTO(FOURTH_TOPIC, FOURTH_ORIENT),
+      tagsUpdateDto = new TagsUpdateRequestDTO([
+        new TagUpdateRequestDTO(FIRST_TOPIC, FIRST_ORIENT),
+        new TagUpdateRequestDTO(THIRD_TOPIC, THIRD_ORIENT),
+        new TagUpdateRequestDTO(FOURTH_TOPIC, FOURTH_ORIENT),
       ]);
     });
 

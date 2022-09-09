@@ -1,17 +1,17 @@
-export interface TagCreate {
+export interface TagUpdateRequest {
   topic: string;
   orientation: string;
 }
 
-export interface JourneyCreate {
+export interface JourneyCreateRequest {
   name: string;
   startDate: number;
   endDate: number;
   themePath: string;
-  tags: TagCreate[];
+  tags: TagUpdateRequest[];
 }
 
-export interface PikmiCreate {
+export interface PikmiCreateRequest {
   name: string;
   address: string;
   category: string;
@@ -20,7 +20,7 @@ export interface PikmiCreate {
   link: string;
 }
 
-export interface PikiUpdate {
+export interface PikiUpdateRequest {
   name: string;
   address: string;
   category: string;
@@ -29,13 +29,13 @@ export interface PikiUpdate {
   link: string;
 }
 
-export interface PikisUpdate {
+export interface PikisUpdateRequest {
   index: number;
-  pikis: PikiUpdate[];
+  pikis: PikiUpdateRequest[];
 }
 
-export interface TagsUpdate {
-  tags: TagCreate[];
+export interface TagsUpdateRequest {
+  tags: TagUpdateRequest[];
 }
 
 export interface IdResponse {
