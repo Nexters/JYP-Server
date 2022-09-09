@@ -3,7 +3,7 @@ import { Option } from 'prelude-ts';
 import { AuthVendor } from '../auth/authVendor';
 import { createMock } from 'ts-auto-mock';
 import { On, method } from 'ts-auto-mock/extension';
-import { UserCreateDTO, UserUpdateDTO } from './dtos/user.dto';
+import { UserCreateRequestDTO, UserUpdateRequestDTO } from './dtos/user.dto';
 import { PERSONALITY } from './schemas/personality';
 import { User } from './schemas/user.schema';
 import { UserRepository } from './user.repository';
@@ -79,7 +79,7 @@ describe('UserService', () => {
       .mockResolvedValue(USER);
 
     // when
-    const userUpdateDTO = new UserUpdateDTO(NAME, IMG);
+    const userUpdateDTO = new UserUpdateRequestDTO(NAME, IMG);
     const result = await userService.updateUser(ID, userUpdateDTO);
 
     // then
@@ -98,7 +98,7 @@ describe('UserService', () => {
       .mockResolvedValue(USER);
 
     // when
-    const userCreateDTO = new UserCreateDTO(
+    const userCreateDTO = new UserCreateRequestDTO(
       AUTH_VENDOR,
       AUTH_ID,
       NAME,

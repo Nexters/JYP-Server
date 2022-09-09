@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Option } from 'prelude-ts';
 import { createMock } from 'ts-auto-mock';
 import { On, method } from 'ts-auto-mock/extension';
-import { UserDTO, UserUpdateDTO } from './dtos/user.dto';
+import { UserResponseDTO, UserUpdateRequestDTO } from './dtos/user.dto';
 import { PERSONALITY } from './schemas/personality';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
@@ -12,7 +12,7 @@ const ID = 'id';
 const NAME = 'name';
 const IMG = '/image/path';
 const PSN = PERSONALITY.ME;
-const userDTO = new UserDTO(ID, NAME, IMG, PERSONALITY[PSN]);
+const userDTO = new UserResponseDTO(ID, NAME, IMG, PERSONALITY[PSN]);
 
 describe('UserController', () => {
   let userController: UserController;
@@ -67,7 +67,7 @@ describe('UserController', () => {
       .mockResolvedValue(userDTO);
 
     // when
-    const userUpdateDTO = new UserUpdateDTO(NAME, IMG);
+    const userUpdateDTO = new UserUpdateRequestDTO(NAME, IMG);
     const result = await userController.updateUser(ID, userUpdateDTO);
 
     // then

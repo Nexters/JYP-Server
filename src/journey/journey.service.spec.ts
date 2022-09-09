@@ -1,28 +1,91 @@
+// 상수 모킹을 위해 import 문 위에 위치함.
+// 참고: https://stackoverflow.com/questions/65554910/jest-referenceerror-cannot-access-before-initialization
+const DEFAULT_TAG1_TOPIC = 'dtopic1';
+const DEFAULT_TAG1_ORIENT = 'like';
+const DEFAULT_TAG2_TOPIC = 'dtopic2';
+const DEFAULT_TAG2_ORIENT = 'dislike';
+const DEFAULT_TAG3_TOPIC = 'dtopic3';
+const DEFAULT_TAG3_ORIENT = 'nomatter';
+const DEFAULT_TAG1 = {
+  topic: DEFAULT_TAG1_TOPIC,
+  orientation: DEFAULT_TAG1_ORIENT,
+};
+const DEFAULT_TAG2 = {
+  topic: DEFAULT_TAG2_TOPIC,
+  orientation: DEFAULT_TAG2_ORIENT,
+};
+const DEFAULT_TAG3 = {
+  topic: DEFAULT_TAG3_TOPIC,
+  orientation: DEFAULT_TAG3_ORIENT,
+};
+
 import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import mongoose from 'mongoose';
 import { UserRepository } from '../user/user.repository';
 import { JourneyRepository } from './journey.repository';
 import { JourneyService } from './journey.service';
-import { Journey, JourneyDocument, Tag } from './schemas/journey.schema';
+import {
+  Journey,
+  JourneyDocument,
+  Piki,
+  Pikmi,
+  Tag,
+} from './schemas/journey.schema';
 import {
   IdResponseDTO,
-  JourneyCreateDTO,
-  TagCreateDTO,
+  JourneyCreateRequestDTO,
+  PikisUpdateRequestDTO,
+  PikiUpdateRequestDTO,
+  PikmiCreateRequestDTO,
+  TagUpdateRequestDTO,
+  TagsUpdateRequestDTO,
+  SimpleJourneyResponseDTO,
+  JourneyListResponseDTO,
+  JourneyResponseDTO,
+  PikmiResponseDTO,
+  TagResponseDTO,
+  PikiResponseDTO,
+  DefaultTagsResponseDTO,
+  DefaultTagResponseDTO,
+  TagsResponseDTO,
+  PikidayResponseDTO,
 } from './dtos/journey.dto';
 import { User } from '../user/schemas/user.schema';
 import {
+  IndexOutOfRangeException,
   InvalidJwtPayloadException,
+  JourneyNotExistException,
   LimitExceededException,
+  PikmiNotExistException,
+  UnauthenticatedException,
 } from '../common/exceptions';
 import {
+  INDEX_OUT_OF_RANGE_MSG,
   INVALID_ID_IN_JWT_MSG,
   JOURNEY_EXCEEDED_MSG,
+  JOURNEY_NOT_EXIST_MSG,
+  PIKMI_EXCEEDED_MSG,
+  PIKMI_NOT_EXIST_MSG,
+  USER_EXCEEDED_MSG,
+  USER_NOT_IN_JOURNEY_MSG,
 } from '../common/validation/validation.messages';
-import { MAX_JOURNEY_PER_USER } from '../common/validation/validation.constants';
+import {
+  MAX_JOURNEY_PER_USER,
+  MAX_PIKMI_PER_JOURNEY,
+} from '../common/validation/validation.constants';
+import { UserResponseDTO } from '../user/dtos/user.dto';
+import { PERSONALITY } from '../user/schemas/personality';
+import { NotFoundException } from '@nestjs/common';
 
 jest.mock('../common/validation/validation.constants', () => ({
   MAX_JOURNEY_PER_USER: 5,
+  MAX_PIKMI_PER_JOURNEY: 5,
+  MAX_USER_PER_JOURNEY: 2,
+}));
+
+jest.mock('./tag/default.tags', () => ({
+  DEFAULT_TAGS: [DEFAULT_TAG1, DEFAULT_TAG2, DEFAULT_TAG3],
 }));
 
 const JOURNEY_NAME = 'name';
@@ -33,11 +96,15 @@ const FIRST_TOPIC = 'topic1';
 const FIRST_ORIENT = 'like';
 const SECOND_TOPIC = 'topic2';
 const SECOND_ORIENT = 'dislike';
+const THIRD_TOPIC = 'topic3';
+const THIRD_ORIENT = 'nomatter';
+const FOURTH_TOPIC = 'topic4';
+const FOURTH_ORIENT = 'like';
 const TAG_CREATE_DTOS = [
-  new TagCreateDTO(FIRST_TOPIC, FIRST_ORIENT),
-  new TagCreateDTO(SECOND_TOPIC, SECOND_ORIENT),
+  new TagUpdateRequestDTO(FIRST_TOPIC, FIRST_ORIENT),
+  new TagUpdateRequestDTO(SECOND_TOPIC, SECOND_ORIENT),
 ];
-const JOURNEY_CREATE_DTO = new JourneyCreateDTO(
+const JOURNEY_CREATE_DTO = new JourneyCreateRequestDTO(
   JOURNEY_NAME,
   START_DATE,
   END_DATE,
@@ -50,8 +117,8 @@ const USER_IMG = '/user/img';
 const USER_PSN_ID = 'ME';
 const USER = new User(USER_ID, USER_NAME, USER_IMG, USER_PSN_ID);
 const TAGS = [
-  new Tag(FIRST_TOPIC, FIRST_ORIENT, [USER]),
-  new Tag(SECOND_TOPIC, SECOND_ORIENT, [USER]),
+  new Tag(FIRST_TOPIC, FIRST_ORIENT, USER),
+  new Tag(SECOND_TOPIC, SECOND_ORIENT, USER),
 ];
 const JOURNEY = new Journey(
   JOURNEY_NAME,
@@ -66,7 +133,115 @@ const JOURNEY = new Journey(
 const SAVED_JOURNEY = structuredClone(JOURNEY);
 const JOURNEY_ID = '630b28c08abfc3f96130789c';
 SAVED_JOURNEY._id = new mongoose.Types.ObjectId(JOURNEY_ID);
-const ID_RESPONSE_DTO = new IdResponseDTO(JOURNEY_ID);
+const JOURNEY_ID_RESPONSE_DTO = new IdResponseDTO(JOURNEY_ID);
+const PIKMI1_ID = '63136a1e02efbf949b847f8e';
+const PIKMI2_ID = '63136a1e02efbf949b847f8f';
+const PIKMI3_ID = '63136a1e02efbf949b847f90';
+const PIKMI_NAME = 'pikmi';
+const PIKMI_ADDR = 'pikmi addr';
+const PIKMI_CATEGORY = 'P';
+const PIKMI_LON = 129.4;
+const PIKMI_LAT = 36.7;
+const PIKMI_LINK = '/pikmi/link';
+const PIKMI_CREATE_DTO = new PikmiCreateRequestDTO(
+  PIKMI_NAME,
+  PIKMI_ADDR,
+  PIKMI_CATEGORY,
+  PIKMI_LON,
+  PIKMI_LAT,
+  PIKMI_LINK,
+);
+const PIKI_INDEX = 0;
+const PIKI1_ID = '63136a1e02efbf949b847f8c';
+const PIKI1_NAME = 'piki1';
+const PIKI1_ADDR = 'piki1 addr';
+const PIKI1_CATEGORY = 'T';
+const PIKI1_LON = 130.4;
+const PIKI1_LAT = 37.7;
+const PIKI1_LINK = '/piki2/link';
+const PIKI2_ID = '63136a1e02efbf949b847f8d';
+const PIKI2_NAME = 'piki2';
+const PIKI2_ADDR = 'piki2 addr';
+const PIKI2_CATEGORY = 'S';
+const PIKI2_LON = 131.4;
+const PIKI2_LAT = 38.7;
+const PIKI2_LINK = '/piki2/link';
+const PIKI3_ID = '63136a1e02efbf949b847f8e';
+const PIKI3_NAME = 'piki3';
+const PIKI3_ADDR = 'piki3 addr';
+const PIKI3_CATEGORY = 'P';
+const PIKI3_LON = 131.5;
+const PIKI3_LAT = 38.8;
+const PIKI3_LINK = '/piki3/link';
+const PIKI_UPDATE_DTOS_NO_ID = [
+  new PikiUpdateRequestDTO(
+    undefined,
+    PIKI1_NAME,
+    PIKI1_ADDR,
+    PIKI1_CATEGORY,
+    PIKI1_LON,
+    PIKI1_LAT,
+    PIKI1_LINK,
+  ),
+  new PikiUpdateRequestDTO(
+    undefined,
+    PIKI2_NAME,
+    PIKI2_ADDR,
+    PIKI2_CATEGORY,
+    PIKI2_LON,
+    PIKI2_LAT,
+    PIKI2_LINK,
+  ),
+];
+const PIKI_UPDATE_DTOS_WITH_ID = [
+  new PikiUpdateRequestDTO(
+    PIKI1_ID,
+    PIKI1_NAME,
+    PIKI1_ADDR,
+    PIKI1_CATEGORY,
+    PIKI1_LON,
+    PIKI1_LAT,
+    PIKI1_LINK,
+  ),
+  new PikiUpdateRequestDTO(
+    PIKI2_ID,
+    PIKI2_NAME,
+    PIKI2_ADDR,
+    PIKI2_CATEGORY,
+    PIKI2_LON,
+    PIKI2_LAT,
+    PIKI2_LINK,
+  ),
+];
+const PIKIS_UPDATE_DTO_NO_ID = new PikisUpdateRequestDTO(
+  PIKI_INDEX,
+  PIKI_UPDATE_DTOS_NO_ID,
+);
+const PIKIS_UPDATE_DTO_WITH_ID = new PikisUpdateRequestDTO(
+  PIKI_INDEX,
+  PIKI_UPDATE_DTOS_WITH_ID,
+);
+const EMPTY_PIKIDAY_RESPONSE_DTO = new PikidayResponseDTO([]);
+const USER2 = new User('user2', 'name2', 'img2', 'ME');
+const USER3 = new User('user3', 'name3', 'img3', 'ME');
+const USER_RESPONSE_DTO = new UserResponseDTO(
+  USER._id,
+  USER.name,
+  USER.img,
+  PERSONALITY[USER.psn],
+);
+const USER2_RESPONSE_DTO = new UserResponseDTO(
+  USER2._id,
+  USER2.name,
+  USER2.img,
+  PERSONALITY[USER2.psn],
+);
+const USER3_RESPONSE_DTO = new UserResponseDTO(
+  USER3._id,
+  USER3.name,
+  USER3.img,
+  PERSONALITY[USER3.psn],
+);
 
 describe('JourneyService', () => {
   let journeyService: JourneyService;
@@ -104,72 +279,1424 @@ describe('JourneyService', () => {
     expect(journeyService).toBeDefined();
   });
 
-  it('createJourney는 JourneyDocument 인스턴스를 생성해서 JourneyRepository.insertOne을 호출한다.', async () => {
-    // given
-    userRepository.findOne = jest.fn().mockResolvedValue(USER);
-    journeyModel.constructor = jest.fn().mockReturnValue(JOURNEY);
-    journeyRepository.listByUser = jest.fn().mockResolvedValue([[]]);
-    journeyRepository.insertOne = jest.fn().mockResolvedValue(SAVED_JOURNEY);
+  describe('listUserJourneys', () => {
+    beforeEach(async () => {
+      // given
+      userRepository.findOne = jest.fn().mockResolvedValue(USER);
+      const journey = structuredClone(JOURNEY);
+      journey._id = new mongoose.Types.ObjectId(JOURNEY_ID);
+      const journeys = [journey, journey, journey];
+      journeyRepository.listByUser = jest.fn().mockResolvedValue(journeys);
+    });
 
-    // when
-    const result = await journeyService.createJourney(
-      JOURNEY_CREATE_DTO,
-      USER_ID,
-    );
+    it('JourneyRepository.listByUser를 호출해 불러온 journey들을 JourneyListResponseDTO로 변환해 리턴한다.', async () => {
+      // when
+      const result = await journeyService.listUserJourneys(USER_ID);
 
-    // then
-    expect(userRepository.findOne).toBeCalledTimes(1);
-    expect(userRepository.findOne).toBeCalledWith(USER_ID);
-    expect(journeyRepository.listByUser).toBeCalledTimes(1);
-    expect(journeyRepository.listByUser).toBeCalledWith(USER, false);
-    expect(journeyModel).toBeCalledTimes(1);
-    expect(journeyModel).toBeCalledWith(JOURNEY);
-    expect(journeyRepository.insertOne).toBeCalledTimes(1);
-    expect(journeyRepository.insertOne).toBeCalledWith(JOURNEY);
-    expect(result).toEqual(ID_RESPONSE_DTO);
+      // then
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.listByUser).toBeCalledTimes(1);
+      expect(journeyRepository.listByUser).toBeCalledWith(USER, {
+        populateUsers: true,
+      });
+      const expectedResultElement = new SimpleJourneyResponseDTO(
+        JOURNEY_ID,
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [UserResponseDTO.from(USER)],
+      );
+      const expectedResult = new JourneyListResponseDTO([
+        expectedResultElement,
+        expectedResultElement,
+        expectedResultElement,
+      ]);
+      expect(result).toEqual(expectedResult);
+    });
+
+    it('userId에 해당하는 user가 없을 경우 InvalidJwtPayloadException을 throw한다.', async () => {
+      // given
+      userRepository.findOne = jest.fn().mockResolvedValue(null);
+
+      // then
+      await expect(journeyService.listUserJourneys(USER_ID)).rejects.toThrow(
+        new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG),
+      );
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+    });
   });
 
-  it('createJourney는 유저가 이미 만든 journey가 MAX_JOURNEY_PER_USER를 초과할 경우 LimitExceededException을 throw한다.', async () => {
-    // given
-    const existingJourneys = [];
-    for (const _ of Array(MAX_JOURNEY_PER_USER).keys()) {
-      existingJourneys.push([]);
-    }
-    userRepository.findOne = jest.fn().mockResolvedValue(USER);
-    journeyRepository.listByUser = jest
-      .fn()
-      .mockResolvedValue(existingJourneys);
-    journeyModel.constructor = jest.fn().mockReturnValue(JOURNEY);
-    journeyRepository.insertOne = jest.fn().mockResolvedValue(SAVED_JOURNEY);
+  describe('getDefaultTags', () => {
+    it('디폴트 태그를 DefaultTagsResponseDTO 타입으로 변환해 리턴한다.', async () => {
+      // when
+      const result = await journeyService.getDefaultTags();
 
-    // then
-    await expect(
-      journeyService.createJourney(JOURNEY_CREATE_DTO, USER_ID),
-    ).rejects.toThrow(new LimitExceededException(JOURNEY_EXCEEDED_MSG));
-    expect(userRepository.findOne).toBeCalledTimes(1);
-    expect(userRepository.findOne).toBeCalledWith(USER_ID);
-    expect(journeyRepository.listByUser).toBeCalledTimes(1);
-    expect(journeyRepository.listByUser).toBeCalledWith(USER, false);
+      // then
+      const expectedResult = new DefaultTagsResponseDTO([
+        new DefaultTagResponseDTO(DEFAULT_TAG1_TOPIC, DEFAULT_TAG1_ORIENT),
+        new DefaultTagResponseDTO(DEFAULT_TAG2_TOPIC, DEFAULT_TAG2_ORIENT),
+        new DefaultTagResponseDTO(DEFAULT_TAG3_TOPIC, DEFAULT_TAG3_ORIENT),
+      ]);
+      expect(result).toEqual(expectedResult);
+    });
   });
 
-  it('createJourney는 userId에 해당하는 user가 없을 경우 InvalidJwtPayloadException을 throw한다.', async () => {
-    // given
-    const existingJourneys = [];
-    for (const _ of Array(MAX_JOURNEY_PER_USER).keys()) {
-      existingJourneys.push([]);
-    }
-    userRepository.findOne = jest.fn().mockResolvedValue(null);
-    journeyRepository.listByUser = jest
-      .fn()
-      .mockResolvedValue(existingJourneys);
-    journeyModel.constructor = jest.fn().mockReturnValue(JOURNEY);
-    journeyRepository.insertOne = jest.fn().mockResolvedValue(SAVED_JOURNEY);
+  describe('getJourney', () => {
+    beforeEach(async () => {
+      // given
+      const journey = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER, USER2, USER3],
+        [
+          new Tag(FIRST_TOPIC, FIRST_ORIENT, USER),
+          new Tag(FIRST_TOPIC, FIRST_ORIENT, USER2),
+          new Tag(FIRST_TOPIC, FIRST_ORIENT, USER3),
+          new Tag(SECOND_TOPIC, SECOND_ORIENT, USER2),
+          new Tag(SECOND_TOPIC, SECOND_ORIENT, USER3),
+          new Tag(THIRD_TOPIC, THIRD_ORIENT, USER),
+          new Tag(THIRD_TOPIC, THIRD_ORIENT, USER3),
+          new Tag(FOURTH_TOPIC, FOURTH_ORIENT, USER),
+        ],
+        [
+          new Pikmi(
+            PIKMI1_ID,
+            PIKMI_NAME,
+            PIKMI_ADDR,
+            PIKMI_CATEGORY,
+            [USER, USER2],
+            PIKMI_LON,
+            PIKMI_LAT,
+            PIKMI_LINK,
+          ),
+          new Pikmi(
+            PIKMI2_ID,
+            PIKMI_NAME,
+            PIKMI_ADDR,
+            PIKMI_CATEGORY,
+            [],
+            PIKMI_LON,
+            PIKMI_LAT,
+            PIKMI_LINK,
+          ),
+          new Pikmi(
+            PIKMI3_ID,
+            PIKMI_NAME,
+            PIKMI_ADDR,
+            PIKMI_CATEGORY,
+            [USER3],
+            PIKMI_LON,
+            PIKMI_LAT,
+            PIKMI_LINK,
+          ),
+        ],
+        [
+          [
+            new Piki(
+              PIKI1_ID,
+              PIKI1_NAME,
+              PIKI1_ADDR,
+              PIKI1_CATEGORY,
+              PIKI1_LON,
+              PIKI1_LAT,
+              PIKI1_LINK,
+            ),
+            new Piki(
+              PIKI2_ID,
+              PIKI2_NAME,
+              PIKI2_ADDR,
+              PIKI2_CATEGORY,
+              PIKI2_LON,
+              PIKI2_LAT,
+              PIKI2_LINK,
+            ),
+          ],
+          [],
+          [
+            new Piki(
+              PIKI3_ID,
+              PIKI3_NAME,
+              PIKI3_ADDR,
+              PIKI3_CATEGORY,
+              PIKI3_LON,
+              PIKI3_LAT,
+              PIKI3_LINK,
+            ),
+          ],
+        ],
+      ) as JourneyDocument;
+      journey._id = new mongoose.Types.ObjectId(JOURNEY_ID);
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
+    });
 
-    // then
-    await expect(
-      journeyService.createJourney(JOURNEY_CREATE_DTO, USER_ID),
-    ).rejects.toThrow(new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG));
-    expect(userRepository.findOne).toBeCalledTimes(1);
-    expect(userRepository.findOne).toBeCalledWith(USER_ID);
+    it('JourneyRepository.get을 호출해 받은 저니를 JourneyResponseDTO 타입으로 변환해 리턴한다.', async () => {
+      // when
+      const result = await journeyService.getJourney(JOURNEY_ID);
+
+      // then
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, {
+        populateUsers: true,
+        populateTags: true,
+        populatePikmis: true,
+        populatePikis: true,
+      });
+      const expectedResult = new JourneyResponseDTO(
+        JOURNEY_ID,
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [
+          new UserResponseDTO(
+            USER._id,
+            USER.name,
+            USER.img,
+            PERSONALITY[USER.psn],
+          ),
+          new UserResponseDTO(
+            USER2._id,
+            USER2.name,
+            USER2.img,
+            PERSONALITY[USER2.psn],
+          ),
+          new UserResponseDTO(
+            USER3._id,
+            USER3.name,
+            USER3.img,
+            PERSONALITY[USER3.psn],
+          ),
+        ],
+        [
+          new TagResponseDTO(FIRST_TOPIC, FIRST_ORIENT, [
+            USER_RESPONSE_DTO,
+            USER2_RESPONSE_DTO,
+            USER3_RESPONSE_DTO,
+          ]),
+          new TagResponseDTO(SECOND_TOPIC, SECOND_ORIENT, [
+            USER2_RESPONSE_DTO,
+            USER3_RESPONSE_DTO,
+          ]),
+          new TagResponseDTO(THIRD_TOPIC, THIRD_ORIENT, [
+            USER_RESPONSE_DTO,
+            USER3_RESPONSE_DTO,
+          ]),
+          new TagResponseDTO(FOURTH_TOPIC, FOURTH_ORIENT, [USER_RESPONSE_DTO]),
+        ],
+        [
+          new PikmiResponseDTO(
+            PIKMI1_ID,
+            PIKMI_NAME,
+            PIKMI_ADDR,
+            PIKMI_CATEGORY,
+            [USER_RESPONSE_DTO, USER2_RESPONSE_DTO],
+            PIKMI_LON,
+            PIKMI_LAT,
+            PIKMI_LINK,
+          ),
+          new PikmiResponseDTO(
+            PIKMI2_ID,
+            PIKMI_NAME,
+            PIKMI_ADDR,
+            PIKMI_CATEGORY,
+            [],
+            PIKMI_LON,
+            PIKMI_LAT,
+            PIKMI_LINK,
+          ),
+          new PikmiResponseDTO(
+            PIKMI3_ID,
+            PIKMI_NAME,
+            PIKMI_ADDR,
+            PIKMI_CATEGORY,
+            [USER3_RESPONSE_DTO],
+            PIKMI_LON,
+            PIKMI_LAT,
+            PIKMI_LINK,
+          ),
+        ],
+        [
+          new PikidayResponseDTO([
+            new PikiResponseDTO(
+              PIKI1_ID,
+              PIKI1_NAME,
+              PIKI1_ADDR,
+              PIKI1_CATEGORY,
+              PIKI1_LON,
+              PIKI1_LAT,
+              PIKI1_LINK,
+            ),
+            new PikiResponseDTO(
+              PIKI2_ID,
+              PIKI2_NAME,
+              PIKI2_ADDR,
+              PIKI2_CATEGORY,
+              PIKI2_LON,
+              PIKI2_LAT,
+              PIKI2_LINK,
+            ),
+          ]),
+          EMPTY_PIKIDAY_RESPONSE_DTO,
+          new PikidayResponseDTO([
+            new PikiResponseDTO(
+              PIKI3_ID,
+              PIKI3_NAME,
+              PIKI3_ADDR,
+              PIKI3_CATEGORY,
+              PIKI3_LON,
+              PIKI3_LAT,
+              PIKI3_LINK,
+            ),
+          ]),
+        ],
+      );
+      expect(result).toEqual(expectedResult);
+    });
+
+    it('해당하는 저니가 없으면 NotFoundException을 throw한다.', async () => {
+      // given
+      journeyRepository.get = jest.fn().mockResolvedValue(null);
+
+      // then
+      await expect(journeyService.getJourney(JOURNEY_ID)).rejects.toThrow(
+        new NotFoundException(JOURNEY_NOT_EXIST_MSG),
+      );
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, {
+        populateUsers: true,
+        populateTags: true,
+        populatePikmis: true,
+        populatePikis: true,
+      });
+    });
+  });
+
+  describe('getTags', () => {
+    beforeEach(async () => {
+      // given
+      const tags = [
+        new Tag(FIRST_TOPIC, FIRST_ORIENT, USER),
+        new Tag(FIRST_TOPIC, FIRST_ORIENT, USER2),
+        new Tag(FIRST_TOPIC, FIRST_ORIENT, USER3),
+        new Tag(DEFAULT_TAG1_TOPIC, DEFAULT_TAG1_ORIENT, USER2),
+        new Tag(DEFAULT_TAG1_TOPIC, DEFAULT_TAG1_ORIENT, USER3),
+        new Tag(THIRD_TOPIC, THIRD_ORIENT, USER),
+        new Tag(THIRD_TOPIC, THIRD_ORIENT, USER3),
+        new Tag(DEFAULT_TAG2_TOPIC, DEFAULT_TAG2_ORIENT, USER),
+      ];
+      const journey = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER, USER2, USER3],
+        tags,
+        [],
+        [[], [], []],
+      ) as JourneyDocument;
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
+    });
+
+    it('includeDefaultTags가 true일 경우 디폴트 태그를 병합해 TagsResponseDTO 타입으로 리턴한다.', async () => {
+      // when
+      const result = await journeyService.getTags(JOURNEY_ID, true);
+
+      // then
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, {
+        populateTags: true,
+      });
+      const expectedResult = new TagsResponseDTO([
+        new TagResponseDTO(FIRST_TOPIC, FIRST_ORIENT, [
+          USER_RESPONSE_DTO,
+          USER2_RESPONSE_DTO,
+          USER3_RESPONSE_DTO,
+        ]),
+        new TagResponseDTO(DEFAULT_TAG1_TOPIC, DEFAULT_TAG1_ORIENT, [
+          USER2_RESPONSE_DTO,
+          USER3_RESPONSE_DTO,
+        ]),
+        new TagResponseDTO(THIRD_TOPIC, THIRD_ORIENT, [
+          USER_RESPONSE_DTO,
+          USER3_RESPONSE_DTO,
+        ]),
+        new TagResponseDTO(DEFAULT_TAG2_TOPIC, DEFAULT_TAG2_ORIENT, [
+          USER_RESPONSE_DTO,
+        ]),
+        new TagResponseDTO(DEFAULT_TAG3_TOPIC, DEFAULT_TAG3_ORIENT, []),
+      ]);
+      expect(result).toEqual(expectedResult);
+    });
+
+    it('includeDefaultTags가 false일 경우 디폴트 태그를 병합하지 않고 TagsResponseDTO 타입으로 리턴한다.', async () => {
+      // when
+      const result = await journeyService.getTags(JOURNEY_ID, false);
+
+      // then
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, {
+        populateTags: true,
+      });
+      const expectedResult = new TagsResponseDTO([
+        new TagResponseDTO(FIRST_TOPIC, FIRST_ORIENT, [
+          USER_RESPONSE_DTO,
+          USER2_RESPONSE_DTO,
+          USER3_RESPONSE_DTO,
+        ]),
+        new TagResponseDTO(DEFAULT_TAG1_TOPIC, DEFAULT_TAG1_ORIENT, [
+          USER2_RESPONSE_DTO,
+          USER3_RESPONSE_DTO,
+        ]),
+        new TagResponseDTO(THIRD_TOPIC, THIRD_ORIENT, [
+          USER_RESPONSE_DTO,
+          USER3_RESPONSE_DTO,
+        ]),
+        new TagResponseDTO(DEFAULT_TAG2_TOPIC, DEFAULT_TAG2_ORIENT, [
+          USER_RESPONSE_DTO,
+        ]),
+      ]);
+      expect(result).toEqual(expectedResult);
+    });
+
+    it('해당하는 저니가 없으면 NotFoundException을 throw한다.', async () => {
+      // given
+      journeyRepository.get = jest.fn().mockResolvedValue(null);
+
+      // then
+      await expect(journeyService.getTags(JOURNEY_ID, true)).rejects.toThrow(
+        new NotFoundException(JOURNEY_NOT_EXIST_MSG),
+      );
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, {
+        populateTags: true,
+      });
+    });
+  });
+
+  describe('createJourney', () => {
+    beforeEach(async () => {
+      // given
+      userRepository.findOne = jest.fn().mockResolvedValue(USER);
+      journeyModel.constructor = jest.fn().mockReturnValue(JOURNEY);
+      journeyRepository.listByUser = jest.fn().mockResolvedValue([[]]);
+      journeyRepository.insert = jest.fn().mockResolvedValue(SAVED_JOURNEY);
+    });
+
+    it('JourneyDocument 인스턴스를 생성해서 JourneyRepository.insert를 호출한다.', async () => {
+      // when
+      const result = await journeyService.createJourney(
+        JOURNEY_CREATE_DTO,
+        USER_ID,
+      );
+
+      // then
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.listByUser).toBeCalledTimes(1);
+      expect(journeyRepository.listByUser).toBeCalledWith(USER);
+      expect(journeyModel).toBeCalledTimes(1);
+      expect(journeyModel).toBeCalledWith(JOURNEY);
+      expect(journeyRepository.insert).toBeCalledTimes(1);
+      expect(journeyRepository.insert).toBeCalledWith(JOURNEY);
+      expect(result).toEqual(JOURNEY_ID_RESPONSE_DTO);
+    });
+
+    it('유저가 이미 만든 journey가 MAX_JOURNEY_PER_USER를 초과할 경우 LimitExceededException을 throw한다.', async () => {
+      // given
+      const existingJourneys = [];
+      for (const _ of Array(MAX_JOURNEY_PER_USER).keys()) {
+        existingJourneys.push([]);
+      }
+      journeyRepository.listByUser = jest
+        .fn()
+        .mockResolvedValue(existingJourneys);
+
+      // then
+      await expect(
+        journeyService.createJourney(JOURNEY_CREATE_DTO, USER_ID),
+      ).rejects.toThrow(new LimitExceededException(JOURNEY_EXCEEDED_MSG));
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.listByUser).toBeCalledTimes(1);
+      expect(journeyRepository.listByUser).toBeCalledWith(USER);
+    });
+
+    it('userId에 해당하는 user가 없을 경우 InvalidJwtPayloadException을 throw한다.', async () => {
+      // given
+      userRepository.findOne = jest.fn().mockResolvedValue(null);
+
+      // then
+      await expect(
+        journeyService.createJourney(JOURNEY_CREATE_DTO, USER_ID),
+      ).rejects.toThrow(new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG));
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+    });
+  });
+
+  describe('createPikmi', () => {
+    let journey: JourneyDocument;
+
+    beforeEach(async () => {
+      // given
+      journey = structuredClone(JOURNEY);
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
+      userRepository.findOne = jest.fn().mockResolvedValue(USER);
+      journeyRepository.update = jest.fn();
+    });
+
+    it('Pikmi 인스턴스를 생성해서 journey에 넣고 journeyRepository.update를 호출한다.', async () => {
+      // when
+      const result = await journeyService.createPikmi(
+        PIKMI_CREATE_DTO,
+        JOURNEY_ID,
+        USER_ID,
+      );
+
+      // then
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
+      expect(journeyRepository.update).toBeCalledTimes(1);
+      expect(journeyRepository.update).toBeCalledWith(journey);
+      expect(JOURNEY.pikmis.length + 1).toBe(journey.pikmis.length);
+      const pikmiWithId = journey.pikmis[journey.pikmis.length - 1];
+      expect(pikmiWithId.name).toBe(PIKMI_NAME);
+      expect(pikmiWithId.addr).toBe(PIKMI_ADDR);
+      expect(pikmiWithId.cate).toBe(PIKMI_CATEGORY);
+      expect(pikmiWithId.likeBy).toEqual([]);
+      expect(pikmiWithId.lon).toBe(PIKMI_LON);
+      expect(pikmiWithId.lat).toBe(PIKMI_LAT);
+      expect(pikmiWithId.link).toBe(PIKMI_LINK);
+      const expectedResponse = new IdResponseDTO(pikmiWithId._id.toString());
+      expect(result).toEqual(expectedResponse);
+    });
+
+    it('해당하는 유저가 없으면 InvalidJwtPayloadException을 throw한다.', async () => {
+      // given
+      userRepository.findOne = jest.fn().mockResolvedValue(null);
+
+      // then
+      await expect(
+        journeyService.createPikmi(PIKMI_CREATE_DTO, JOURNEY_ID, USER_ID),
+      ).rejects.toThrow(new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG));
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.update).toBeCalledTimes(0);
+    });
+
+    it('해당하는 저니가 없으면 JourneyNotExistException을 throw한다.', async () => {
+      // given
+      journeyRepository.get = jest.fn().mockResolvedValue(null);
+
+      // then
+      await expect(
+        journeyService.createPikmi(PIKMI_CREATE_DTO, JOURNEY_ID, USER_ID),
+      ).rejects.toThrow(new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG));
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
+      expect(journeyRepository.update).toBeCalledTimes(0);
+    });
+
+    it('저니에 유저가 소속되어 있지 않으면 UnauthenticatedException을 throw한다.', async () => {
+      // given
+      journey = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER2],
+        TAGS,
+        [],
+        [[], [], []],
+      ) as JourneyDocument;
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
+
+      // then
+      await expect(
+        journeyService.createPikmi(PIKMI_CREATE_DTO, JOURNEY_ID, USER_ID),
+      ).rejects.toThrow(new UnauthenticatedException(USER_NOT_IN_JOURNEY_MSG));
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
+      expect(journeyRepository.update).toBeCalledTimes(0);
+    });
+
+    it('저니에 픽미 갯수가 MAX_PIKMI_PER_JOURNEY를 초과할 경우 LimitExceededException을 throw한다.', async () => {
+      // given
+      journey = structuredClone(JOURNEY);
+      const pikmi = new Pikmi(
+        PIKMI1_ID,
+        PIKMI_NAME,
+        PIKI1_ADDR,
+        PIKI1_CATEGORY,
+        [],
+        PIKMI_LON,
+        PIKMI_LAT,
+        PIKMI_LINK,
+      );
+      for (const _ of Array(MAX_PIKMI_PER_JOURNEY).keys()) {
+        journey.pikmis.push(pikmi);
+      }
+      userRepository.findOne = jest.fn().mockResolvedValue(USER);
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
+      journeyRepository.update = jest.fn();
+
+      // then
+      await expect(
+        journeyService.createPikmi(PIKMI_CREATE_DTO, JOURNEY_ID, USER_ID),
+      ).rejects.toThrow(new LimitExceededException(PIKMI_EXCEEDED_MSG));
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
+      expect(journeyRepository.update).toBeCalledTimes(0);
+    });
+  });
+
+  describe('updatePiki', () => {
+    let journey: JourneyDocument;
+
+    beforeEach(async () => {
+      // given
+      userRepository.findOne = jest.fn().mockResolvedValue(USER);
+      journey = structuredClone(JOURNEY);
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
+      journeyRepository.update = jest.fn();
+    });
+
+    it('piki에 id가 없을 경우 직접 생성해서 journey의 올바른 인덱스에 넣고 journeyRepository.update를 호출한다.', async () => {
+      // when
+      const result = await journeyService.updatePiki(
+        PIKIS_UPDATE_DTO_NO_ID,
+        JOURNEY_ID,
+        USER_ID,
+      );
+
+      // then
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
+      expect(journeyRepository.update).toBeCalledTimes(1);
+      expect(journeyRepository.update).toBeCalledWith(journey);
+      const pikis = journey.pikis[PIKI_INDEX];
+      const piki1 = pikis[0];
+      expect(piki1._id.toString()).toBe(result.ids[0]);
+      expect(piki1.name).toBe(PIKI1_NAME);
+      expect(piki1.addr).toBe(PIKI1_ADDR);
+      expect(piki1.cate).toBe(PIKI1_CATEGORY);
+      expect(piki1.lon).toBe(PIKI1_LON);
+      expect(piki1.lat).toBe(PIKI1_LAT);
+      expect(piki1.link).toBe(PIKI1_LINK);
+      const piki2 = pikis[1];
+      expect(piki2._id.toString()).toBe(result.ids[1]);
+      expect(piki2.name).toBe(PIKI2_NAME);
+      expect(piki2.addr).toBe(PIKI2_ADDR);
+      expect(piki2.cate).toBe(PIKI2_CATEGORY);
+      expect(piki2.lon).toBe(PIKI2_LON);
+      expect(piki2.lat).toBe(PIKI2_LAT);
+      expect(piki2.link).toBe(PIKI2_LINK);
+    });
+
+    it('piki에 id가 존재할 경우 그대로 사용해서 journey의 올바른 인덱스에 넣고 journeyRepository.update를 호출한다.', async () => {
+      // when
+      const result = await journeyService.updatePiki(
+        PIKIS_UPDATE_DTO_WITH_ID,
+        JOURNEY_ID,
+        USER_ID,
+      );
+
+      // then
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
+      expect(journeyRepository.update).toBeCalledTimes(1);
+      expect(journeyRepository.update).toBeCalledWith(journey);
+      const pikis = journey.pikis[PIKI_INDEX];
+      const piki1 = pikis[0];
+      expect(piki1._id.toString()).toBe(result.ids[0]);
+      expect(piki1._id.toString()).toBe(PIKI1_ID);
+      expect(piki1.name).toBe(PIKI1_NAME);
+      expect(piki1.addr).toBe(PIKI1_ADDR);
+      expect(piki1.cate).toBe(PIKI1_CATEGORY);
+      expect(piki1.lon).toBe(PIKI1_LON);
+      expect(piki1.lat).toBe(PIKI1_LAT);
+      expect(piki1.link).toBe(PIKI1_LINK);
+      const piki2 = pikis[1];
+      expect(piki2._id.toString()).toBe(result.ids[1]);
+      expect(piki2._id.toString()).toBe(PIKI2_ID);
+      expect(piki2.name).toBe(PIKI2_NAME);
+      expect(piki2.addr).toBe(PIKI2_ADDR);
+      expect(piki2.cate).toBe(PIKI2_CATEGORY);
+      expect(piki2.lon).toBe(PIKI2_LON);
+      expect(piki2.lat).toBe(PIKI2_LAT);
+      expect(piki2.link).toBe(PIKI2_LINK);
+    });
+
+    it('해당하는 유저가 없으면 InvalidJwtPayloadException을 throw한다.', async () => {
+      // given
+      userRepository.findOne = jest.fn().mockResolvedValue(null);
+
+      // then
+      await expect(
+        journeyService.updatePiki(PIKIS_UPDATE_DTO_NO_ID, JOURNEY_ID, USER_ID),
+      ).rejects.toThrow(new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG));
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.update).toBeCalledTimes(0);
+    });
+
+    it('해당하는 저니가 없으면 JourneyNotExistException을 throw한다.', async () => {
+      // given
+      userRepository.findOne = jest.fn().mockResolvedValue(USER);
+      journeyRepository.get = jest.fn().mockResolvedValue(null);
+      journeyRepository.update = jest.fn();
+
+      // then
+      await expect(
+        journeyService.updatePiki(PIKIS_UPDATE_DTO_NO_ID, JOURNEY_ID, USER_ID),
+      ).rejects.toThrow(new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG));
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
+      expect(journeyRepository.update).toBeCalledTimes(0);
+    });
+
+    it('저니에 유저가 소속되어 있지 않으면 UnauthenticatedException을 throw한다.', async () => {
+      // given
+      journey = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER2],
+        TAGS,
+        [],
+        [[], [], []],
+      ) as JourneyDocument;
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
+
+      // then
+      await expect(
+        journeyService.updatePiki(PIKIS_UPDATE_DTO_NO_ID, JOURNEY_ID, USER_ID),
+      ).rejects.toThrow(new UnauthenticatedException(USER_NOT_IN_JOURNEY_MSG));
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
+      expect(journeyRepository.update).toBeCalledTimes(0);
+    });
+
+    it('index가 범위를 초과하면 IndexOutOfRangeException을 throw한다.', async () => {
+      // given
+      const invalidIndex = JOURNEY.pikis.length;
+      const pikisUpdateDtoWithInvalidIndex = new PikisUpdateRequestDTO(
+        invalidIndex,
+        PIKI_UPDATE_DTOS_NO_ID,
+      );
+
+      // then
+      await expect(
+        journeyService.updatePiki(
+          pikisUpdateDtoWithInvalidIndex,
+          JOURNEY_ID,
+          USER_ID,
+        ),
+      ).rejects.toThrow(new IndexOutOfRangeException(INDEX_OUT_OF_RANGE_MSG));
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
+      expect(journeyRepository.update).toBeCalledTimes(0);
+    });
+  });
+
+  describe('updateTags', () => {
+    let journey: JourneyDocument;
+    let tagDeletedJourney: JourneyDocument;
+    let tagsUpdateDto: TagsUpdateRequestDTO;
+
+    beforeEach(async () => {
+      // given
+      userRepository.findOne = jest.fn().mockResolvedValue(USER);
+      const tags = [
+        new Tag(FIRST_TOPIC, FIRST_ORIENT, USER2),
+        new Tag(SECOND_TOPIC, SECOND_ORIENT, USER3),
+      ];
+      journey = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER, USER2, USER3],
+        tags,
+        [],
+        [[], [], []],
+      ) as JourneyDocument;
+      tagDeletedJourney = structuredClone(journey);
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
+      journeyRepository.deleteTags = jest
+        .fn()
+        .mockResolvedValue(tagDeletedJourney);
+      journeyRepository.update = jest.fn();
+      tagsUpdateDto = new TagsUpdateRequestDTO([
+        new TagUpdateRequestDTO(FIRST_TOPIC, FIRST_ORIENT),
+        new TagUpdateRequestDTO(THIRD_TOPIC, THIRD_ORIENT),
+        new TagUpdateRequestDTO(FOURTH_TOPIC, FOURTH_ORIENT),
+      ]);
+    });
+
+    it('태그를 추가한다.', async () => {
+      // when
+      await journeyService.updateTags(tagsUpdateDto, JOURNEY_ID, USER_ID);
+
+      // then
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
+      expect(journeyRepository.deleteTags).toBeCalledTimes(1);
+      expect(journeyRepository.deleteTags).toBeCalledWith(JOURNEY_ID, USER_ID);
+      expect(journeyRepository.update).toBeCalledTimes(1);
+      expect(journeyRepository.update).toBeCalledWith(tagDeletedJourney);
+      const expectedTags = [
+        new Tag(FIRST_TOPIC, FIRST_ORIENT, USER2),
+        new Tag(SECOND_TOPIC, SECOND_ORIENT, USER3),
+        new Tag(FIRST_TOPIC, FIRST_ORIENT, USER),
+        new Tag(THIRD_TOPIC, THIRD_ORIENT, USER),
+        new Tag(FOURTH_TOPIC, FOURTH_ORIENT, USER),
+      ];
+      const updatedTags = tagDeletedJourney.tags;
+      expect(updatedTags).toEqual(expectedTags);
+    });
+
+    it('userId에 해당하는 user가 없을 경우 InvalidJwtPayloadException을 throw한다.', async () => {
+      // given
+      userRepository.findOne = jest.fn().mockResolvedValue(null);
+
+      // then
+      await expect(
+        journeyService.updateTags(tagsUpdateDto, JOURNEY_ID, USER_ID),
+      ).rejects.toThrow(new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG));
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.update).toBeCalledTimes(0);
+    });
+
+    it('해당하는 저니가 없으면 JourneyNotExistException을 throw한다.', async () => {
+      // given
+      journeyRepository.get = jest.fn().mockResolvedValue(null);
+
+      // then
+      await expect(
+        journeyService.updateTags(tagsUpdateDto, JOURNEY_ID, USER_ID),
+      ).rejects.toThrow(new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG));
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
+      expect(journeyRepository.update).toBeCalledTimes(0);
+    });
+
+    it('저니에 유저가 소속되어 있지 않으면 UnauthenticatedException을 throw한다.', async () => {
+      // given
+      journey = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER2],
+        TAGS,
+        [],
+        [[], [], []],
+      ) as JourneyDocument;
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
+
+      // then
+      await expect(
+        journeyService.updateTags(tagsUpdateDto, JOURNEY_ID, USER_ID),
+      ).rejects.toThrow(new UnauthenticatedException(USER_NOT_IN_JOURNEY_MSG));
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
+      expect(journeyRepository.update).toBeCalledTimes(0);
+    });
+  });
+
+  describe('addUserToJourney', () => {
+    let journey: JourneyDocument;
+
+    beforeEach(async () => {
+      // given
+      userRepository.findOne = jest.fn().mockResolvedValue(USER2);
+      journey = structuredClone(JOURNEY);
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
+      journeyRepository.update = jest.fn().mockResolvedValue(journey);
+    });
+
+    it('저니에 유저를 추가해 저장한다.', async () => {
+      // when
+      const result = await journeyService.addUserToJourney(
+        JOURNEY_ID,
+        USER2._id,
+      );
+
+      // then
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER2._id);
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
+      expect(journeyRepository.update).toBeCalledTimes(1);
+      expect(journeyRepository.update).toBeCalledWith(journey);
+      expect(result.users).toEqual([USER, USER2]);
+    });
+
+    it('userId에 해당하는 user가 없을 경우 InvalidJwtPayloadException을 throw한다.', async () => {
+      // given
+      userRepository.findOne = jest.fn().mockResolvedValue(null);
+
+      // then
+      await expect(
+        journeyService.addUserToJourney(JOURNEY_ID, USER2._id),
+      ).rejects.toThrow(new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG));
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER2._id);
+      expect(journeyRepository.update).toBeCalledTimes(0);
+    });
+
+    it('해당하는 저니가 없으면 JourneyNotExistException을 throw한다.', async () => {
+      // given
+      journeyRepository.get = jest.fn().mockResolvedValue(null);
+
+      // then
+      await expect(
+        journeyService.addUserToJourney(JOURNEY_ID, USER2._id),
+      ).rejects.toThrow(new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG));
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
+      expect(journeyRepository.update).toBeCalledTimes(0);
+    });
+
+    it('저니에 정원이 찼을 경우 LimitExceededException을 throw한다.', async () => {
+      // given
+      journey = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER, USER3],
+        TAGS,
+        [],
+        [[], [], []],
+      ) as JourneyDocument;
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
+      journeyRepository.update = jest.fn().mockResolvedValue(journey);
+
+      // then
+      await expect(
+        journeyService.addUserToJourney(JOURNEY_ID, USER2._id),
+      ).rejects.toThrow(new LimitExceededException(USER_EXCEEDED_MSG));
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
+      expect(journeyRepository.update).toBeCalledTimes(0);
+    });
+  });
+
+  describe('deleteUserFromJourney', () => {
+    let journey: JourneyDocument;
+    let userDeletedJourney: JourneyDocument;
+
+    beforeEach(async () => {
+      // given
+      userRepository.findOne = jest.fn().mockResolvedValue(USER);
+      journey = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER, USER2],
+        TAGS,
+        [],
+        [[], [], []],
+      ) as JourneyDocument;
+      userDeletedJourney = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER2],
+        TAGS,
+        [],
+        [[], [], []],
+      ) as JourneyDocument;
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
+      journeyRepository.deleteTags = jest.fn();
+      journeyRepository.deleteAllPikmiLikeBy = jest.fn();
+      journeyRepository.deleteUser = jest
+        .fn()
+        .mockResolvedValue(userDeletedJourney);
+      journeyRepository.delete = jest.fn();
+    });
+
+    it('저니에서 유저 및 유저가 추가한 태그와 픽미 좋아요를 삭제한다. 저니에 유저가 남아있다면 저니는 삭제하지 않는다.', async () => {
+      // when
+      await journeyService.deleteUserFromJourney(JOURNEY_ID, USER_ID);
+
+      // then
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
+      expect(journeyRepository.deleteTags).toBeCalledTimes(1);
+      expect(journeyRepository.deleteTags).toBeCalledWith(JOURNEY_ID, USER_ID);
+      expect(journeyRepository.deleteAllPikmiLikeBy).toBeCalledTimes(1);
+      expect(journeyRepository.deleteAllPikmiLikeBy).toBeCalledWith(
+        JOURNEY_ID,
+        USER_ID,
+      );
+      expect(journeyRepository.deleteUser).toBeCalledTimes(1);
+      expect(journeyRepository.deleteUser).toBeCalledWith(JOURNEY_ID, USER_ID);
+      expect(journeyRepository.delete).toBeCalledTimes(0);
+    });
+
+    it('저니에서 유저 및 유저가 추가한 태그와 픽미 좋아요를 삭제한다. 저니에 유저가 남아있지 않으면 저니를 삭제한다.', async () => {
+      // given
+      journey = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER],
+        TAGS,
+        [],
+        [[], [], []],
+      ) as JourneyDocument;
+      userDeletedJourney = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [],
+        TAGS,
+        [],
+        [[], [], []],
+      ) as JourneyDocument;
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
+      journeyRepository.deleteUser = jest
+        .fn()
+        .mockResolvedValue(userDeletedJourney);
+
+      // when
+      await journeyService.deleteUserFromJourney(JOURNEY_ID, USER_ID);
+
+      // then
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
+      expect(journeyRepository.deleteTags).toBeCalledTimes(1);
+      expect(journeyRepository.deleteTags).toBeCalledWith(JOURNEY_ID, USER_ID);
+      expect(journeyRepository.deleteAllPikmiLikeBy).toBeCalledTimes(1);
+      expect(journeyRepository.deleteAllPikmiLikeBy).toBeCalledWith(
+        JOURNEY_ID,
+        USER_ID,
+      );
+      expect(journeyRepository.deleteUser).toBeCalledTimes(1);
+      expect(journeyRepository.deleteUser).toBeCalledWith(JOURNEY_ID, USER_ID);
+      expect(journeyRepository.delete).toBeCalledTimes(1);
+      expect(journeyRepository.delete).toBeCalledWith(userDeletedJourney);
+    });
+
+    it('userId에 해당하는 user가 없을 경우 InvalidJwtPayloadException을 throw한다.', async () => {
+      // given
+      userRepository.findOne = jest.fn().mockResolvedValue(null);
+
+      // then
+      await expect(
+        journeyService.deleteUserFromJourney(JOURNEY_ID, USER_ID),
+      ).rejects.toThrow(new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG));
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.deleteTags).toBeCalledTimes(0);
+      expect(journeyRepository.deleteAllPikmiLikeBy).toBeCalledTimes(0);
+      expect(journeyRepository.deleteUser).toBeCalledTimes(0);
+      expect(journeyRepository.delete).toBeCalledTimes(0);
+    });
+
+    it('해당하는 저니가 없으면 JourneyNotExistException을 throw한다.', async () => {
+      // given
+      journeyRepository.get = jest.fn().mockResolvedValue(null);
+
+      // then
+      await expect(
+        journeyService.deleteUserFromJourney(JOURNEY_ID, USER_ID),
+      ).rejects.toThrow(new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG));
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
+      expect(journeyRepository.deleteTags).toBeCalledTimes(0);
+      expect(journeyRepository.deleteAllPikmiLikeBy).toBeCalledTimes(0);
+      expect(journeyRepository.deleteUser).toBeCalledTimes(0);
+      expect(journeyRepository.delete).toBeCalledTimes(0);
+    });
+
+    it('저니에 유저가 소속되어 있지 않으면 UnauthenticatedException을 throw한다.', async () => {
+      // given
+      journey = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER2],
+        TAGS,
+        [],
+        [[], [], []],
+      ) as JourneyDocument;
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
+
+      // then
+      await expect(
+        journeyService.deleteUserFromJourney(JOURNEY_ID, USER_ID),
+      ).rejects.toThrow(new UnauthenticatedException(USER_NOT_IN_JOURNEY_MSG));
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
+      expect(journeyRepository.deleteTags).toBeCalledTimes(0);
+      expect(journeyRepository.deleteAllPikmiLikeBy).toBeCalledTimes(0);
+      expect(journeyRepository.deleteUser).toBeCalledTimes(0);
+      expect(journeyRepository.delete).toBeCalledTimes(0);
+    });
+  });
+
+  describe('addLikesToPikmi', () => {
+    let pikmi1: Pikmi;
+    let pikmi2: Pikmi;
+    let pikmi3: Pikmi;
+    let journey: JourneyDocument;
+
+    beforeEach(async () => {
+      // given
+      userRepository.findOne = jest.fn().mockResolvedValue(USER);
+      pikmi1 = new Pikmi(
+        PIKMI1_ID,
+        PIKMI_NAME,
+        PIKMI_ADDR,
+        PIKMI_CATEGORY,
+        [USER2],
+        PIKMI_LON,
+        PIKMI_LAT,
+        PIKMI_LINK,
+      );
+      pikmi2 = new Pikmi(
+        PIKMI2_ID,
+        PIKMI_NAME,
+        PIKMI_ADDR,
+        PIKMI_CATEGORY,
+        [USER2],
+        PIKMI_LON,
+        PIKMI_LAT,
+        PIKMI_LINK,
+      );
+      pikmi3 = new Pikmi(
+        PIKMI3_ID,
+        PIKMI_NAME,
+        PIKMI_ADDR,
+        PIKMI_CATEGORY,
+        [USER],
+        PIKMI_LON,
+        PIKMI_LAT,
+        PIKMI_LINK,
+      );
+      journey = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER, USER2],
+        TAGS,
+        [pikmi1, pikmi2, pikmi3],
+        [[], [], []],
+      ) as JourneyDocument;
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
+      journeyRepository.addLikeBy = jest.fn();
+    });
+
+    it('픽미에 유저의 좋아요가 없을 경우 추가한다.', async () => {
+      // when
+      await journeyService.addLikesToPikmi(JOURNEY_ID, PIKMI1_ID, USER_ID);
+
+      // then
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
+      expect(journeyRepository.addLikeBy).toBeCalledTimes(1);
+      expect(journeyRepository.addLikeBy).toBeCalledWith(
+        JOURNEY_ID,
+        PIKMI1_ID,
+        USER_ID,
+      );
+    });
+
+    it('픽미에 유저의 좋아요가 있을 경우 추가하지 않는다.', async () => {
+      // given
+      pikmi1 = new Pikmi(
+        PIKMI1_ID,
+        PIKMI_NAME,
+        PIKMI_ADDR,
+        PIKMI_CATEGORY,
+        [USER, USER2],
+        PIKMI_LON,
+        PIKMI_LAT,
+        PIKMI_LINK,
+      );
+      journey = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER, USER2],
+        TAGS,
+        [pikmi1, pikmi2, pikmi3],
+        [[], [], []],
+      ) as JourneyDocument;
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
+
+      // when
+      await journeyService.addLikesToPikmi(JOURNEY_ID, PIKMI1_ID, USER_ID);
+
+      // then
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
+      expect(journeyRepository.addLikeBy).toBeCalledTimes(0);
+    });
+
+    it('userId에 해당하는 user가 없을 경우 InvalidJwtPayloadException을 throw한다.', async () => {
+      // given
+      userRepository.findOne = jest.fn().mockResolvedValue(null);
+
+      // then
+      await expect(
+        journeyService.addLikesToPikmi(JOURNEY_ID, PIKMI1_ID, USER_ID),
+      ).rejects.toThrow(new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG));
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.addLikeBy).toBeCalledTimes(0);
+    });
+
+    it('해당하는 저니가 없으면 JourneyNotExistException을 throw한다.', async () => {
+      // given
+      journeyRepository.get = jest.fn().mockResolvedValue(null);
+
+      // then
+      await expect(
+        journeyService.addLikesToPikmi(JOURNEY_ID, PIKMI1_ID, USER_ID),
+      ).rejects.toThrow(new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG));
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
+      expect(journeyRepository.addLikeBy).toBeCalledTimes(0);
+    });
+
+    it('저니에 유저가 소속되어 있지 않으면 UnauthenticatedException을 throw한다.', async () => {
+      // given
+      journey = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER2],
+        TAGS,
+        [pikmi1, pikmi2, pikmi3],
+        [[], [], []],
+      ) as JourneyDocument;
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
+
+      // then
+      await expect(
+        journeyService.addLikesToPikmi(JOURNEY_ID, PIKMI1_ID, USER_ID),
+      ).rejects.toThrow(new UnauthenticatedException(USER_NOT_IN_JOURNEY_MSG));
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
+      expect(journeyRepository.addLikeBy).toBeCalledTimes(0);
+    });
+
+    it('해당하는 픽미가 없으면 PikmiNotExistException을 throw한다.', async () => {
+      // given
+      journey = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER, USER2],
+        TAGS,
+        [pikmi2, pikmi3],
+        [[], [], []],
+      ) as JourneyDocument;
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
+
+      // then
+      await expect(
+        journeyService.addLikesToPikmi(JOURNEY_ID, PIKMI1_ID, USER_ID),
+      ).rejects.toThrow(new PikmiNotExistException(PIKMI_NOT_EXIST_MSG));
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
+      expect(journeyRepository.addLikeBy).toBeCalledTimes(0);
+    });
+  });
+
+  describe('deleteLikesFromPikmi', () => {
+    let pikmi1: Pikmi;
+    let pikmi2: Pikmi;
+    let pikmi3: Pikmi;
+    let journey: JourneyDocument;
+
+    beforeEach(async () => {
+      // given
+      userRepository.findOne = jest.fn().mockResolvedValue(USER);
+      pikmi1 = new Pikmi(
+        PIKMI1_ID,
+        PIKMI_NAME,
+        PIKMI_ADDR,
+        PIKMI_CATEGORY,
+        [USER, USER2],
+        PIKMI_LON,
+        PIKMI_LAT,
+        PIKMI_LINK,
+      );
+      pikmi2 = new Pikmi(
+        PIKMI2_ID,
+        PIKMI_NAME,
+        PIKMI_ADDR,
+        PIKMI_CATEGORY,
+        [USER2],
+        PIKMI_LON,
+        PIKMI_LAT,
+        PIKMI_LINK,
+      );
+      pikmi3 = new Pikmi(
+        PIKMI3_ID,
+        PIKMI_NAME,
+        PIKMI_ADDR,
+        PIKMI_CATEGORY,
+        [USER],
+        PIKMI_LON,
+        PIKMI_LAT,
+        PIKMI_LINK,
+      );
+      journey = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER, USER2],
+        TAGS,
+        [pikmi1, pikmi2, pikmi3],
+        [[], [], []],
+      ) as JourneyDocument;
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
+      journeyRepository.deleteLikeBy = jest.fn();
+    });
+
+    it('픽미에서 유저의 좋아요를 삭제한다.', async () => {
+      // when
+      await journeyService.deleteLikesFromPikmi(JOURNEY_ID, PIKMI1_ID, USER_ID);
+
+      // then
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
+      expect(journeyRepository.deleteLikeBy).toBeCalledTimes(1);
+      expect(journeyRepository.deleteLikeBy).toBeCalledWith(
+        JOURNEY_ID,
+        PIKMI1_ID,
+        USER_ID,
+      );
+    });
+
+    it('userId에 해당하는 user가 없을 경우 InvalidJwtPayloadException을 throw한다.', async () => {
+      // given
+      userRepository.findOne = jest.fn().mockResolvedValue(null);
+
+      // then
+      await expect(
+        journeyService.deleteLikesFromPikmi(JOURNEY_ID, PIKMI1_ID, USER_ID),
+      ).rejects.toThrow(new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG));
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.deleteLikeBy).toBeCalledTimes(0);
+    });
+
+    it('해당하는 저니가 없으면 JourneyNotExistException을 throw한다.', async () => {
+      // given
+      journeyRepository.get = jest.fn().mockResolvedValue(null);
+
+      // then
+      await expect(
+        journeyService.deleteLikesFromPikmi(JOURNEY_ID, PIKMI1_ID, USER_ID),
+      ).rejects.toThrow(new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG));
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
+      expect(journeyRepository.deleteLikeBy).toBeCalledTimes(0);
+    });
+
+    it('저니에 유저가 소속되어 있지 않으면 UnauthenticatedException을 throw한다.', async () => {
+      // given
+      journey = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER2],
+        TAGS,
+        [pikmi1, pikmi2, pikmi3],
+        [[], [], []],
+      ) as JourneyDocument;
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
+
+      // then
+      await expect(
+        journeyService.deleteLikesFromPikmi(JOURNEY_ID, PIKMI1_ID, USER_ID),
+      ).rejects.toThrow(new UnauthenticatedException(USER_NOT_IN_JOURNEY_MSG));
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
+      expect(journeyRepository.deleteLikeBy).toBeCalledTimes(0);
+    });
+
+    it('해당하는 픽미가 없으면 PikmiNotExistException을 throw한다.', async () => {
+      // given
+      journey = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER, USER2],
+        TAGS,
+        [pikmi2, pikmi3],
+        [[], [], []],
+      ) as JourneyDocument;
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
+
+      // then
+      await expect(
+        journeyService.deleteLikesFromPikmi(JOURNEY_ID, PIKMI1_ID, USER_ID),
+      ).rejects.toThrow(new PikmiNotExistException(PIKMI_NOT_EXIST_MSG));
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
+      expect(journeyRepository.deleteLikeBy).toBeCalledTimes(0);
+    });
   });
 });

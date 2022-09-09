@@ -8,8 +8,11 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import {
+  IndexOutOfRangeException,
   InvalidJwtPayloadException,
+  JourneyNotExistException,
   LimitExceededException,
+  UnauthenticatedException,
 } from '../common/exceptions';
 import { DEFAULT_MSG } from '../common/validation/validation.messages';
 
@@ -57,6 +60,19 @@ export class InvalidJwtPayloadExceptionFilter implements ExceptionFilter {
   }
 }
 
+@Catch(UnauthenticatedException)
+export class UnauthenticatedExceptionFilter implements ExceptionFilter {
+  catch(exception: UnauthenticatedException, host: ArgumentsHost) {
+    const ctx = host.switchToHttp();
+    const response = ctx.getResponse<Response>();
+    const status = exception.getStatus();
+    response.status(status).json({
+      code: String(status) + '02',
+      message: exception.message,
+    });
+  }
+}
+
 @Catch(BadRequestException)
 export class BadRequestExceptionFilter implements ExceptionFilter {
   catch(exception: BadRequestException, host: ArgumentsHost) {
@@ -77,6 +93,30 @@ export class LimitExceededExceptionFilter implements ExceptionFilter {
     const status = exception.getStatus();
     response.status(status).json({
       code: String(status) + '02',
+      message: exception.message,
+    });
+  }
+}
+
+@Catch(JourneyNotExistException)
+export class JourneyNotExistExceptionFliter implements ExceptionFilter {
+  catch(exception: JourneyNotExistException, host: ArgumentsHost) {
+    const response = getResponse(host);
+    const status = exception.getStatus();
+    response.status(status).json({
+      code: String(status) + '03',
+      message: exception.message,
+    });
+  }
+}
+
+@Catch(IndexOutOfRangeException)
+export class IndexOutOfRangeExceptionFilter implements ExceptionFilter {
+  catch(exception: IndexOutOfRangeException, host: ArgumentsHost) {
+    const response = getResponse(host);
+    const status = exception.getStatus();
+    response.status(status).json({
+      code: String(status) + '04',
       message: exception.message,
     });
   }

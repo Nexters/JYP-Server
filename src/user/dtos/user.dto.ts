@@ -1,5 +1,9 @@
-import { User, UserCreate, UserUpdate } from './user.interface';
-import { User as UserDoc } from '../schemas/user.schema';
+import {
+  UserResponse,
+  UserCreateRequest,
+  UserUpdateRequest,
+} from './user.interface';
+import { User } from '../schemas/user.schema';
 import { PERSONALITY } from '../schemas/personality';
 import { ApiProperty } from '@nestjs/swagger';
 import { AuthVendor } from '../../auth/authVendor';
@@ -17,7 +21,7 @@ import {
   MAX_LENGTH_MSG,
 } from '../../common/validation/validation.messages';
 
-export class UserDTO implements User {
+export class UserResponseDTO implements UserResponse {
   @ApiProperty({
     description: '유저 ID',
   })
@@ -38,8 +42,13 @@ export class UserDTO implements User {
   })
   readonly personality: string;
 
-  static from(user: UserDoc): UserDTO {
-    return new UserDTO(user._id, user.name, user.img, PERSONALITY[user.psn]);
+  static from(user: User): UserResponseDTO {
+    return new UserResponseDTO(
+      user._id,
+      user.name,
+      user.img,
+      PERSONALITY[user.psn],
+    );
   }
 
   constructor(
@@ -55,7 +64,7 @@ export class UserDTO implements User {
   }
 }
 
-export class UserCreateDTO implements UserCreate {
+export class UserCreateRequestDTO implements UserCreateRequest {
   @ApiProperty({
     type: String,
     description: 'Auth 연동을 제공하는 벤더의 이름',
@@ -106,7 +115,7 @@ export class UserCreateDTO implements UserCreate {
   }
 }
 
-export class UserUpdateDTO implements UserUpdate {
+export class UserUpdateRequestDTO implements UserUpdateRequest {
   @ApiProperty({
     description: '유저 이름',
     maxLength: 10,

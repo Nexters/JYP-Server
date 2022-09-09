@@ -47,77 +47,83 @@ describe('Users controller', () => {
     userModel = module.get<Model<UserDocument>>(getModelToken(User.name));
   });
 
-  it('GET /users/:id', async () => {
-    const user = new userModel(USER);
-    await user.save();
+  describe('GET /users/:id', () => {
+    it('success', async () => {
+      const user = new userModel(USER);
+      await user.save();
 
-    const response = await request(app.getHttpServer())
-      .get(`/users/${ID}`)
-      .type('application/json');
-    expect(response.statusCode).toBe(200);
-    expect(response.body).toEqual({
-      id: ID,
-      name: NAME,
-      profileImagePath: IMG,
-      personality: PERSONALITY[PSN_ID],
-    });
-  });
-
-  it('GET /users/:id and get 404', async () => {
-    const response = await request(app.getHttpServer())
-      .get(`/users/${ID}`)
-      .type('application/json');
-    expect(response.statusCode).toBe(404);
-  });
-
-  it('POST /users', async () => {
-    const response = await request(app.getHttpServer())
-      .post('/users')
-      .send({
-        authVendor: AUTH_VENDOR,
-        authId: AUTH_ID,
+      const response = await request(app.getHttpServer())
+        .get(`/users/${ID}`)
+        .type('application/json');
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toEqual({
+        id: ID,
         name: NAME,
         profileImagePath: IMG,
-        personalityId: PSN_ID,
-      })
-      .type('application/json');
-    expect(response.statusCode).toBe(201);
-    expect(response.body).toEqual({
-      id: ID,
-      name: NAME,
-      profileImagePath: IMG,
-      personality: PERSONALITY[PSN_ID],
+        personality: PERSONALITY[PSN_ID],
+      });
     });
-    const user = await userModel.findById({ _id: ID }).exec();
-    expect(user._id).toBe(ID);
-    expect(user.name).toBe(NAME);
-    expect(user.img).toBe(IMG);
-    expect(user.psn).toBe(PSN_ID);
+
+    it('해당 유저가 존재하지 않아 404 응답', async () => {
+      const response = await request(app.getHttpServer())
+        .get(`/users/${ID}`)
+        .type('application/json');
+      expect(response.statusCode).toBe(404);
+    });
   });
 
-  it('PATCH /users/:id', async () => {
-    const user = new userModel(USER);
-    await user.save();
+  describe('POST /users', () => {
+    it('POST /users', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/users')
+        .send({
+          authVendor: AUTH_VENDOR,
+          authId: AUTH_ID,
+          name: NAME,
+          profileImagePath: IMG,
+          personalityId: PSN_ID,
+        })
+        .type('application/json');
+      expect(response.statusCode).toBe(201);
+      expect(response.body).toEqual({
+        id: ID,
+        name: NAME,
+        profileImagePath: IMG,
+        personality: PERSONALITY[PSN_ID],
+      });
+      const user = await userModel.findById({ _id: ID }).exec();
+      expect(user._id).toBe(ID);
+      expect(user.name).toBe(NAME);
+      expect(user.img).toBe(IMG);
+      expect(user.psn).toBe(PSN_ID);
+    });
+  });
 
-    const response = await request(app.getHttpServer())
-      .patch(`/users/${ID}`)
-      .send({
+  describe('PATCH /users/:id', () => {
+    it('PATCH /users/:id', async () => {
+      const user = new userModel(USER);
+      await user.save();
+
+      const response = await request(app.getHttpServer())
+        .patch(`/users/${ID}`)
+        .send({
+          name: CHANGED_NAME,
+          profileImagePath: CHANGED_IMG,
+        })
+        .type('application/json');
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toEqual({
+        id: ID,
         name: CHANGED_NAME,
         profileImagePath: CHANGED_IMG,
-      })
-      .type('application/json');
-    expect(response.statusCode).toBe(200);
-    expect(response.body).toEqual({
-      id: ID,
-      name: CHANGED_NAME,
-      profileImagePath: CHANGED_IMG,
-      personality: PERSONALITY[PSN_ID],
+        personality: PERSONALITY[PSN_ID],
+      });
+      const updatedUser = await userModel.findById({ _id: ID }).exec();
+      expect(updatedUser._id).toBe(ID);
+      expect(updatedUser.name).toBe(CHANGED_NAME);
+      expect(updatedUser.img).toBe(CHANGED_IMG);
+      expect(updatedUser.psn).toBe(PSN_ID);
     });
-    const updatedUser = await userModel.findById({ _id: ID }).exec();
-    expect(updatedUser._id).toBe(ID);
-    expect(updatedUser.name).toBe(CHANGED_NAME);
-    expect(updatedUser.img).toBe(CHANGED_IMG);
-    expect(updatedUser.psn).toBe(PSN_ID);
   });
 
   afterEach(async () => {

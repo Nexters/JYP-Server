@@ -25,16 +25,16 @@ export class Tag {
   orient: string;
 
   @Prop({
-    type: [String],
+    type: String,
     ref: 'User',
     required: true,
   })
-  users: User[];
+  user: User;
 
-  constructor(topic: string, orient: string, users: User[]) {
+  constructor(topic: string, orient: string, user: User) {
     this.topic = topic;
     this.orient = orient;
-    this.users = users;
+    this.user = user;
   }
 }
 export const TagSchema = generateSchemaWithoutId(Tag);
@@ -88,7 +88,7 @@ export class Pikmi {
   link: string;
 
   constructor(
-    _id: mongoose.Types.ObjectId,
+    id: string,
     name: string,
     addr: string,
     cate: string,
@@ -97,7 +97,7 @@ export class Pikmi {
     lat: number,
     link: string,
   ) {
-    this._id = _id;
+    this._id = new mongoose.Types.ObjectId(id);
     this.name = name;
     this.addr = addr;
     this.cate = cate;
@@ -117,7 +117,7 @@ export class Pikmi {
     link: string,
   ): Pikmi {
     const _id = new mongoose.Types.ObjectId();
-    return new Pikmi(_id, name, addr, cate, likeBy, lon, lat, link);
+    return new Pikmi(_id.toString(), name, addr, cate, likeBy, lon, lat, link);
   }
 }
 export const PikmiSchema = SchemaFactory.createForClass(Pikmi);
@@ -164,7 +164,7 @@ export class Piki {
   link: string;
 
   constructor(
-    _id: mongoose.Types.ObjectId,
+    id: string,
     name: string,
     addr: string,
     cate: string,
@@ -172,7 +172,7 @@ export class Piki {
     lat: number,
     link: string,
   ) {
-    this._id = _id;
+    this._id = new mongoose.Types.ObjectId(id);
     this.name = name;
     this.addr = addr;
     this.cate = cate;
@@ -190,7 +190,7 @@ export class Piki {
     link: string,
   ): Piki {
     const _id = new mongoose.Types.ObjectId();
-    return new Piki(_id, name, addr, cate, lon, lat, link);
+    return new Piki(_id.toString(), name, addr, cate, lon, lat, link);
   }
 }
 export const PikiSchema = SchemaFactory.createForClass(Piki);

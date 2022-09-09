@@ -57,7 +57,7 @@ const JOURNEYS_VALIDATOR = {
         uniqueItems: true,
         items: {
           bsonType: 'object',
-          required: ['topic', 'orient', 'users'],
+          required: ['topic', 'orient', 'user'],
           properties: {
             topic: {
               bsonType: 'string',
@@ -66,13 +66,8 @@ const JOURNEYS_VALIDATOR = {
             orient: {
               enum: ['like', 'dislike', 'nomatter'],
             },
-            users: {
-              bsonType: 'array',
-              maxItems: 8,
-              uniqueItems: true,
-              items: {
-                bsonType: 'string',
-              },
+            user: {
+              bsonType: 'string',
             },
           },
         },
