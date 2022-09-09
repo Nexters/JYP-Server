@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { User } from '../user/schemas/user.schema';
 import {
   TagUpdateRequestDTO,
   JourneyCreateRequestDTO,
@@ -11,6 +12,7 @@ import {
 } from './dtos/journey.dto';
 import { JourneyController } from './journey.controller';
 import { JourneyService } from './journey.service';
+import { Tag, Journey, JourneyDocument } from './schemas/journey.schema';
 
 const JOURNEY_NAME = 'name';
 const START_DATE = 1661299200;
@@ -32,10 +34,28 @@ const JOURNEY_CREATE_DTO = new JourneyCreateRequestDTO(
   TAG_CREATE_DTOS,
 );
 const USER_ID = 'kakao-1234';
+const USER_NAME = 'username';
+const USER_IMG = '/user/img';
+const USER_PSN_ID = 'ME';
+const USER = new User(USER_ID, USER_NAME, USER_IMG, USER_PSN_ID);
+const TAGS = [
+  new Tag(FIRST_TOPIC, FIRST_ORIENT, USER),
+  new Tag(SECOND_TOPIC, SECOND_ORIENT, USER),
+];
+const JOURNEY_ID = '630b28c08abfc3f96130789c';
+const JOURNEY = new Journey(
+  JOURNEY_NAME,
+  START_DATE,
+  END_DATE,
+  THEME_PATH,
+  [USER],
+  TAGS,
+  [],
+  [[], [], []],
+) as JourneyDocument;
 const REQ = {
   user: { id: USER_ID },
 };
-const JOURNEY_ID = '630b28c08abfc3f96130789c';
 const JOURNEY_ID_RESPONSE_DTO = new IdResponseDTO(JOURNEY_ID);
 const PIKMI_NAME = 'pikmi';
 const PIKMI_ADDR = 'pikmi addr';
@@ -116,6 +136,20 @@ describe('JourneyController', () => {
 
   it('should be defined', () => {
     expect(journeyController).toBeDefined();
+  });
+
+  it('listUserJourneys는 JourneyService.listUserJourneys를 호출해 리턴한다.', async () => {
+    // given
+    const journeys = [JOURNEY, JOURNEY, JOURNEY];
+    journeyService.listUserJourneys = jest.fn().mockResolvedValue(journeys);
+
+    // when
+    const result = await journeyController.listUserJourneys(REQ);
+
+    // then
+    expect(journeyService.listUserJourneys).toBeCalledTimes(1);
+    expect(journeyService.listUserJourneys).toBeCalledWith(USER_ID);
+    expect(result).toEqual(journeys);
   });
 
   it('createJourney는 JourneyService.createJourney를 호출해 리턴한다.', async () => {

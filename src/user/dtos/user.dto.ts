@@ -3,7 +3,7 @@ import {
   UserCreateRequest,
   UserUpdateRequest,
 } from './user.interface';
-import { User as UserDoc } from '../schemas/user.schema';
+import { User } from '../schemas/user.schema';
 import { PERSONALITY } from '../schemas/personality';
 import { ApiProperty } from '@nestjs/swagger';
 import { AuthVendor } from '../../auth/authVendor';
@@ -42,7 +42,7 @@ export class UserResponseDTO implements UserResponse {
   })
   readonly personality: string;
 
-  static from(user: UserDoc): UserResponseDTO {
+  static from(user: User): UserResponseDTO {
     return new UserResponseDTO(
       user._id,
       user.name,

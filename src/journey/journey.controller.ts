@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   Param,
   Post,
@@ -27,6 +28,7 @@ import {
   PikisUpdateRequestDTO,
   IdsResponseDTO,
   TagsUpdateRequestDTO,
+  JourneyListResponseDTO,
 } from './dtos/journey.dto';
 import { JourneyService } from './journey.service';
 
@@ -34,6 +36,22 @@ import { JourneyService } from './journey.service';
 @Controller('journeys')
 export class JourneyController {
   constructor(private readonly journeyService: JourneyService) {}
+
+  @ApiOperation({
+    summary: '유저의 여행 목록',
+    description: '유저가 속한 모든 여행을 가져온다.',
+  })
+  @ApiOkResponse({ description: '성공', type: JourneyListResponseDTO })
+  @ApiUnauthorizedResponse({ description: '인증 실패' })
+  @ApiInternalServerErrorResponse({ description: '서버 오류' })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Get()
+  public async listUserJourneys(
+    @Request() req,
+  ): Promise<JourneyListResponseDTO> {
+    return await this.journeyService.listUserJourneys(req.user.id);
+  }
 
   @ApiOperation({
     summary: '여행 생성',

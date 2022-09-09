@@ -13,6 +13,8 @@ import {
   PikmiCreateRequestDTO,
   TagUpdateRequestDTO,
   TagsUpdateRequestDTO,
+  SimpleJourneyResponseDTO,
+  JourneyListResponseDTO,
 } from './dtos/journey.dto';
 import { User } from '../user/schemas/user.schema';
 import {
@@ -37,6 +39,7 @@ import {
   MAX_JOURNEY_PER_USER,
   MAX_PIKMI_PER_JOURNEY,
 } from '../common/validation/validation.constants';
+import { UserResponseDTO } from '../user/dtos/user.dto';
 
 jest.mock('../common/validation/validation.constants', () => ({
   MAX_JOURNEY_PER_USER: 5,
@@ -207,6 +210,54 @@ describe('JourneyService', () => {
 
   it('should be defined', () => {
     expect(journeyService).toBeDefined();
+  });
+
+  describe('listUserJourneys', () => {
+    beforeEach(async () => {
+      // given
+      userRepository.findOne = jest.fn().mockResolvedValue(USER);
+      const journey = structuredClone(JOURNEY);
+      journey._id = new mongoose.Types.ObjectId(JOURNEY_ID);
+      const journeys = [journey, journey, journey];
+      journeyRepository.listByUser = jest.fn().mockResolvedValue(journeys);
+    });
+
+    it('JourneyRepository.listByUser를 호출해 불러온 journey들을 JourneyListResponseDTO로 변환해 리턴한다.', async () => {
+      // when
+      const result = await journeyService.listUserJourneys(USER_ID);
+
+      // then
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.listByUser).toBeCalledTimes(1);
+      expect(journeyRepository.listByUser).toBeCalledWith(USER);
+      const expectedResultElement = new SimpleJourneyResponseDTO(
+        JOURNEY_ID,
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [UserResponseDTO.from(USER)],
+      );
+      const expectedResult = new JourneyListResponseDTO([
+        expectedResultElement,
+        expectedResultElement,
+        expectedResultElement,
+      ]);
+      expect(result).toEqual(expectedResult);
+    });
+
+    it('userId에 해당하는 user가 없을 경우 InvalidJwtPayloadException을 throw한다.', async () => {
+      // given
+      userRepository.findOne = jest.fn().mockResolvedValue(null);
+
+      // then
+      await expect(journeyService.listUserJourneys(USER_ID)).rejects.toThrow(
+        new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG),
+      );
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+    });
   });
 
   describe('createJourney', () => {

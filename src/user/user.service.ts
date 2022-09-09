@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Option } from 'prelude-ts';
 import { generateId } from '../common/util';
-import { UserCreateRequestDTO, UserResponseDTO, UserUpdateRequestDTO } from './dtos/user.dto';
+import {
+  UserCreateRequestDTO,
+  UserResponseDTO,
+  UserUpdateRequestDTO,
+} from './dtos/user.dto';
 import { UserRepository } from './user.repository';
 
 @Injectable()
@@ -30,7 +34,9 @@ export class UserService {
     );
   }
 
-  public async createUser(userCreateDTO: UserCreateRequestDTO): Promise<UserResponseDTO> {
+  public async createUser(
+    userCreateDTO: UserCreateRequestDTO,
+  ): Promise<UserResponseDTO> {
     const id = generateId(userCreateDTO.authVendor, userCreateDTO.authId);
     return UserResponseDTO.from(
       await this.userRepository.insertOne(

@@ -19,6 +19,7 @@ import {
   MAX_PIKMI_PER_JOURNEY,
 } from '../src/common/validation/validation.constants';
 import { toPlainObject } from '../src/common/util';
+import { JourneyListResponseDTO } from '../src/journey/dtos/journey.dto';
 
 jest.mock('../src/common/validation/validation.constants', () => ({
   MAX_JOURNEY_PER_USER: 5,
@@ -126,6 +127,81 @@ describe('Journeys controller', () => {
     journeyModel = module.get<Model<JourneyDocument>>(
       getModelToken(Journey.name),
     );
+  });
+
+  describe('GET /journeys', () => {
+    let journeys: JourneyDocument[];
+
+    beforeEach(async () => {
+      // given
+      const user = new userModel(USER);
+      await user.save();
+      const user2 = new userModel(USER2);
+      await user2.save();
+      const user3 = new userModel(USER3);
+      await user3.save();
+      journeys = [
+        new Journey(
+          'journey1',
+          1646492400,
+          1646751600,
+          'theme1',
+          [USER, USER2],
+          TAGS,
+          [],
+          [[], [], []],
+        ),
+        new Journey(
+          'journey2',
+          1647270000,
+          1647702000,
+          'theme2',
+          [USER, USER2, USER3],
+          TAGS,
+          [],
+          [[], [], [], [], []],
+        ),
+        new Journey(
+          'journey3',
+          1662476400,
+          1662822000,
+          'theme3',
+          [USER2, USER3],
+          TAGS,
+          [],
+          [[], [], [], []],
+        ),
+      ].map((journey) => new journeyModel(journey));
+      journeys.forEach((journey) => {
+        journey.save();
+        journey.populate('users');
+      });
+      path = '/journeys';
+    });
+
+    it('success', async () => {
+      // when
+      const response = await request(app.getHttpServer()).get(path);
+
+      // then
+      expect(response.statusCode).toBe(200);
+      const expectedResult = JourneyListResponseDTO.from([
+        journeys[0],
+        journeys[1],
+      ]);
+      expect(response.body).toEqual(expectedResult);
+    });
+
+    it('payload로 전달된 회원 ID가 존재하지 않는 회원 ID일 때 401 응답', async () => {
+      // given
+      await userModel.findByIdAndDelete(USER_ID);
+
+      // when
+      const response = await request(app.getHttpServer()).get(path);
+
+      // then
+      expect(response.statusCode).toBe(401);
+    });
   });
 
   describe('POST /journeys', () => {

@@ -34,7 +34,9 @@ import {
   TAG_EXCEEDED_MSG,
   TAG_TOPIC_LENGTH_EXCEEDED_MSG,
 } from '../../common/validation/validation.messages';
+import { UserResponseDTO } from '../../user/dtos/user.dto';
 import { CATEGORY } from '../schemas/category';
+import { JourneyDocument } from '../schemas/journey.schema';
 import { ORIENTATION } from '../schemas/orientation';
 import {
   IdResponse,
@@ -45,7 +47,77 @@ import {
   PikmiCreateRequest,
   TagUpdateRequest,
   TagsUpdateRequest,
+  SimpleJourneyResponse,
+  JourneyListResponse,
 } from './journey.interface';
+
+export class SimpleJourneyResponseDTO implements SimpleJourneyResponse {
+  @ApiProperty({ description: '여행 ID' })
+  readonly id: string;
+
+  @ApiProperty({ description: '여행 이름' })
+  readonly name: string;
+
+  @ApiProperty({ description: '여행 시작일 timestamp' })
+  readonly startDate: number;
+
+  @ApiProperty({ description: '여행 종료일 timestamp' })
+  readonly endDate: number;
+
+  @ApiProperty({ description: '여행기 커버 이미지 경로' })
+  readonly themePath: string;
+
+  @ApiProperty({
+    type: [UserResponseDTO],
+    description: '여행에 속한 유저 목록',
+  })
+  readonly users: UserResponseDTO[];
+
+  static from(journey: JourneyDocument): SimpleJourneyResponseDTO {
+    return new SimpleJourneyResponseDTO(
+      journey._id.toString(),
+      journey.name,
+      journey.start,
+      journey.end,
+      journey.theme,
+      journey.users.map((user) => UserResponseDTO.from(user)),
+    );
+  }
+
+  constructor(
+    id: string,
+    name: string,
+    startDate: number,
+    endDate: number,
+    themePath: string,
+    users: UserResponseDTO[],
+  ) {
+    this.id = id;
+    this.name = name;
+    this.startDate = startDate;
+    this.endDate = endDate;
+    this.themePath = themePath;
+    this.users = users;
+  }
+}
+
+export class JourneyListResponseDTO implements JourneyListResponse {
+  @ApiProperty({
+    type: [SimpleJourneyResponseDTO],
+    description: '여행 목록',
+  })
+  readonly journeys: SimpleJourneyResponseDTO[];
+
+  static from(journeys: JourneyDocument[]) {
+    return new JourneyListResponseDTO(
+      journeys.map((journey) => SimpleJourneyResponseDTO.from(journey)),
+    );
+  }
+
+  constructor(journeys: SimpleJourneyResponseDTO[]) {
+    this.journeys = journeys;
+  }
+}
 
 export class TagUpdateRequestDTO implements TagUpdateRequest {
   @ApiProperty({ description: '태그 주제' })

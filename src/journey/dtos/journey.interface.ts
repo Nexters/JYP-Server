@@ -1,3 +1,17 @@
+import { UserResponse } from '../../user/dtos/user.interface';
+
+export interface SimpleJourneyResponse {
+  id: string;
+  name: string;
+  startDate: number;
+  endDate: number;
+  themePath: string;
+  users: UserResponse[];
+}
+
+export interface JourneyListResponse {
+  journeys: SimpleJourneyResponse[];
+}
 export interface TagUpdateRequest {
   topic: string;
   orientation: string;

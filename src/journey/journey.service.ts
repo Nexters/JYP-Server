@@ -29,6 +29,7 @@ import {
   PikisUpdateRequestDTO,
   IdsResponseDTO,
   TagsUpdateRequestDTO,
+  JourneyListResponseDTO,
 } from './dtos/journey.dto';
 import { JourneyRepository } from './journey.repository';
 import {
@@ -53,6 +54,17 @@ export class JourneyService {
     @InjectModel(Journey.name)
     private readonly journeyModel: Model<JourneyDocument>,
   ) {}
+
+  public async listUserJourneys(
+    userId: string,
+  ): Promise<JourneyListResponseDTO> {
+    const user = await this.userRepository.findOne(userId);
+    if (user == null) {
+      throw new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG);
+    }
+    const journeys = await this.journeyRepository.listByUser(user);
+    return JourneyListResponseDTO.from(journeys);
+  }
 
   public async createJourney(
     journeyCreateDto: JourneyCreateRequestDTO,
