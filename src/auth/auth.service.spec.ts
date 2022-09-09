@@ -9,7 +9,7 @@ import { AuthVendor } from './authVendor';
 import { JwtService } from '@nestjs/jwt';
 import { KakaoLoginResponseDTO, KakaoSignUpResponseDTO } from './dto/auth.dto';
 import { toCamel } from 'snake-camel';
-import { UserDTO } from '../user/dtos/user.dto';
+import { UserResponseDTO } from '../user/dtos/user.dto';
 import { generateId } from '../common/util';
 
 const ACCESS_TOKEN = 'ACCESS_TOKEN';
@@ -94,7 +94,12 @@ describe('AuthService', () => {
       .get(method(() => userService.getUser))
       .mockResolvedValue(
         Option.of(
-          UserDTO.from({ _id: 'id', name: 'name', img: 'img', psn: 'psn' }),
+          UserResponseDTO.from({
+            _id: 'id',
+            name: 'name',
+            img: 'img',
+            psn: 'psn',
+          }),
         ),
       );
 

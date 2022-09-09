@@ -1,13 +1,13 @@
 import { AuthVendor } from '../../auth/authVendor';
 
-export interface User {
+export interface UserResponse {
   id: string;
   name: string;
   profileImagePath: string;
   personality: string;
 }
 
-export interface UserCreate {
+export interface UserCreateRequest {
   authVendor: AuthVendor;
   authId: string;
   name: string;
@@ -15,7 +15,7 @@ export interface UserCreate {
   personalityId: string;
 }
 
-export interface UserUpdate {
+export interface UserUpdateRequest {
   name: string;
   profileImagePath: string;
 }
