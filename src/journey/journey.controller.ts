@@ -102,7 +102,7 @@ export class JourneyController {
     summary: '피키 수정',
     description: '추가 혹은 수정된 피키 목록을 여행에 반영한다.',
   })
-  @ApiOkResponse({ description: '성공' })
+  @ApiOkResponse({ description: '성공', type: IdsResponseDTO })
   @ApiBadRequestResponse({ description: '요청 데이터가 잘못됨' })
   @ApiUnauthorizedResponse({ description: '인증 실패' })
   @ApiInternalServerErrorResponse({ description: '서버 오류' })
