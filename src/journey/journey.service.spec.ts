@@ -1,10 +1,37 @@
+// 상수 모킹을 위해 import 문 위에 위치함.
+// 참고: https://stackoverflow.com/questions/65554910/jest-referenceerror-cannot-access-before-initialization
+const DEFAULT_TAG1_TOPIC = 'dtopic1';
+const DEFAULT_TAG1_ORIENT = 'like';
+const DEFAULT_TAG2_TOPIC = 'dtopic2';
+const DEFAULT_TAG2_ORIENT = 'dislike';
+const DEFAULT_TAG3_TOPIC = 'dtopic3';
+const DEFAULT_TAG3_ORIENT = 'nomatter';
+const DEFAULT_TAG1 = {
+  topic: DEFAULT_TAG1_TOPIC,
+  orientation: DEFAULT_TAG1_ORIENT,
+};
+const DEFAULT_TAG2 = {
+  topic: DEFAULT_TAG2_TOPIC,
+  orientation: DEFAULT_TAG2_ORIENT,
+};
+const DEFAULT_TAG3 = {
+  topic: DEFAULT_TAG3_TOPIC,
+  orientation: DEFAULT_TAG3_ORIENT,
+};
+
 import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import mongoose from 'mongoose';
 import { UserRepository } from '../user/user.repository';
 import { JourneyRepository } from './journey.repository';
 import { JourneyService } from './journey.service';
-import { Journey, JourneyDocument, Pikmi, Tag } from './schemas/journey.schema';
+import {
+  Journey,
+  JourneyDocument,
+  Piki,
+  Pikmi,
+  Tag,
+} from './schemas/journey.schema';
 import {
   IdResponseDTO,
   JourneyCreateRequestDTO,
@@ -15,6 +42,14 @@ import {
   TagsUpdateRequestDTO,
   SimpleJourneyResponseDTO,
   JourneyListResponseDTO,
+  JourneyResponseDTO,
+  PikmiResponseDTO,
+  TagResponseDTO,
+  PikiResponseDTO,
+  DefaultTagsResponseDTO,
+  DefaultTagResponseDTO,
+  TagsResponseDTO,
+  PikidayResponseDTO,
 } from './dtos/journey.dto';
 import { User } from '../user/schemas/user.schema';
 import {
@@ -40,11 +75,17 @@ import {
   MAX_PIKMI_PER_JOURNEY,
 } from '../common/validation/validation.constants';
 import { UserResponseDTO } from '../user/dtos/user.dto';
+import { PERSONALITY } from '../user/schemas/personality';
+import { NotFoundException } from '@nestjs/common';
 
 jest.mock('../common/validation/validation.constants', () => ({
   MAX_JOURNEY_PER_USER: 5,
   MAX_PIKMI_PER_JOURNEY: 5,
   MAX_USER_PER_JOURNEY: 2,
+}));
+
+jest.mock('./tag/default.tags', () => ({
+  DEFAULT_TAGS: [DEFAULT_TAG1, DEFAULT_TAG2, DEFAULT_TAG3],
 }));
 
 const JOURNEY_NAME = 'name';
@@ -125,6 +166,13 @@ const PIKI2_CATEGORY = 'S';
 const PIKI2_LON = 131.4;
 const PIKI2_LAT = 38.7;
 const PIKI2_LINK = '/piki2/link';
+const PIKI3_ID = '63136a1e02efbf949b847f8e';
+const PIKI3_NAME = 'piki3';
+const PIKI3_ADDR = 'piki3 addr';
+const PIKI3_CATEGORY = 'P';
+const PIKI3_LON = 131.5;
+const PIKI3_LAT = 38.8;
+const PIKI3_LINK = '/piki3/link';
 const PIKI_UPDATE_DTOS_NO_ID = [
   new PikiUpdateRequestDTO(
     undefined,
@@ -173,8 +221,27 @@ const PIKIS_UPDATE_DTO_WITH_ID = new PikisUpdateRequestDTO(
   PIKI_INDEX,
   PIKI_UPDATE_DTOS_WITH_ID,
 );
+const EMPTY_PIKIDAY_RESPONSE_DTO = new PikidayResponseDTO([]);
 const USER2 = new User('user2', 'name2', 'img2', 'ME');
 const USER3 = new User('user3', 'name3', 'img3', 'ME');
+const USER_RESPONSE_DTO = new UserResponseDTO(
+  USER._id,
+  USER.name,
+  USER.img,
+  PERSONALITY[USER.psn],
+);
+const USER2_RESPONSE_DTO = new UserResponseDTO(
+  USER2._id,
+  USER2.name,
+  USER2.img,
+  PERSONALITY[USER2.psn],
+);
+const USER3_RESPONSE_DTO = new UserResponseDTO(
+  USER3._id,
+  USER3.name,
+  USER3.img,
+  PERSONALITY[USER3.psn],
+);
 
 describe('JourneyService', () => {
   let journeyService: JourneyService;
@@ -259,6 +326,355 @@ describe('JourneyService', () => {
       );
       expect(userRepository.findOne).toBeCalledTimes(1);
       expect(userRepository.findOne).toBeCalledWith(USER_ID);
+    });
+  });
+
+  describe('getDefaultTags', () => {
+    it('디폴트 태그를 DefaultTagsResponseDTO 타입으로 변환해 리턴한다.', async () => {
+      // when
+      const result = await journeyService.getDefaultTags();
+
+      // then
+      const expectedResult = new DefaultTagsResponseDTO([
+        new DefaultTagResponseDTO(DEFAULT_TAG1_TOPIC, DEFAULT_TAG1_ORIENT),
+        new DefaultTagResponseDTO(DEFAULT_TAG2_TOPIC, DEFAULT_TAG2_ORIENT),
+        new DefaultTagResponseDTO(DEFAULT_TAG3_TOPIC, DEFAULT_TAG3_ORIENT),
+      ]);
+      expect(result).toEqual(expectedResult);
+    });
+  });
+
+  describe('getJourney', () => {
+    beforeEach(async () => {
+      // given
+      const journey = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER, USER2, USER3],
+        [
+          new Tag(FIRST_TOPIC, FIRST_ORIENT, USER),
+          new Tag(FIRST_TOPIC, FIRST_ORIENT, USER2),
+          new Tag(FIRST_TOPIC, FIRST_ORIENT, USER3),
+          new Tag(SECOND_TOPIC, SECOND_ORIENT, USER2),
+          new Tag(SECOND_TOPIC, SECOND_ORIENT, USER3),
+          new Tag(THIRD_TOPIC, THIRD_ORIENT, USER),
+          new Tag(THIRD_TOPIC, THIRD_ORIENT, USER3),
+          new Tag(FOURTH_TOPIC, FOURTH_ORIENT, USER),
+        ],
+        [
+          new Pikmi(
+            PIKMI1_ID,
+            PIKMI_NAME,
+            PIKMI_ADDR,
+            PIKMI_CATEGORY,
+            [USER, USER2],
+            PIKMI_LON,
+            PIKMI_LAT,
+            PIKMI_LINK,
+          ),
+          new Pikmi(
+            PIKMI2_ID,
+            PIKMI_NAME,
+            PIKMI_ADDR,
+            PIKMI_CATEGORY,
+            [],
+            PIKMI_LON,
+            PIKMI_LAT,
+            PIKMI_LINK,
+          ),
+          new Pikmi(
+            PIKMI3_ID,
+            PIKMI_NAME,
+            PIKMI_ADDR,
+            PIKMI_CATEGORY,
+            [USER3],
+            PIKMI_LON,
+            PIKMI_LAT,
+            PIKMI_LINK,
+          ),
+        ],
+        [
+          [
+            new Piki(
+              PIKI1_ID,
+              PIKI1_NAME,
+              PIKI1_ADDR,
+              PIKI1_CATEGORY,
+              PIKI1_LON,
+              PIKI1_LAT,
+              PIKI1_LINK,
+            ),
+            new Piki(
+              PIKI2_ID,
+              PIKI2_NAME,
+              PIKI2_ADDR,
+              PIKI2_CATEGORY,
+              PIKI2_LON,
+              PIKI2_LAT,
+              PIKI2_LINK,
+            ),
+          ],
+          [],
+          [
+            new Piki(
+              PIKI3_ID,
+              PIKI3_NAME,
+              PIKI3_ADDR,
+              PIKI3_CATEGORY,
+              PIKI3_LON,
+              PIKI3_LAT,
+              PIKI3_LINK,
+            ),
+          ],
+        ],
+      ) as JourneyDocument;
+      journey._id = new mongoose.Types.ObjectId(JOURNEY_ID);
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
+    });
+
+    it('JourneyRepository.get을 호출해 받은 저니를 JourneyResponseDTO 타입으로 변환해 리턴한다.', async () => {
+      // when
+      const result = await journeyService.getJourney(JOURNEY_ID);
+
+      // then
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, {
+        populateUsers: true,
+        populateTags: true,
+        populatePikmis: true,
+        populatePikis: true,
+      });
+      const expectedResult = new JourneyResponseDTO(
+        JOURNEY_ID,
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [
+          new UserResponseDTO(
+            USER._id,
+            USER.name,
+            USER.img,
+            PERSONALITY[USER.psn],
+          ),
+          new UserResponseDTO(
+            USER2._id,
+            USER2.name,
+            USER2.img,
+            PERSONALITY[USER2.psn],
+          ),
+          new UserResponseDTO(
+            USER3._id,
+            USER3.name,
+            USER3.img,
+            PERSONALITY[USER3.psn],
+          ),
+        ],
+        [
+          new TagResponseDTO(FIRST_TOPIC, FIRST_ORIENT, [
+            USER_RESPONSE_DTO,
+            USER2_RESPONSE_DTO,
+            USER3_RESPONSE_DTO,
+          ]),
+          new TagResponseDTO(SECOND_TOPIC, SECOND_ORIENT, [
+            USER2_RESPONSE_DTO,
+            USER3_RESPONSE_DTO,
+          ]),
+          new TagResponseDTO(THIRD_TOPIC, THIRD_ORIENT, [
+            USER_RESPONSE_DTO,
+            USER3_RESPONSE_DTO,
+          ]),
+          new TagResponseDTO(FOURTH_TOPIC, FOURTH_ORIENT, [USER_RESPONSE_DTO]),
+        ],
+        [
+          new PikmiResponseDTO(
+            PIKMI1_ID,
+            PIKMI_NAME,
+            PIKMI_ADDR,
+            PIKMI_CATEGORY,
+            [USER_RESPONSE_DTO, USER2_RESPONSE_DTO],
+            PIKMI_LON,
+            PIKMI_LAT,
+            PIKMI_LINK,
+          ),
+          new PikmiResponseDTO(
+            PIKMI2_ID,
+            PIKMI_NAME,
+            PIKMI_ADDR,
+            PIKMI_CATEGORY,
+            [],
+            PIKMI_LON,
+            PIKMI_LAT,
+            PIKMI_LINK,
+          ),
+          new PikmiResponseDTO(
+            PIKMI3_ID,
+            PIKMI_NAME,
+            PIKMI_ADDR,
+            PIKMI_CATEGORY,
+            [USER3_RESPONSE_DTO],
+            PIKMI_LON,
+            PIKMI_LAT,
+            PIKMI_LINK,
+          ),
+        ],
+        [
+          new PikidayResponseDTO([
+            new PikiResponseDTO(
+              PIKI1_ID,
+              PIKI1_NAME,
+              PIKI1_ADDR,
+              PIKI1_CATEGORY,
+              PIKI1_LON,
+              PIKI1_LAT,
+              PIKI1_LINK,
+            ),
+            new PikiResponseDTO(
+              PIKI2_ID,
+              PIKI2_NAME,
+              PIKI2_ADDR,
+              PIKI2_CATEGORY,
+              PIKI2_LON,
+              PIKI2_LAT,
+              PIKI2_LINK,
+            ),
+          ]),
+          EMPTY_PIKIDAY_RESPONSE_DTO,
+          new PikidayResponseDTO([
+            new PikiResponseDTO(
+              PIKI3_ID,
+              PIKI3_NAME,
+              PIKI3_ADDR,
+              PIKI3_CATEGORY,
+              PIKI3_LON,
+              PIKI3_LAT,
+              PIKI3_LINK,
+            ),
+          ]),
+        ],
+      );
+      expect(result).toEqual(expectedResult);
+    });
+
+    it('해당하는 저니가 없으면 NotFoundException을 throw한다.', async () => {
+      // given
+      journeyRepository.get = jest.fn().mockResolvedValue(null);
+
+      // then
+      await expect(journeyService.getJourney(JOURNEY_ID)).rejects.toThrow(
+        new NotFoundException(JOURNEY_NOT_EXIST_MSG),
+      );
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, {
+        populateUsers: true,
+        populateTags: true,
+        populatePikmis: true,
+        populatePikis: true,
+      });
+    });
+  });
+
+  describe('getTags', () => {
+    beforeEach(async () => {
+      // given
+      const tags = [
+        new Tag(FIRST_TOPIC, FIRST_ORIENT, USER),
+        new Tag(FIRST_TOPIC, FIRST_ORIENT, USER2),
+        new Tag(FIRST_TOPIC, FIRST_ORIENT, USER3),
+        new Tag(DEFAULT_TAG1_TOPIC, DEFAULT_TAG1_ORIENT, USER2),
+        new Tag(DEFAULT_TAG1_TOPIC, DEFAULT_TAG1_ORIENT, USER3),
+        new Tag(THIRD_TOPIC, THIRD_ORIENT, USER),
+        new Tag(THIRD_TOPIC, THIRD_ORIENT, USER3),
+        new Tag(DEFAULT_TAG2_TOPIC, DEFAULT_TAG2_ORIENT, USER),
+      ];
+      const journey = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER, USER2, USER3],
+        tags,
+        [],
+        [[], [], []],
+      ) as JourneyDocument;
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
+    });
+
+    it('includeDefaultTags가 true일 경우 디폴트 태그를 병합해 TagsResponseDTO 타입으로 리턴한다.', async () => {
+      // when
+      const result = await journeyService.getTags(JOURNEY_ID, true);
+
+      // then
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, {
+        populateTags: true,
+      });
+      const expectedResult = new TagsResponseDTO([
+        new TagResponseDTO(FIRST_TOPIC, FIRST_ORIENT, [
+          USER_RESPONSE_DTO,
+          USER2_RESPONSE_DTO,
+          USER3_RESPONSE_DTO,
+        ]),
+        new TagResponseDTO(DEFAULT_TAG1_TOPIC, DEFAULT_TAG1_ORIENT, [
+          USER2_RESPONSE_DTO,
+          USER3_RESPONSE_DTO,
+        ]),
+        new TagResponseDTO(THIRD_TOPIC, THIRD_ORIENT, [
+          USER_RESPONSE_DTO,
+          USER3_RESPONSE_DTO,
+        ]),
+        new TagResponseDTO(DEFAULT_TAG2_TOPIC, DEFAULT_TAG2_ORIENT, [
+          USER_RESPONSE_DTO,
+        ]),
+        new TagResponseDTO(DEFAULT_TAG3_TOPIC, DEFAULT_TAG3_ORIENT, []),
+      ]);
+      expect(result).toEqual(expectedResult);
+    });
+
+    it('includeDefaultTags가 false일 경우 디폴트 태그를 병합하지 않고 TagsResponseDTO 타입으로 리턴한다.', async () => {
+      // when
+      const result = await journeyService.getTags(JOURNEY_ID, false);
+
+      // then
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, {
+        populateTags: true,
+      });
+      const expectedResult = new TagsResponseDTO([
+        new TagResponseDTO(FIRST_TOPIC, FIRST_ORIENT, [
+          USER_RESPONSE_DTO,
+          USER2_RESPONSE_DTO,
+          USER3_RESPONSE_DTO,
+        ]),
+        new TagResponseDTO(DEFAULT_TAG1_TOPIC, DEFAULT_TAG1_ORIENT, [
+          USER2_RESPONSE_DTO,
+          USER3_RESPONSE_DTO,
+        ]),
+        new TagResponseDTO(THIRD_TOPIC, THIRD_ORIENT, [
+          USER_RESPONSE_DTO,
+          USER3_RESPONSE_DTO,
+        ]),
+        new TagResponseDTO(DEFAULT_TAG2_TOPIC, DEFAULT_TAG2_ORIENT, [
+          USER_RESPONSE_DTO,
+        ]),
+      ]);
+      expect(result).toEqual(expectedResult);
+    });
+
+    it('해당하는 저니가 없으면 NotFoundException을 throw한다.', async () => {
+      // given
+      journeyRepository.get = jest.fn().mockResolvedValue(null);
+
+      // then
+      await expect(journeyService.getTags(JOURNEY_ID, true)).rejects.toThrow(
+        new NotFoundException(JOURNEY_NOT_EXIST_MSG),
+      );
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, {
+        populateTags: true,
+      });
     });
   });
 

@@ -5,6 +5,7 @@ import {
   HttpCode,
   Param,
   Post,
+  Query,
   Request,
   UseGuards,
   UsePipes,
@@ -15,6 +16,7 @@ import {
   ApiBearerAuth,
   ApiCreatedResponse,
   ApiInternalServerErrorResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -29,6 +31,8 @@ import {
   IdsResponseDTO,
   TagsUpdateRequestDTO,
   JourneyListResponseDTO,
+  JourneyResponseDTO,
+  DefaultTagsResponseDTO,
 } from './dtos/journey.dto';
 import { JourneyService } from './journey.service';
 
@@ -39,7 +43,7 @@ export class JourneyController {
 
   @ApiOperation({
     summary: '유저의 여행 목록',
-    description: '유저가 속한 모든 여행을 가져온다.',
+    description: '유저가 속한 모든 여행을 가져온다. 정렬은 최신순이다.',
   })
   @ApiOkResponse({ description: '성공', type: JourneyListResponseDTO })
   @ApiUnauthorizedResponse({ description: '인증 실패' })
@@ -51,6 +55,53 @@ export class JourneyController {
     @Request() req,
   ): Promise<JourneyListResponseDTO> {
     return await this.journeyService.listUserJourneys(req.user.id);
+  }
+
+  @ApiOperation({
+    summary: '디폴트 태그 조회',
+    description: '디폴트 태그 데이터를 가져온다.',
+  })
+  @ApiOkResponse({ description: '성공', type: DefaultTagsResponseDTO })
+  @ApiUnauthorizedResponse({ description: '인증 실패' })
+  @ApiInternalServerErrorResponse({ description: '서버 오류' })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Get('default-tags')
+  public async getDefaultTags() {
+    return await this.journeyService.getDefaultTags();
+  }
+
+  @ApiOperation({
+    summary: '여행 조회',
+    description: '여행 ID로 여행 데이터를 조회한다.',
+  })
+  @ApiOkResponse({ description: '성공', type: JourneyResponseDTO })
+  @ApiUnauthorizedResponse({ description: '인증 실패' })
+  @ApiNotFoundResponse({ description: '여행을 찾을 수 없음' })
+  @ApiInternalServerErrorResponse({ description: '서버 오류' })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Get(':journeyId')
+  public async getJourney(@Param('journeyId') journeyId: string) {
+    return await this.journeyService.getJourney(journeyId);
+  }
+
+  @ApiOperation({
+    summary: '여행 태그 조회',
+    description: '여행에 등록된 태그를 조회한다.',
+  })
+  @ApiOkResponse({ description: '성공', type: JourneyResponseDTO })
+  @ApiUnauthorizedResponse({ description: '인증 실패' })
+  @ApiNotFoundResponse({ description: '여행을 찾을 수 없음' })
+  @ApiInternalServerErrorResponse({ description: '서버 오류' })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Get(':journeyId/tags')
+  public async getTags(
+    @Param('journeyId') journeyId: string,
+    @Query('includeDefaultTags') includeDefaultTags = false,
+  ) {
+    return await this.journeyService.getTags(journeyId, includeDefaultTags);
   }
 
   @ApiOperation({

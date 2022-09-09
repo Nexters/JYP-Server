@@ -1,4 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { UserResponseDTO } from '../user/dtos/user.dto';
+import { PERSONALITY } from '../user/schemas/personality';
 import { User } from '../user/schemas/user.schema';
 import {
   TagUpdateRequestDTO,
@@ -9,6 +11,12 @@ import {
   PikiUpdateRequestDTO,
   IdsResponseDTO,
   TagsUpdateRequestDTO,
+  JourneyResponseDTO,
+  DefaultTagsResponseDTO,
+  DefaultTagResponseDTO,
+  TagsResponseDTO,
+  TagResponseDTO,
+  PikidayResponseDTO,
 } from './dtos/journey.dto';
 import { JourneyController } from './journey.controller';
 import { JourneyService } from './journey.service';
@@ -114,6 +122,36 @@ const PIKIS_UPDATE_DTO_NO_ID = new PikisUpdateRequestDTO(
 );
 const PIKIS_IDS_RESPONSE_DTO = new IdsResponseDTO(PIKI1_ID, PIKI2_ID);
 const TAGS_UPDATE_DTO = new TagsUpdateRequestDTO(TAG_CREATE_DTOS);
+const USER_RESPONSE_DTO = new UserResponseDTO(
+  USER._id,
+  USER.name,
+  USER.img,
+  PERSONALITY[USER.psn],
+);
+const EMPTY_PIKIDAY_RESPONSE_DTO = new PikidayResponseDTO([]);
+const JOURNEY_RESPONSE_DTO = new JourneyResponseDTO(
+  JOURNEY_ID,
+  JOURNEY_NAME,
+  START_DATE,
+  END_DATE,
+  THEME_PATH,
+  [USER_RESPONSE_DTO],
+  [],
+  [],
+  [
+    EMPTY_PIKIDAY_RESPONSE_DTO,
+    EMPTY_PIKIDAY_RESPONSE_DTO,
+    EMPTY_PIKIDAY_RESPONSE_DTO,
+  ],
+);
+const DEFAULT_TAGS_RESPONSE_DTO = new DefaultTagsResponseDTO([
+  new DefaultTagResponseDTO(FIRST_TOPIC, FIRST_ORIENT),
+  new DefaultTagResponseDTO(SECOND_TOPIC, SECOND_ORIENT),
+]);
+const TAGS_RESPONSE_DTO = new TagsResponseDTO([
+  new TagResponseDTO(FIRST_TOPIC, FIRST_ORIENT, [USER_RESPONSE_DTO]),
+  new TagResponseDTO(SECOND_TOPIC, SECOND_ORIENT, [USER_RESPONSE_DTO]),
+]);
 
 describe('JourneyController', () => {
   let journeyController: JourneyController;
@@ -150,6 +188,49 @@ describe('JourneyController', () => {
     expect(journeyService.listUserJourneys).toBeCalledTimes(1);
     expect(journeyService.listUserJourneys).toBeCalledWith(USER_ID);
     expect(result).toEqual(journeys);
+  });
+
+  it('getDefaultTags는 JourneyService.getDefaultTags를 호출해 리턴한다.', async () => {
+    // given
+    journeyService.getDefaultTags = jest
+      .fn()
+      .mockResolvedValue(DEFAULT_TAGS_RESPONSE_DTO);
+
+    // when
+    const result = await journeyController.getDefaultTags();
+
+    // then
+    expect(journeyService.getDefaultTags).toBeCalledTimes(1);
+    expect(journeyService.getDefaultTags).toBeCalledWith();
+    expect(result).toEqual(DEFAULT_TAGS_RESPONSE_DTO);
+  });
+
+  it('getJourney는 JourneyService.getJourney를 호출해 리턴한다.', async () => {
+    // given
+    journeyService.getJourney = jest
+      .fn()
+      .mockResolvedValue(JOURNEY_RESPONSE_DTO);
+
+    // when
+    const result = await journeyController.getJourney(JOURNEY_ID);
+
+    // then
+    expect(journeyService.getJourney).toBeCalledTimes(1);
+    expect(journeyService.getJourney).toBeCalledWith(JOURNEY_ID);
+    expect(result).toEqual(JOURNEY_RESPONSE_DTO);
+  });
+
+  it('getTags는 JourneyService.getTags를 호출해 리턴한다.', async () => {
+    // given
+    journeyService.getTags = jest.fn().mockResolvedValue(TAGS_RESPONSE_DTO);
+
+    // when
+    const result = await journeyController.getTags(JOURNEY_ID, true);
+
+    // then
+    expect(journeyService.getTags).toBeCalledTimes(1);
+    expect(journeyService.getTags).toBeCalledWith(JOURNEY_ID, true);
+    expect(result).toEqual(TAGS_RESPONSE_DTO);
   });
 
   it('createJourney는 JourneyService.createJourney를 호출해 리턴한다.', async () => {

@@ -42,9 +42,9 @@ export class JourneyRepository {
     user: User,
     populateOptions: PopulateOptions = {},
   ): Promise<JourneyDocument[]> {
-    let query: Query<any, any, any, any> = this.journeyModel.find({
-      users: user,
-    });
+    let query: Query<any, any, any, any> = this.journeyModel
+      .find({ users: user })
+      .sort({ _id: -1 });
     if (populateOptions.populateUsers) {
       query = query.populate('users');
     }

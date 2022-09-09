@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
@@ -30,6 +30,10 @@ import {
   IdsResponseDTO,
   TagsUpdateRequestDTO,
   JourneyListResponseDTO,
+  JourneyResponseDTO,
+  DefaultTagsResponseDTO,
+  TagsResponseDTO,
+  TagResponseDTO,
 } from './dtos/journey.dto';
 import { JourneyRepository } from './journey.repository';
 import {
@@ -45,6 +49,7 @@ import {
   MAX_USER_PER_JOURNEY,
 } from '../common/validation/validation.constants';
 import { User } from '../user/schemas/user.schema';
+import { DEFAULT_TAGS } from './tag/default.tags';
 
 @Injectable()
 export class JourneyService {
@@ -66,6 +71,44 @@ export class JourneyService {
       populateUsers: true,
     });
     return JourneyListResponseDTO.from(journeys);
+  }
+
+  public async getDefaultTags(): Promise<DefaultTagsResponseDTO> {
+    return DefaultTagsResponseDTO.from(DEFAULT_TAGS);
+  }
+
+  public async getJourney(journeyId: string): Promise<JourneyResponseDTO> {
+    const journey = await this.journeyRepository.get(journeyId, {
+      populateUsers: true,
+      populateTags: true,
+      populatePikmis: true,
+      populatePikis: true,
+    });
+    if (journey == null) {
+      throw new NotFoundException(JOURNEY_NOT_EXIST_MSG);
+    } else {
+      return JourneyResponseDTO.from(journey);
+    }
+  }
+
+  public async getTags(
+    journeyId: string,
+    includeDefaultTags: boolean,
+  ): Promise<TagsResponseDTO> {
+    const journey = await this.journeyRepository.get(journeyId, {
+      populateTags: true,
+    });
+    if (journey == null) {
+      throw new NotFoundException(JOURNEY_NOT_EXIST_MSG);
+    } else if (includeDefaultTags) {
+      const defaultTags = DEFAULT_TAGS.map(
+        (defaultTag) => new Tag(defaultTag.topic, defaultTag.orientation, null),
+      );
+      const tags = journey.tags.concat(defaultTags);
+      return new TagsResponseDTO(TagResponseDTO.aggregate(tags));
+    } else {
+      return new TagsResponseDTO(TagResponseDTO.aggregate(journey.tags));
+    }
   }
 
   public async createJourney(
