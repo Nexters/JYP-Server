@@ -1037,6 +1037,189 @@ describe('Journeys controller', () => {
     });
   });
 
+  describe('POST /journeys/:journeyId/pikmis/:pikmiId/undoLikes', () => {
+    let pikmis: Pikmi[];
+
+    beforeEach(async () => {
+      // given
+      pikmis = [
+        new Pikmi(
+          PIKMI1_ID,
+          PIKMI_NAME,
+          PIKMI_ADDR,
+          PIKMI_CATEGORY,
+          [USER, USER2],
+          PIKMI_LON,
+          PIKMI_LAT,
+          PIKMI_LINK,
+        ),
+        new Pikmi(
+          PIKMI2_ID,
+          PIKMI_NAME,
+          PIKMI_ADDR,
+          PIKMI_CATEGORY,
+          [USER2],
+          PIKMI_LON,
+          PIKMI_LAT,
+          PIKMI_LINK,
+        ),
+        new Pikmi(
+          PIKMI3_ID,
+          PIKMI_NAME,
+          PIKMI_ADDR,
+          PIKMI_CATEGORY,
+          [USER],
+          PIKMI_LON,
+          PIKMI_LAT,
+          PIKMI_LINK,
+        ),
+      ];
+      journey = new journeyModel(
+        new Journey(
+          JOURNEY_NAME,
+          START_DATE,
+          END_DATE,
+          THEME_PATH,
+          [USER, USER2],
+          TAGS,
+          pikmis,
+          [[], [], []],
+        ),
+      );
+      journeyId = journey._id.toString();
+      await journey.save();
+      const user = new userModel(USER);
+      await user.save();
+      const user2 = new userModel(USER2);
+      await user2.save();
+      path = `/journeys/${journeyId}/pikmis/${PIKMI1_ID}/undoLikes`;
+    });
+
+    it('success, 좋아요를 삭제하는 경우', async () => {
+      // when
+      const response = await request(app.getHttpServer()).post(path);
+
+      // then
+      expect(response.statusCode).toBe(200);
+      const updatedJourney = await journeyModel
+        .findById(new mongoose.Types.ObjectId(journeyId))
+        .populate('users')
+        .populate({
+          path: 'tags',
+          populate: { path: 'user' },
+        })
+        .populate({
+          path: 'pikmis',
+          populate: { path: 'likeBy' },
+        })
+        .exec();
+      const expectedPikmis = structuredClone(pikmis);
+      expectedPikmis[0].likeBy = [USER2];
+      const expectedJourney = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER, USER2],
+        TAGS,
+        expectedPikmis,
+        [[], [], []],
+      );
+      expect(toPlainObject(updatedJourney, expectedJourney)).toMatchObject(
+        expectedJourney,
+      );
+    });
+
+    it('success, 좋아요가 존재하지 않아 수정하지 않는 경우', async () => {
+      // given
+      await journeyModel.updateOne(
+        { _id: journeyId, 'pikmis._id': PIKMI1_ID },
+        { $pull: { 'pikmis.$.likeBy': USER } },
+      );
+
+      // when
+      const response = await request(app.getHttpServer()).post(path);
+
+      // then
+      expect(response.statusCode).toBe(200);
+      const updatedJourney = await journeyModel
+        .findById(new mongoose.Types.ObjectId(journeyId))
+        .populate('users')
+        .populate({
+          path: 'tags',
+          populate: { path: 'user' },
+        })
+        .populate({
+          path: 'pikmis',
+          populate: { path: 'likeBy' },
+        })
+        .exec();
+      const expectedPikmis = structuredClone(pikmis);
+      expectedPikmis[0].likeBy = [USER2];
+      const expectedJourney = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER, USER2],
+        TAGS,
+        expectedPikmis,
+        [[], [], []],
+      );
+      expect(toPlainObject(updatedJourney, expectedJourney)).toMatchObject(
+        expectedJourney,
+      );
+    });
+
+    it('payload로 전달된 회원 ID가 존재하지 않는 회원 ID일 때 401 응답', async () => {
+      // given
+      await userModel.findByIdAndDelete(USER_ID);
+
+      // when
+      const response = await request(app.getHttpServer()).post(path);
+
+      // then
+      expect(response.statusCode).toBe(401);
+    });
+
+    it('저니가 존재하지 않을 때 400 응답', async () => {
+      // given
+      await journeyModel.findByIdAndDelete(journeyId);
+
+      // when
+      const response = await request(app.getHttpServer()).post(path);
+
+      // then
+      expect(response.statusCode).toBe(400);
+    });
+
+    it('유저가 저니에 소속되어 있지 않을 때 401 응답', async () => {
+      // given
+      await journeyModel.findByIdAndUpdate(journeyId, {
+        $pull: { users: USER_ID },
+      });
+
+      // when
+      const response = await request(app.getHttpServer()).post(path);
+
+      // then
+      expect(response.statusCode).toBe(401);
+    });
+
+    it('픽미가 존재하지 않을 때 400 응답', async () => {
+      // given
+      await journeyModel.findByIdAndUpdate(journeyId, {
+        $pull: { pikmis: { _id: new mongoose.Types.ObjectId(PIKMI1_ID) } },
+      });
+
+      // when
+      const response = await request(app.getHttpServer()).post(path);
+
+      // then
+      expect(response.statusCode).toBe(400);
+    });
+  });
+
   afterEach(async () => {
     await userModel.deleteMany({});
     await journeyModel.deleteMany({});

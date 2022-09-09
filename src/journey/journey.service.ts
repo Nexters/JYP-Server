@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
@@ -218,6 +218,21 @@ export class JourneyService {
     ) {
       await this.journeyRepository.addLikeBy(journeyId, pikmiId, userId);
     }
+  }
+
+  public async deleteLikesFromPikmi(
+    journeyId: string,
+    pikmiId: string,
+    userId: string,
+  ) {
+    const user = await this.userRepository.findOne(userId);
+    const journey = await this.journeyRepository.get(journeyId, false);
+    JourneyService.preCheck(user, journey, true);
+    const pikmiIndex = JourneyService.getPikmiIndex(pikmiId, journey.pikmis);
+    if (pikmiIndex == -1) {
+      throw new PikmiNotExistException(PIKMI_NOT_EXIST_MSG);
+    }
+    await this.journeyRepository.deleteLikeBy(journeyId, pikmiId, userId);
   }
 
   private static preCheck(user: User, journey: Journey, userInJourney = true) {

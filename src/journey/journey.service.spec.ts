@@ -1083,4 +1083,151 @@ describe('JourneyService', () => {
       expect(journeyRepository.addLikeBy).toBeCalledTimes(0);
     });
   });
+
+  describe('deleteLikesFromPikmi', () => {
+    let pikmi1: Pikmi;
+    let pikmi2: Pikmi;
+    let pikmi3: Pikmi;
+    let journey: JourneyDocument;
+
+    beforeEach(async () => {
+      // given
+      userRepository.findOne = jest.fn().mockResolvedValue(USER);
+      pikmi1 = new Pikmi(
+        PIKMI1_ID,
+        PIKMI_NAME,
+        PIKMI_ADDR,
+        PIKMI_CATEGORY,
+        [USER, USER2],
+        PIKMI_LON,
+        PIKMI_LAT,
+        PIKMI_LINK,
+      );
+      pikmi2 = new Pikmi(
+        PIKMI2_ID,
+        PIKMI_NAME,
+        PIKMI_ADDR,
+        PIKMI_CATEGORY,
+        [USER2],
+        PIKMI_LON,
+        PIKMI_LAT,
+        PIKMI_LINK,
+      );
+      pikmi3 = new Pikmi(
+        PIKMI3_ID,
+        PIKMI_NAME,
+        PIKMI_ADDR,
+        PIKMI_CATEGORY,
+        [USER],
+        PIKMI_LON,
+        PIKMI_LAT,
+        PIKMI_LINK,
+      );
+      journey = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER, USER2],
+        TAGS,
+        [pikmi1, pikmi2, pikmi3],
+        [[], [], []],
+      ) as JourneyDocument;
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
+      journeyRepository.deleteLikeBy = jest.fn();
+    });
+
+    it('픽미에서 유저의 좋아요를 삭제한다.', async () => {
+      // when
+      await journeyService.deleteLikesFromPikmi(JOURNEY_ID, PIKMI1_ID, USER_ID);
+
+      // then
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.deleteLikeBy).toBeCalledTimes(1);
+      expect(journeyRepository.deleteLikeBy).toBeCalledWith(
+        JOURNEY_ID,
+        PIKMI1_ID,
+        USER_ID,
+      );
+    });
+
+    it('userId에 해당하는 user가 없을 경우 InvalidJwtPayloadException을 throw한다.', async () => {
+      // given
+      userRepository.findOne = jest.fn().mockResolvedValue(null);
+
+      // then
+      await expect(
+        journeyService.deleteLikesFromPikmi(JOURNEY_ID, PIKMI1_ID, USER_ID),
+      ).rejects.toThrow(new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG));
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.deleteLikeBy).toBeCalledTimes(0);
+    });
+
+    it('해당하는 저니가 없으면 JourneyNotExistException을 throw한다.', async () => {
+      // given
+      journeyRepository.get = jest.fn().mockResolvedValue(null);
+
+      // then
+      await expect(
+        journeyService.deleteLikesFromPikmi(JOURNEY_ID, PIKMI1_ID, USER_ID),
+      ).rejects.toThrow(new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG));
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.deleteLikeBy).toBeCalledTimes(0);
+    });
+
+    it('저니에 유저가 소속되어 있지 않으면 UnauthenticatedException을 throw한다.', async () => {
+      // given
+      journey = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER2],
+        TAGS,
+        [pikmi1, pikmi2, pikmi3],
+        [[], [], []],
+      ) as JourneyDocument;
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
+
+      // then
+      await expect(
+        journeyService.deleteLikesFromPikmi(JOURNEY_ID, PIKMI1_ID, USER_ID),
+      ).rejects.toThrow(new UnauthenticatedException(USER_NOT_IN_JOURNEY_MSG));
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.deleteLikeBy).toBeCalledTimes(0);
+    });
+
+    it('해당하는 픽미가 없으면 PikmiNotExistException을 throw한다.', async () => {
+      // given
+      journey = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER, USER2],
+        TAGS,
+        [pikmi2, pikmi3],
+        [[], [], []],
+      ) as JourneyDocument;
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
+
+      // then
+      await expect(
+        journeyService.deleteLikesFromPikmi(JOURNEY_ID, PIKMI1_ID, USER_ID),
+      ).rejects.toThrow(new PikmiNotExistException(PIKMI_NOT_EXIST_MSG));
+      expect(userRepository.findOne).toBeCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(USER_ID);
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.deleteLikeBy).toBeCalledTimes(0);
+    });
+  });
 });

@@ -250,4 +250,20 @@ describe('JourneyController', () => {
       USER_ID,
     );
   });
+
+  it('deleteLikesFromPikmi는 JourneyService.deleteLikesFromPikmi를 호출한다.', async () => {
+    // given
+    journeyService.deleteLikesFromPikmi = jest.fn();
+
+    // when
+    await journeyController.deleteLikesFromPikmi(JOURNEY_ID, PIKMI_ID, REQ);
+
+    // then
+    expect(journeyService.deleteLikesFromPikmi).toBeCalledTimes(1);
+    expect(journeyService.deleteLikesFromPikmi).toBeCalledWith(
+      JOURNEY_ID,
+      PIKMI_ID,
+      USER_ID,
+    );
+  });
 });

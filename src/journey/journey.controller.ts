@@ -184,4 +184,28 @@ export class JourneyController {
   ): Promise<void> {
     await this.journeyService.addLikesToPikmi(journeyId, pikmiId, req.user.id);
   }
+
+  @ApiOperation({
+    summary: '픽미에서 좋아요 삭제',
+    description: '픽미에서 요청한 유저 ID의 좋아요를 삭제한다.',
+  })
+  @ApiOkResponse({ description: '성공' })
+  @ApiBadRequestResponse({ description: '요청 데이터가 잘못됨' })
+  @ApiUnauthorizedResponse({ description: '인증 실패' })
+  @ApiInternalServerErrorResponse({ description: '서버 오류' })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(200)
+  @Post(':journeyId/pikmis/:pikmiId/undoLikes')
+  public async deleteLikesFromPikmi(
+    @Param('journeyId') journeyId: string,
+    @Param('pikmiId') pikmiId: string,
+    @Request() req,
+  ): Promise<void> {
+    await this.journeyService.deleteLikesFromPikmi(
+      journeyId,
+      pikmiId,
+      req.user.id,
+    );
+  }
 }
