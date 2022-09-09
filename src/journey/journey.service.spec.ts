@@ -230,7 +230,9 @@ describe('JourneyService', () => {
       expect(userRepository.findOne).toBeCalledTimes(1);
       expect(userRepository.findOne).toBeCalledWith(USER_ID);
       expect(journeyRepository.listByUser).toBeCalledTimes(1);
-      expect(journeyRepository.listByUser).toBeCalledWith(USER);
+      expect(journeyRepository.listByUser).toBeCalledWith(USER, {
+        populateUsers: true,
+      });
       const expectedResultElement = new SimpleJourneyResponseDTO(
         JOURNEY_ID,
         JOURNEY_NAME,
@@ -280,7 +282,7 @@ describe('JourneyService', () => {
       expect(userRepository.findOne).toBeCalledTimes(1);
       expect(userRepository.findOne).toBeCalledWith(USER_ID);
       expect(journeyRepository.listByUser).toBeCalledTimes(1);
-      expect(journeyRepository.listByUser).toBeCalledWith(USER, false);
+      expect(journeyRepository.listByUser).toBeCalledWith(USER);
       expect(journeyModel).toBeCalledTimes(1);
       expect(journeyModel).toBeCalledWith(JOURNEY);
       expect(journeyRepository.insert).toBeCalledTimes(1);
@@ -305,7 +307,7 @@ describe('JourneyService', () => {
       expect(userRepository.findOne).toBeCalledTimes(1);
       expect(userRepository.findOne).toBeCalledWith(USER_ID);
       expect(journeyRepository.listByUser).toBeCalledTimes(1);
-      expect(journeyRepository.listByUser).toBeCalledWith(USER, false);
+      expect(journeyRepository.listByUser).toBeCalledWith(USER);
     });
 
     it('userId에 해당하는 user가 없을 경우 InvalidJwtPayloadException을 throw한다.', async () => {
@@ -344,7 +346,7 @@ describe('JourneyService', () => {
       expect(userRepository.findOne).toBeCalledTimes(1);
       expect(userRepository.findOne).toBeCalledWith(USER_ID);
       expect(journeyRepository.get).toBeCalledTimes(1);
-      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
       expect(journeyRepository.update).toBeCalledTimes(1);
       expect(journeyRepository.update).toBeCalledWith(journey);
       expect(JOURNEY.pikmis.length + 1).toBe(journey.pikmis.length);
@@ -382,7 +384,7 @@ describe('JourneyService', () => {
         journeyService.createPikmi(PIKMI_CREATE_DTO, JOURNEY_ID, USER_ID),
       ).rejects.toThrow(new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG));
       expect(journeyRepository.get).toBeCalledTimes(1);
-      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
       expect(journeyRepository.update).toBeCalledTimes(0);
     });
 
@@ -407,7 +409,7 @@ describe('JourneyService', () => {
       expect(userRepository.findOne).toBeCalledTimes(1);
       expect(userRepository.findOne).toBeCalledWith(USER_ID);
       expect(journeyRepository.get).toBeCalledTimes(1);
-      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
       expect(journeyRepository.update).toBeCalledTimes(0);
     });
 
@@ -436,7 +438,7 @@ describe('JourneyService', () => {
         journeyService.createPikmi(PIKMI_CREATE_DTO, JOURNEY_ID, USER_ID),
       ).rejects.toThrow(new LimitExceededException(PIKMI_EXCEEDED_MSG));
       expect(journeyRepository.get).toBeCalledTimes(1);
-      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
       expect(journeyRepository.update).toBeCalledTimes(0);
     });
   });
@@ -464,7 +466,7 @@ describe('JourneyService', () => {
       expect(userRepository.findOne).toBeCalledTimes(1);
       expect(userRepository.findOne).toBeCalledWith(USER_ID);
       expect(journeyRepository.get).toBeCalledTimes(1);
-      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
       expect(journeyRepository.update).toBeCalledTimes(1);
       expect(journeyRepository.update).toBeCalledWith(journey);
       const pikis = journey.pikis[PIKI_INDEX];
@@ -498,7 +500,7 @@ describe('JourneyService', () => {
       expect(userRepository.findOne).toBeCalledTimes(1);
       expect(userRepository.findOne).toBeCalledWith(USER_ID);
       expect(journeyRepository.get).toBeCalledTimes(1);
-      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
       expect(journeyRepository.update).toBeCalledTimes(1);
       expect(journeyRepository.update).toBeCalledWith(journey);
       const pikis = journey.pikis[PIKI_INDEX];
@@ -546,7 +548,7 @@ describe('JourneyService', () => {
         journeyService.updatePiki(PIKIS_UPDATE_DTO_NO_ID, JOURNEY_ID, USER_ID),
       ).rejects.toThrow(new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG));
       expect(journeyRepository.get).toBeCalledTimes(1);
-      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
       expect(journeyRepository.update).toBeCalledTimes(0);
     });
 
@@ -571,7 +573,7 @@ describe('JourneyService', () => {
       expect(userRepository.findOne).toBeCalledTimes(1);
       expect(userRepository.findOne).toBeCalledWith(USER_ID);
       expect(journeyRepository.get).toBeCalledTimes(1);
-      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
       expect(journeyRepository.update).toBeCalledTimes(0);
     });
 
@@ -592,7 +594,7 @@ describe('JourneyService', () => {
         ),
       ).rejects.toThrow(new IndexOutOfRangeException(INDEX_OUT_OF_RANGE_MSG));
       expect(journeyRepository.get).toBeCalledTimes(1);
-      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
       expect(journeyRepository.update).toBeCalledTimes(0);
     });
   });
@@ -640,7 +642,7 @@ describe('JourneyService', () => {
       expect(userRepository.findOne).toBeCalledTimes(1);
       expect(userRepository.findOne).toBeCalledWith(USER_ID);
       expect(journeyRepository.get).toBeCalledTimes(1);
-      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
       expect(journeyRepository.deleteTags).toBeCalledTimes(1);
       expect(journeyRepository.deleteTags).toBeCalledWith(JOURNEY_ID, USER_ID);
       expect(journeyRepository.update).toBeCalledTimes(1);
@@ -678,7 +680,7 @@ describe('JourneyService', () => {
         journeyService.updateTags(tagsUpdateDto, JOURNEY_ID, USER_ID),
       ).rejects.toThrow(new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG));
       expect(journeyRepository.get).toBeCalledTimes(1);
-      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
       expect(journeyRepository.update).toBeCalledTimes(0);
     });
 
@@ -703,7 +705,7 @@ describe('JourneyService', () => {
       expect(userRepository.findOne).toBeCalledTimes(1);
       expect(userRepository.findOne).toBeCalledWith(USER_ID);
       expect(journeyRepository.get).toBeCalledTimes(1);
-      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
       expect(journeyRepository.update).toBeCalledTimes(0);
     });
   });
@@ -730,7 +732,7 @@ describe('JourneyService', () => {
       expect(userRepository.findOne).toBeCalledTimes(1);
       expect(userRepository.findOne).toBeCalledWith(USER2._id);
       expect(journeyRepository.get).toBeCalledTimes(1);
-      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
       expect(journeyRepository.update).toBeCalledTimes(1);
       expect(journeyRepository.update).toBeCalledWith(journey);
       expect(result.users).toEqual([USER, USER2]);
@@ -758,7 +760,7 @@ describe('JourneyService', () => {
         journeyService.addUserToJourney(JOURNEY_ID, USER2._id),
       ).rejects.toThrow(new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG));
       expect(journeyRepository.get).toBeCalledTimes(1);
-      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
       expect(journeyRepository.update).toBeCalledTimes(0);
     });
 
@@ -782,7 +784,7 @@ describe('JourneyService', () => {
         journeyService.addUserToJourney(JOURNEY_ID, USER2._id),
       ).rejects.toThrow(new LimitExceededException(USER_EXCEEDED_MSG));
       expect(journeyRepository.get).toBeCalledTimes(1);
-      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
       expect(journeyRepository.update).toBeCalledTimes(0);
     });
   });
@@ -831,7 +833,7 @@ describe('JourneyService', () => {
       expect(userRepository.findOne).toBeCalledTimes(1);
       expect(userRepository.findOne).toBeCalledWith(USER_ID);
       expect(journeyRepository.get).toBeCalledTimes(1);
-      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
       expect(journeyRepository.deleteTags).toBeCalledTimes(1);
       expect(journeyRepository.deleteTags).toBeCalledWith(JOURNEY_ID, USER_ID);
       expect(journeyRepository.deleteAllPikmiLikeBy).toBeCalledTimes(1);
@@ -878,7 +880,7 @@ describe('JourneyService', () => {
       expect(userRepository.findOne).toBeCalledTimes(1);
       expect(userRepository.findOne).toBeCalledWith(USER_ID);
       expect(journeyRepository.get).toBeCalledTimes(1);
-      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
       expect(journeyRepository.deleteTags).toBeCalledTimes(1);
       expect(journeyRepository.deleteTags).toBeCalledWith(JOURNEY_ID, USER_ID);
       expect(journeyRepository.deleteAllPikmiLikeBy).toBeCalledTimes(1);
@@ -917,7 +919,7 @@ describe('JourneyService', () => {
         journeyService.deleteUserFromJourney(JOURNEY_ID, USER_ID),
       ).rejects.toThrow(new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG));
       expect(journeyRepository.get).toBeCalledTimes(1);
-      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
       expect(journeyRepository.deleteTags).toBeCalledTimes(0);
       expect(journeyRepository.deleteAllPikmiLikeBy).toBeCalledTimes(0);
       expect(journeyRepository.deleteUser).toBeCalledTimes(0);
@@ -945,7 +947,7 @@ describe('JourneyService', () => {
       expect(userRepository.findOne).toBeCalledTimes(1);
       expect(userRepository.findOne).toBeCalledWith(USER_ID);
       expect(journeyRepository.get).toBeCalledTimes(1);
-      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
       expect(journeyRepository.deleteTags).toBeCalledTimes(0);
       expect(journeyRepository.deleteAllPikmiLikeBy).toBeCalledTimes(0);
       expect(journeyRepository.deleteUser).toBeCalledTimes(0);
@@ -1014,7 +1016,7 @@ describe('JourneyService', () => {
       expect(userRepository.findOne).toBeCalledTimes(1);
       expect(userRepository.findOne).toBeCalledWith(USER_ID);
       expect(journeyRepository.get).toBeCalledTimes(1);
-      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
       expect(journeyRepository.addLikeBy).toBeCalledTimes(1);
       expect(journeyRepository.addLikeBy).toBeCalledWith(
         JOURNEY_ID,
@@ -1054,7 +1056,7 @@ describe('JourneyService', () => {
       expect(userRepository.findOne).toBeCalledTimes(1);
       expect(userRepository.findOne).toBeCalledWith(USER_ID);
       expect(journeyRepository.get).toBeCalledTimes(1);
-      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
       expect(journeyRepository.addLikeBy).toBeCalledTimes(0);
     });
 
@@ -1080,7 +1082,7 @@ describe('JourneyService', () => {
         journeyService.addLikesToPikmi(JOURNEY_ID, PIKMI1_ID, USER_ID),
       ).rejects.toThrow(new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG));
       expect(journeyRepository.get).toBeCalledTimes(1);
-      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
       expect(journeyRepository.addLikeBy).toBeCalledTimes(0);
     });
 
@@ -1105,7 +1107,7 @@ describe('JourneyService', () => {
       expect(userRepository.findOne).toBeCalledTimes(1);
       expect(userRepository.findOne).toBeCalledWith(USER_ID);
       expect(journeyRepository.get).toBeCalledTimes(1);
-      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
       expect(journeyRepository.addLikeBy).toBeCalledTimes(0);
     });
 
@@ -1130,7 +1132,7 @@ describe('JourneyService', () => {
       expect(userRepository.findOne).toBeCalledTimes(1);
       expect(userRepository.findOne).toBeCalledWith(USER_ID);
       expect(journeyRepository.get).toBeCalledTimes(1);
-      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
       expect(journeyRepository.addLikeBy).toBeCalledTimes(0);
     });
   });
@@ -1196,7 +1198,7 @@ describe('JourneyService', () => {
       expect(userRepository.findOne).toBeCalledTimes(1);
       expect(userRepository.findOne).toBeCalledWith(USER_ID);
       expect(journeyRepository.get).toBeCalledTimes(1);
-      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
       expect(journeyRepository.deleteLikeBy).toBeCalledTimes(1);
       expect(journeyRepository.deleteLikeBy).toBeCalledWith(
         JOURNEY_ID,
@@ -1227,7 +1229,7 @@ describe('JourneyService', () => {
         journeyService.deleteLikesFromPikmi(JOURNEY_ID, PIKMI1_ID, USER_ID),
       ).rejects.toThrow(new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG));
       expect(journeyRepository.get).toBeCalledTimes(1);
-      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
       expect(journeyRepository.deleteLikeBy).toBeCalledTimes(0);
     });
 
@@ -1252,7 +1254,7 @@ describe('JourneyService', () => {
       expect(userRepository.findOne).toBeCalledTimes(1);
       expect(userRepository.findOne).toBeCalledWith(USER_ID);
       expect(journeyRepository.get).toBeCalledTimes(1);
-      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
       expect(journeyRepository.deleteLikeBy).toBeCalledTimes(0);
     });
 
@@ -1277,7 +1279,7 @@ describe('JourneyService', () => {
       expect(userRepository.findOne).toBeCalledTimes(1);
       expect(userRepository.findOne).toBeCalledWith(USER_ID);
       expect(journeyRepository.get).toBeCalledTimes(1);
-      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, false);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
       expect(journeyRepository.deleteLikeBy).toBeCalledTimes(0);
     });
   });

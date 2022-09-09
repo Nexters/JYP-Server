@@ -62,7 +62,9 @@ export class JourneyService {
     if (user == null) {
       throw new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG);
     }
-    const journeys = await this.journeyRepository.listByUser(user);
+    const journeys = await this.journeyRepository.listByUser(user, {
+      populateUsers: true,
+    });
     return JourneyListResponseDTO.from(journeys);
   }
 
@@ -74,10 +76,7 @@ export class JourneyService {
     if (user == null) {
       throw new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG);
     }
-    const existingJourneys = await this.journeyRepository.listByUser(
-      user,
-      false,
-    );
+    const existingJourneys = await this.journeyRepository.listByUser(user);
     if (existingJourneys.length >= MAX_JOURNEY_PER_USER) {
       throw new LimitExceededException(JOURNEY_EXCEEDED_MSG);
     }
@@ -109,7 +108,7 @@ export class JourneyService {
     userId: string,
   ) {
     const user = await this.userRepository.findOne(userId);
-    const journey = await this.journeyRepository.get(journeyId, false);
+    const journey = await this.journeyRepository.get(journeyId);
     JourneyService.preCheck(user, journey);
     if (journey.pikmis.length >= MAX_PIKMI_PER_JOURNEY) {
       throw new LimitExceededException(PIKMI_EXCEEDED_MSG);
@@ -134,7 +133,7 @@ export class JourneyService {
     userId: string,
   ) {
     const user = await this.userRepository.findOne(userId);
-    const journey = await this.journeyRepository.get(journeyId, false);
+    const journey = await this.journeyRepository.get(journeyId);
     JourneyService.preCheck(user, journey);
     if (pikisUpdateDto.index >= journey.pikis.length) {
       throw new IndexOutOfRangeException(INDEX_OUT_OF_RANGE_MSG);
@@ -174,7 +173,7 @@ export class JourneyService {
     userId: string,
   ) {
     const user = await this.userRepository.findOne(userId);
-    const journey = await this.journeyRepository.get(journeyId, false);
+    const journey = await this.journeyRepository.get(journeyId);
     JourneyService.preCheck(user, journey);
     const tagDeletedJourney = await this.journeyRepository.deleteTags(
       journeyId,
@@ -189,7 +188,7 @@ export class JourneyService {
 
   public async addUserToJourney(journeyId: string, userId: string) {
     const user = await this.userRepository.findOne(userId);
-    const journey = await this.journeyRepository.get(journeyId, false);
+    const journey = await this.journeyRepository.get(journeyId);
     JourneyService.preCheck(user, journey, false);
     if (journey.users.length >= MAX_USER_PER_JOURNEY) {
       throw new LimitExceededException(USER_EXCEEDED_MSG);
@@ -200,7 +199,7 @@ export class JourneyService {
 
   public async deleteUserFromJourney(journeyId: string, userId: string) {
     const user = await this.userRepository.findOne(userId);
-    const journey = await this.journeyRepository.get(journeyId, false);
+    const journey = await this.journeyRepository.get(journeyId);
     JourneyService.preCheck(user, journey, true);
     await this.journeyRepository.deleteTags(journeyId, userId);
     await this.journeyRepository.deleteAllPikmiLikeBy(journeyId, userId);
@@ -219,7 +218,7 @@ export class JourneyService {
     userId: string,
   ) {
     const user = await this.userRepository.findOne(userId);
-    const journey = await this.journeyRepository.get(journeyId, false);
+    const journey = await this.journeyRepository.get(journeyId);
     JourneyService.preCheck(user, journey, true);
     const pikmiIndex = JourneyService.getPikmiIndex(pikmiId, journey.pikmis);
     if (pikmiIndex == -1) {
@@ -238,7 +237,7 @@ export class JourneyService {
     userId: string,
   ) {
     const user = await this.userRepository.findOne(userId);
-    const journey = await this.journeyRepository.get(journeyId, false);
+    const journey = await this.journeyRepository.get(journeyId);
     JourneyService.preCheck(user, journey, true);
     const pikmiIndex = JourneyService.getPikmiIndex(pikmiId, journey.pikmis);
     if (pikmiIndex == -1) {

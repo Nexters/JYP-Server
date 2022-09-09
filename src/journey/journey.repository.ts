@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import mongoose, { Model } from 'mongoose';
+import mongoose, { Model, Query } from 'mongoose';
 import { User } from '../user/schemas/user.schema';
 import { Journey, JourneyDocument } from './schemas/journey.schema';
 
@@ -11,48 +11,59 @@ export class JourneyRepository {
     private readonly journeyModel: Model<JourneyDocument>,
   ) {}
 
-  public async get(id: string, populate = true): Promise<JourneyDocument> {
+  public async get(
+    id: string,
+    populateOptions: PopulateOptions = {},
+  ): Promise<JourneyDocument> {
     const objectId = new mongoose.Types.ObjectId(id);
-    if (populate) {
-      return this.journeyModel
-        .findById(objectId)
-        .populate('users')
-        .populate({
-          path: 'tags',
-          populate: { path: 'user' },
-        })
-        .populate({
-          path: 'pikmis',
-          populate: { path: 'likeBy' },
-        })
-        .populate('pikis')
-        .exec();
-    } else {
-      return await this.journeyModel.findById(objectId).exec();
+    let query: Query<any, any, any, any> = this.journeyModel.findById(objectId);
+    if (populateOptions.populateUsers) {
+      query = query.populate('users');
     }
+    if (populateOptions.populateTags) {
+      query = query.populate({
+        path: 'tags',
+        populate: { path: 'user' },
+      });
+    }
+    if (populateOptions.populatePikmis) {
+      query = query.populate({
+        path: 'pikmis',
+        populate: { path: 'likeBy' },
+      });
+    }
+    if (populateOptions.populatePikis) {
+      query = query.populate('pikis');
+    }
+    return await query.exec();
   }
 
   public async listByUser(
     user: User,
-    populate = true,
+    populateOptions: PopulateOptions = {},
   ): Promise<JourneyDocument[]> {
-    if (populate) {
-      return this.journeyModel
-        .find({ users: user })
-        .populate('users')
-        .populate({
-          path: 'tags',
-          populate: { path: 'user' },
-        })
-        .populate({
-          path: 'pikmis',
-          populate: { path: 'likeBy' },
-        })
-        .populate('pikis')
-        .exec();
-    } else {
-      return await this.journeyModel.find({ users: user }).exec();
+    let query: Query<any, any, any, any> = this.journeyModel.find({
+      users: user,
+    });
+    if (populateOptions.populateUsers) {
+      query = query.populate('users');
     }
+    if (populateOptions.populateTags) {
+      query = query.populate({
+        path: 'tags',
+        populate: { path: 'user' },
+      });
+    }
+    if (populateOptions.populatePikmis) {
+      query = query.populate({
+        path: 'pikmis',
+        populate: { path: 'likeBy' },
+      });
+    }
+    if (populateOptions.populatePikis) {
+      query = query.populate('pikis');
+    }
+    return await query.exec();
   }
 
   public async insert(journey: JourneyDocument): Promise<JourneyDocument> {
@@ -115,4 +126,11 @@ export class JourneyRepository {
   public async delete(journey: JourneyDocument) {
     return await this.journeyModel.deleteOne({ _id: journey._id });
   }
+}
+
+interface PopulateOptions {
+  populateUsers?: boolean;
+  populateTags?: boolean;
+  populatePikmis?: boolean;
+  populatePikis?: boolean;
 }
