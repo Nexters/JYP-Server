@@ -49,6 +49,7 @@ import { Environment } from '../common/environment';
     UserRepository,
     AuthKakaoService,
   ],
+  exports: [JwtModule],
   controllers: [AuthController],
 })
 export class AuthModule {}
