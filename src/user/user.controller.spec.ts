@@ -3,7 +3,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Option } from 'prelude-ts';
 import { createMock } from 'ts-auto-mock';
 import { On, method } from 'ts-auto-mock/extension';
-import { UserResponseDTO, UserUpdateRequestDTO } from './dtos/user.dto';
+import {
+  UserCreateRequestDTO,
+  UserResponseDTO,
+  UserUpdateRequestDTO,
+} from './dtos/user.dto';
 import { PERSONALITY } from './schemas/personality';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
@@ -13,6 +17,9 @@ const NAME = 'name';
 const IMG = '/image/path';
 const PSN = PERSONALITY.ME;
 const userDTO = new UserResponseDTO(ID, NAME, IMG, PERSONALITY[PSN]);
+const REQ = {
+  user: { id: ID },
+};
 
 describe('UserController', () => {
   let userController: UserController;
@@ -73,6 +80,22 @@ describe('UserController', () => {
     // then
     expect(updateUser).toBeCalledTimes(1);
     expect(updateUser).toBeCalledWith(ID, userUpdateDTO);
+    expect(result).toEqual(userDTO);
+  });
+
+  it('createUser는 UserService.createUser를 호출해 데이터를 받아 리턴한다', async () => {
+    // given
+    const createUser = On(userService)
+      .get(method(() => userService.createUser))
+      .mockResolvedValue(userDTO);
+
+    // when
+    const userCreateDTO = new UserCreateRequestDTO(NAME, IMG, PSN);
+    const result = await userController.createUser(userCreateDTO, REQ);
+
+    // then
+    expect(createUser).toBeCalledTimes(1);
+    expect(createUser).toBeCalledWith(userCreateDTO, ID);
     expect(result).toEqual(userDTO);
   });
 });

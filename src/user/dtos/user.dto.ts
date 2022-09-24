@@ -6,16 +6,8 @@ import {
 import { User } from '../schemas/user.schema';
 import { PERSONALITY } from '../schemas/personality';
 import { ApiProperty } from '@nestjs/swagger';
-import { AuthVendor } from '../../auth/authVendor';
+import { IsIn, IsNotEmpty, IsOptional, MaxLength } from 'class-validator';
 import {
-  IsEnum,
-  IsIn,
-  IsNotEmpty,
-  IsOptional,
-  MaxLength,
-} from 'class-validator';
-import {
-  IS_EMUN_MSG,
   IS_IN_MSG,
   IS_NOT_EMPTY_MSG,
   MAX_LENGTH_MSG,
@@ -66,20 +58,6 @@ export class UserResponseDTO implements UserResponse {
 
 export class UserCreateRequestDTO implements UserCreateRequest {
   @ApiProperty({
-    type: String,
-    description: 'Auth 연동을 제공하는 벤더의 이름',
-    enum: Object.values(AuthVendor),
-  })
-  @IsEnum(AuthVendor, { message: IS_EMUN_MSG })
-  readonly authVendor: AuthVendor;
-
-  @ApiProperty({
-    description: 'Auth 벤더가 제공하는 유저 ID',
-  })
-  @IsNotEmpty({ message: IS_NOT_EMPTY_MSG })
-  readonly authId: string;
-
-  @ApiProperty({
     description: '유저 이름',
     maxLength: 10,
   })
@@ -100,15 +78,7 @@ export class UserCreateRequestDTO implements UserCreateRequest {
   @IsIn(Object.keys(PERSONALITY), { message: IS_IN_MSG })
   readonly personalityId: string;
 
-  constructor(
-    authVendor: AuthVendor,
-    authId: string,
-    name: string,
-    profileImagePath: string,
-    personalityId: string,
-  ) {
-    this.authVendor = authVendor;
-    this.authId = authId;
+  constructor(name: string, profileImagePath: string, personalityId: string) {
     this.name = name;
     this.profileImagePath = profileImagePath;
     this.personalityId = personalityId;

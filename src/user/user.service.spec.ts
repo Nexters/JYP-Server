@@ -98,14 +98,8 @@ describe('UserService', () => {
       .mockResolvedValue(USER);
 
     // when
-    const userCreateDTO = new UserCreateRequestDTO(
-      AUTH_VENDOR,
-      AUTH_ID,
-      NAME,
-      IMG,
-      PSN_ID,
-    );
-    const result = await userService.createUser(userCreateDTO);
+    const userCreateDTO = new UserCreateRequestDTO(NAME, IMG, PSN_ID);
+    const result = await userService.createUser(userCreateDTO, ID);
 
     // then
     expect(insertOne).toBeCalledTimes(1);

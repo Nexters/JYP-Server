@@ -1,5 +1,3 @@
-import { AuthVendor } from '../../auth/authVendor';
-
 export interface UserResponse {
   id: string;
   name: string;
@@ -8,8 +6,6 @@ export interface UserResponse {
 }
 
 export interface UserCreateRequest {
-  authVendor: AuthVendor;
-  authId: string;
   name: string;
   profileImagePath: string;
   personalityId: string;
