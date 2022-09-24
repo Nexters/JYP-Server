@@ -15,6 +15,7 @@ services:
       - MONGO_DB=jyp
       - JWT_SECRET_KEY=yoonminzzang
       - JWT_MASTER_KEY=master
+      - TZ=Asia/Seoul
     links:
       - "mongo:mongo"
     depends_on:
