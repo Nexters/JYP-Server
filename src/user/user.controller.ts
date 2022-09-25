@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Request,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
@@ -58,8 +59,9 @@ export class UserController {
   @Post()
   public async createUser(
     @Body() userCreateDTO: UserCreateRequestDTO,
+    @Request() req,
   ): Promise<UserResponseDTO> {
-    return await this.userService.createUser(userCreateDTO);
+    return await this.userService.createUser(userCreateDTO, req.user.id);
   }
 
   @ApiTags('User')

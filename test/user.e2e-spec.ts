@@ -5,7 +5,7 @@ import { Model } from 'mongoose';
 import { User, UserDocument } from '../src/user/schemas/user.schema';
 import { UserModule } from '../src/user/user.module';
 import request from 'supertest';
-import { ConsoleLogger } from '@nestjs/common';
+import { ConsoleLogger, ExecutionContext } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { PERSONALITY } from '../src/user/schemas/personality';
 import { AuthVendor } from '../src/auth/authVendor';
@@ -37,7 +37,13 @@ describe('Users controller', () => {
       ],
     })
       .overrideGuard(AuthGuard('jwt'))
-      .useValue({ canActivate: () => true })
+      .useValue({
+        canActivate: (context: ExecutionContext) => {
+          const request = context.switchToHttp().getRequest();
+          request.user = { id: ID };
+          return true;
+        },
+      })
       .compile();
     app = module.createNestApplication({
       logger: new ConsoleLogger(),
@@ -77,8 +83,6 @@ describe('Users controller', () => {
       const response = await request(app.getHttpServer())
         .post('/users')
         .send({
-          authVendor: AUTH_VENDOR,
-          authId: AUTH_ID,
           name: NAME,
           profileImagePath: IMG,
           personalityId: PSN_ID,
