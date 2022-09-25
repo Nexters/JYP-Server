@@ -5,6 +5,7 @@ import {
   UnauthorizedException,
   HttpException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { Response } from 'express';
 import {
@@ -23,7 +24,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const status = exception.getStatus();
 
-    console.log(exception.stack);
     response.status(status).json({
       code: String(status) + '00',
       message: exception.message,
@@ -125,11 +125,13 @@ export class IndexOutOfRangeExceptionFilter implements ExceptionFilter {
 @Catch(Error)
 export class ErrorFilter implements ExceptionFilter {
   catch(error: Error, host: ArgumentsHost) {
+    Logger.error(error);
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
 
     response.status(500).json({
       code: '50000',
+      // TODO: 클라이언트 연동 완료 이후에 보안을 위해 에러 메시지가 노출되지 않도록 수정해야 함
       message: error.message,
     });
   }
