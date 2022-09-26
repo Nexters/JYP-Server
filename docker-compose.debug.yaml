@@ -24,6 +24,8 @@ services:
       - mongo
   mongo:
     image: "mongo:5.0"
+    ports:
+      - "27017:27017"
     volumes:
       - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
     environment:
