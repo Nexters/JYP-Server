@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Post, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Headers } from '@nestjs/common';
 import { KakaoLoginResponseDTO, KakaoSignUpResponseDTO } from './dto/auth.dto';
@@ -9,6 +9,7 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
 export class AuthController {
@@ -28,5 +29,19 @@ export class AuthController {
     @Headers() headers,
   ): Promise<KakaoLoginResponseDTO | KakaoSignUpResponseDTO> {
     return await this.authService.validateKakaoUser(headers['authorization']);
+  }
+
+  @UseGuards(AuthGuard('apple'))
+  @Get('/apple/login')
+  async appleLogin(@Headers() headers): Promise<any> {
+    return HttpStatus.OK;
+  }
+
+  @Post('/apple/redirect')
+  async redirect(@Body() payload): Promise<any> {
+    if (payload.id_token) {
+      return await this.authService.registerByIDtoken(payload);
+    }
+    throw new UnauthorizedException('Unauthorized');
   }
 }
