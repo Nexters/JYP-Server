@@ -6,6 +6,23 @@ export interface KakaoLoginResponse {
   token: string;
 }
 
+export interface AppleLoginResponse {
+  token: string;
+}
+
+export interface AppleUserInformation {
+  iss: string,
+  aud: string,
+  exp: number,
+  iat: number,
+  sub: string,
+  c_hash: string,
+  email: string,
+  email_verified: string,
+  auth_time: number,
+  nonce_supported: boolean
+}
+
 export interface KakaoUserInformation {
   id: string;
   connectedAt?: string;

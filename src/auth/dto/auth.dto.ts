@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   KakaoUserInformation,
   KakaoLoginRequest,
-  KakaoLoginResponse,
+  KakaoLoginResponse, AppleUserInformation, AppleLoginResponse,
 } from './auth.interface';
 import { IsString, Length } from 'class-validator';
 
@@ -15,6 +15,48 @@ export class KakaoLoginRequestDTO implements KakaoLoginRequest {
   @Length(50, 60)
   @IsString()
   public accessToken: string;
+}
+
+export class AppleLoginResponseDTO implements AppleLoginResponse {
+  @ApiProperty({
+    example: 'auth/apple/login',
+    description: '애플 로그인 Req 후 JWT 토큰 전달',
+    required: true,
+  })
+  @IsString()
+  readonly token: string;
+
+  constructor(token) {
+    this.token = token;
+  }
+}
+
+export class AppleSignUpResponseDTO implements AppleUserInformation {
+  constructor(token, value?) {
+    this.token = token;
+    this.iss = value.iss;
+    this.aud = value.aud;
+    this.exp = value.exp;
+    this.iat = value.iat;
+    this.sub = value.sub;
+    this.c_hash = value.c_hash;
+    this.email = value.email;
+    this.email_verified = value.email_verified;
+    this.auth_time = value.auth_time;
+    this.nonce_supported = value.nonce_supported;
+  }
+
+  readonly token: string;
+  iss: string;
+  aud: string;
+  exp: number;
+  iat: number;
+  sub: string;
+  c_hash: string;
+  email: string;
+  email_verified: string;
+  auth_time: number;
+  nonce_supported: boolean;
 }
 
 export class KakaoLoginResponseDTO implements KakaoLoginResponse {
@@ -32,6 +74,14 @@ export class KakaoLoginResponseDTO implements KakaoLoginResponse {
 }
 
 export class KakaoSignUpResponseDTO implements KakaoUserInformation {
+  constructor(token, value?) {
+    this.token = token;
+    this.id = value.id;
+    this.connectedAt = value.connected_at;
+    this.properties = value.properties;
+    this.kakaoAccount = value.kakaoAccount;
+  }
+
   readonly token: string;
 
   readonly id: string;
@@ -68,12 +118,4 @@ export class KakaoSignUpResponseDTO implements KakaoUserInformation {
     genderNeedsAgreement: boolean;
     gender: string;
   };
-
-  constructor(token, value?) {
-    this.token = token;
-    this.id = value.id;
-    this.connectedAt = value.connected_at;
-    this.properties = value.properties;
-    this.kakaoAccount = value.kakaoAccount;
-  }
 }
