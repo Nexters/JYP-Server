@@ -49,7 +49,6 @@ export class AuthService {
       publicKey: publicKey,
       algorithms: [decodedToken['header'].alg]
     });
-    console.info(result);
     return result;
   }
 }
