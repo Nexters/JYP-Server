@@ -31,17 +31,24 @@ export class AuthController {
     return await this.authService.validateKakaoUser(headers['authorization']);
   }
 
-  @UseGuards(AuthGuard('apple'))
   @Get('/apple/login')
-  async appleLogin(@Headers() headers): Promise<any> {
+  async appleLogin(
+    @Headers() headers,
+  ): Promise<any> {
+    return await this.authService.validateAppleUser(headers['authorization']);
+  }
+
+  @UseGuards(AuthGuard('apple'))
+  @Get('/apple')
+  async appleLoginTrigger(@Headers() headers): Promise<any> {
     return HttpStatus.OK;
   }
 
-  @Post('/apple/redirect')
-  async redirect(@Body() payload): Promise<any> {
-    if (payload.id_token) {
-      return await this.authService.registerByIDtoken(payload);
-    }
-    throw new UnauthorizedException('Unauthorized');
-  }
+  // @Post('/apple/redirect')
+  // async redirect(@Body() payload): Promise<any> {
+  //   if (payload.id_token) {
+  //     return await this.authService.registerByIDtoken(payload);
+  //   }
+  //   throw new UnauthorizedException('Unauthorized');
+  // }
 }
