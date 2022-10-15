@@ -16,11 +16,11 @@ export interface AppleUserInformation {
   exp: number,
   iat: number,
   sub: string,
-  c_hash: string,
+  cHash: string,
   email: string,
-  email_verified: string,
-  auth_time: number,
-  nonce_supported: boolean
+  emailVerified: string,
+  authTime: number,
+  nonceSupported: boolean
 }
 
 export interface KakaoUserInformation {
@@ -51,8 +51,4 @@ export interface KakaoUserInformation {
     genderNeedsAgreement: boolean;
     gender: string;
   };
-}
-
-export interface KakaoUserInfoRequest {
-  accessToken: string;
 }

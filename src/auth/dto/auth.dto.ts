@@ -39,11 +39,11 @@ export class AppleSignUpResponseDTO implements AppleUserInformation {
     this.exp = value.exp;
     this.iat = value.iat;
     this.sub = value.sub;
-    this.c_hash = value.c_hash;
+    this.cHash = value.c_hash;
     this.email = value.email;
-    this.email_verified = value.email_verified;
-    this.auth_time = value.auth_time;
-    this.nonce_supported = value.nonce_supported;
+    this.emailVerified = value.emailVerified;
+    this.authTime = value.authTime;
+    this.nonceSupported = value.nonceSupported;
   }
 
   readonly token: string;
@@ -52,11 +52,11 @@ export class AppleSignUpResponseDTO implements AppleUserInformation {
   exp: number;
   iat: number;
   sub: string;
-  c_hash: string;
+  cHash: string;
   email: string;
-  email_verified: string;
-  auth_time: number;
-  nonce_supported: boolean;
+  emailVerified: string;
+  authTime: number;
+  nonceSupported: boolean;
 }
 
 export class KakaoLoginResponseDTO implements KakaoLoginResponse {
