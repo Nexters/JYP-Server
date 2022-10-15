@@ -1,4 +1,12 @@
-import { Body, Controller, Get, HttpStatus, Post, UnauthorizedException, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpStatus,
+  Post,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Headers } from '@nestjs/common';
 import { KakaoLoginResponseDTO, KakaoSignUpResponseDTO } from './dto/auth.dto';
@@ -32,9 +40,7 @@ export class AuthController {
   }
 
   @Get('/apple/login')
-  async appleLogin(
-    @Headers() headers,
-  ): Promise<any> {
+  async appleLogin(@Headers() headers): Promise<any> {
     return await this.authService.validateAppleUser(headers['authorization']);
   }
 

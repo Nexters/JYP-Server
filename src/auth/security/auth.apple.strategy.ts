@@ -17,14 +17,12 @@ export class AppleStrategy extends PassportStrategy(Strategy, 'apple') {
     });
   }
 
-
   async validate(
     accessToken: string,
     idToken: string,
     profile: any,
     done: VerifyCallback,
   ) {
-
     const decodedIdToken: DecodedIdToken = this.jwtService.verify(idToken);
 
     console.log(decodedIdToken);
@@ -37,6 +35,5 @@ export class AppleStrategy extends PassportStrategy(Strategy, 'apple') {
 
     console.log(user);
     done(null, user);
-
   }
 }
