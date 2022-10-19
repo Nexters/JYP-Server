@@ -81,11 +81,4 @@ export class UserController {
   ): Promise<UserResponseDTO> {
     return await this.userService.updateUser(id, userUpdateDTO);
   }
-
-  public async createAppleUser(
-    @Body() appleUserCreateDTO: AppleUserCreateRequestDTO,
-    @Request() req,
-  ): Promise<AppleUserResponseDTO> {
-    return await this.userService.createAppleUser(appleUserCreateDTO, req.user.id);
-  }
 }
