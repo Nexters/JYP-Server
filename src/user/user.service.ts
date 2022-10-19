@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Option } from 'prelude-ts';
 import {
-  AppleUserCreateRequestDTO, AppleUserResponseDTO,
   UserCreateRequestDTO,
   UserResponseDTO,
   UserUpdateRequestDTO,
