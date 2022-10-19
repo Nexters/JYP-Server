@@ -49,12 +49,4 @@ export class AuthController {
   async appleLoginTrigger(@Headers() headers): Promise<any> {
     return HttpStatus.OK;
   }
-
-  // @Post('/apple/redirect')
-  // async redirect(@Body() payload): Promise<any> {
-  //   if (payload.id_token) {
-  //     return await this.authService.registerByIDtoken(payload);
-  //   }
-  //   throw new UnauthorizedException('Unauthorized');
-  // }
 }
