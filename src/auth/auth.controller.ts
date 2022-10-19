@@ -1,10 +1,7 @@
 import {
-  Body,
   Controller,
   Get,
   HttpStatus,
-  Post,
-  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
