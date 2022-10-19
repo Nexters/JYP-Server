@@ -28,15 +28,24 @@ export class UserRepository {
   public async insertOne(
     id: string,
     name: string,
-    profileImagePath: string,
-    personality: string,
+    profileImagePath?: string,
+    personality?: string,
   ): Promise<User> {
-    const user = new this.userModel({
-      _id: id,
-      name: name,
-      img: profileImagePath,
-      psn: personality,
-    });
-    return await user.save();
+    if (profileImagePath) {
+      const user = new this.userModel({
+        _id: id,
+        name: name,
+        img: profileImagePath,
+        psn: personality,
+      });
+      return await user.save();
+    } else {
+      const user = new this.userModel({
+        _id: id,
+        name: name,
+        psn: personality
+      });
+      return await user.save();
+    }
   }
 }

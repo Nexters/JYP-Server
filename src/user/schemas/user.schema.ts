@@ -13,7 +13,7 @@ export class User {
   name: string;
 
   @Prop({ required: true })
-  img: string;
+  img?: string;
 
   @Prop({
     alias: 'personality',

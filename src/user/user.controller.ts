@@ -21,6 +21,7 @@ import {
 } from '@nestjs/swagger';
 import { Option } from 'prelude-ts';
 import {
+  AppleUserCreateRequestDTO, AppleUserResponseDTO,
   UserCreateRequestDTO,
   UserResponseDTO,
   UserUpdateRequestDTO,
@@ -79,5 +80,12 @@ export class UserController {
     @Body() userUpdateDTO: UserUpdateRequestDTO,
   ): Promise<UserResponseDTO> {
     return await this.userService.updateUser(id, userUpdateDTO);
+  }
+
+  public async createAppleUser(
+    @Body() appleUserCreateDTO: AppleUserCreateRequestDTO,
+    @Request() req,
+  ): Promise<AppleUserResponseDTO> {
+    return await this.userService.createAppleUser(appleUserCreateDTO, req.user.id);
   }
 }

@@ -17,20 +17,6 @@ export class KakaoLoginRequestDTO implements KakaoLoginRequest {
   public accessToken: string;
 }
 
-export class AppleLoginResponseDTO implements AppleLoginResponse {
-  @ApiProperty({
-    example: 'auth/apple/login',
-    description: '애플 로그인 Req 후 JWT 토큰 전달',
-    required: true,
-  })
-  @IsString()
-  readonly token: string;
-
-  constructor(token) {
-    this.token = token;
-  }
-}
-
 export class AppleSignUpResponseDTO implements AppleUserInformation {
   constructor(token, value?) {
     this.token = token;
@@ -57,20 +43,6 @@ export class AppleSignUpResponseDTO implements AppleUserInformation {
   emailVerified: string;
   authTime: number;
   nonceSupported: boolean;
-}
-
-export class KakaoLoginResponseDTO implements KakaoLoginResponse {
-  @ApiProperty({
-    example: 'auth/kakao/login',
-    description: '카카오 로그인 Req 후 JWT 토큰 전달',
-    required: true,
-  })
-  @IsString()
-  readonly token: string;
-
-  constructor(token) {
-    this.token = token;
-  }
 }
 
 export class KakaoSignUpResponseDTO implements KakaoUserInformation {
@@ -118,4 +90,32 @@ export class KakaoSignUpResponseDTO implements KakaoUserInformation {
     genderNeedsAgreement: boolean;
     gender: string;
   };
+}
+
+export class KakaoLoginResponseDTO implements KakaoLoginResponse {
+  @ApiProperty({
+    example: 'auth/kakao/login',
+    description: '카카오 로그인 Req 후 JWT 토큰 전달',
+    required: true,
+  })
+  @IsString()
+  readonly token: string;
+
+  constructor(token) {
+    this.token = token;
+  }
+}
+
+export class AppleLoginResponseDTO implements AppleLoginResponse {
+  @ApiProperty({
+    example: 'auth/apple/login',
+    description: '애플 로그인 Req 후 JWT 토큰 전달',
+    required: true,
+  })
+  @IsString()
+  readonly token: string;
+
+  constructor(token) {
+    this.token = token;
+  }
 }

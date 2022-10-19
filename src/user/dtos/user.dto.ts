@@ -1,7 +1,7 @@
 import {
   UserResponse,
   UserCreateRequest,
-  UserUpdateRequest,
+  UserUpdateRequest, AppleUserCreateRequest, AppleUserResponse,
 } from './user.interface';
 import { User } from '../schemas/user.schema';
 import { PERSONALITY } from '../schemas/personality';
@@ -12,6 +12,29 @@ import {
   IS_NOT_EMPTY_MSG,
   MAX_LENGTH_MSG,
 } from '../../common/validation/validation.messages';
+
+export class AppleUserResponseDTO implements AppleUserResponse {
+  readonly id: string;
+  readonly name: string;
+  readonly personality: string;
+
+  static from(user: User): UserResponseDTO {
+    return new AppleUserResponseDTO(
+      user._id,
+      user.name,
+      PERSONALITY[user.psn],
+    );
+  }
+  constructor(
+    id: string,
+    name: string,
+    personality: string,
+  ) {
+    this.id = id;
+    this.name = name;
+    this.personality = personality;
+  }
+}
 
 export class UserResponseDTO implements UserResponse {
   @ApiProperty({
@@ -27,7 +50,7 @@ export class UserResponseDTO implements UserResponse {
   @ApiProperty({
     description: '프로필 이미지 경로',
   })
-  readonly profileImagePath: string;
+  readonly profileImagePath?: string;
 
   @ApiProperty({
     description: '유저 성향',
@@ -81,6 +104,16 @@ export class UserCreateRequestDTO implements UserCreateRequest {
   constructor(name: string, profileImagePath: string, personalityId: string) {
     this.name = name;
     this.profileImagePath = profileImagePath;
+    this.personalityId = personalityId;
+  }
+}
+
+export class AppleUserCreateRequestDTO implements AppleUserCreateRequest {
+  readonly name: string;
+  readonly personalityId: string;
+
+  constructor(name: string, personalityId: string) {
+    this.name = name;
     this.personalityId = personalityId;
   }
 }
