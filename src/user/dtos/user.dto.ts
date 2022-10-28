@@ -1,7 +1,9 @@
 import {
   UserResponse,
   UserCreateRequest,
-  UserUpdateRequest, AppleUserCreateRequest, AppleUserResponse,
+  UserUpdateRequest,
+  AppleUserCreateRequest,
+  AppleUserResponse,
 } from './user.interface';
 import { User } from '../schemas/user.schema';
 import { PERSONALITY } from '../schemas/personality';
@@ -19,17 +21,9 @@ export class AppleUserResponseDTO implements AppleUserResponse {
   readonly personality: string;
 
   static from(user: User): UserResponseDTO {
-    return new AppleUserResponseDTO(
-      user._id,
-      user.name,
-      PERSONALITY[user.psn],
-    );
+    return new AppleUserResponseDTO(user._id, user.name, PERSONALITY[user.psn]);
   }
-  constructor(
-    id: string,
-    name: string,
-    personality: string,
-  ) {
+  constructor(id: string, name: string, personality: string) {
     this.id = id;
     this.name = name;
     this.personality = personality;

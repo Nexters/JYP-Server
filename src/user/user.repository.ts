@@ -43,7 +43,7 @@ export class UserRepository {
       const user = new this.userModel({
         _id: id,
         name: name,
-        psn: personality
+        psn: personality,
       });
       return await user.save();
     }

@@ -21,7 +21,8 @@ import {
 } from '@nestjs/swagger';
 import { Option } from 'prelude-ts';
 import {
-  AppleUserCreateRequestDTO, AppleUserResponseDTO,
+  AppleUserCreateRequestDTO,
+  AppleUserResponseDTO,
   UserCreateRequestDTO,
   UserResponseDTO,
   UserUpdateRequestDTO,

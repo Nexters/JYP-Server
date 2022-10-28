@@ -11,16 +11,16 @@ export interface AppleLoginResponse {
 }
 
 export interface AppleUserInformation {
-  iss: string,
-  aud: string,
-  exp: number,
-  iat: number,
-  sub: string,
-  cHash: string,
-  email: string,
-  emailVerified: string,
-  authTime: number,
-  nonceSupported: boolean
+  iss: string;
+  aud: string;
+  exp: number;
+  iat: number;
+  sub: string;
+  cHash: string;
+  email: string;
+  emailVerified: string;
+  authTime: number;
+  nonceSupported: boolean;
 }
 
 export interface KakaoUserInformation {

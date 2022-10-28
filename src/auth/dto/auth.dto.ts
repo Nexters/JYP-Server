@@ -2,7 +2,9 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   KakaoUserInformation,
   KakaoLoginRequest,
-  KakaoLoginResponse, AppleUserInformation, AppleLoginResponse,
+  KakaoLoginResponse,
+  AppleUserInformation,
+  AppleLoginResponse,
 } from './auth.interface';
 import { IsString, Length } from 'class-validator';
 

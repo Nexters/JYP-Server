@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import {
-  AppleLoginResponseDTO, AppleSignUpResponseDTO,
+  AppleLoginResponseDTO,
+  AppleSignUpResponseDTO,
   KakaoLoginRequestDTO,
   KakaoLoginResponseDTO,
   KakaoSignUpResponseDTO,
@@ -40,7 +41,9 @@ export class AuthService {
     }
   }
 
-  public async validateAppleUser(idToken: string): Promise<AppleLoginResponseDTO | AppleSignUpResponseDTO> {
+  public async validateAppleUser(
+    idToken: string,
+  ): Promise<AppleLoginResponseDTO | AppleSignUpResponseDTO> {
     const decodedToken = this.jwtService.decode(idToken, { complete: true });
     const keyIdFromToken = decodedToken['header'].kid;
     const applePublicKeyUrl = 'https://appleid.apple.com/auth/keys';
