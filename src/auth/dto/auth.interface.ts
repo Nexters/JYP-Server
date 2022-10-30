@@ -6,6 +6,23 @@ export interface KakaoLoginResponse {
   token: string;
 }
 
+export interface AppleLoginResponse {
+  token: string;
+}
+
+export interface AppleUserInformation {
+  iss: string;
+  aud: string;
+  exp: number;
+  iat: number;
+  sub: string;
+  cHash: string;
+  email: string;
+  emailVerified: string;
+  authTime: number;
+  nonceSupported: boolean;
+}
+
 export interface KakaoUserInformation {
   id: string;
   connectedAt?: string;
@@ -34,8 +51,4 @@ export interface KakaoUserInformation {
     genderNeedsAgreement: boolean;
     gender: string;
   };
-}
-
-export interface KakaoUserInfoRequest {
-  accessToken: string;
 }

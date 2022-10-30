@@ -13,6 +13,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from '../user/schemas/user.schema';
 import { AuthKakaoService } from './auth.kakao.service';
 import { Environment } from '../common/environment';
+import { AppleStrategy } from './security/auth.apple.strategy';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { Environment } from '../common/environment';
       useClass: ValidationPipe,
     },
     JwtStrategy,
+    AppleStrategy,
     UserService,
     UserRepository,
     AuthKakaoService,
