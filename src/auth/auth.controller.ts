@@ -35,10 +35,4 @@ export class AuthController {
   async appleLogin(@Headers() headers): Promise<any> {
     return await this.authService.validateAppleUser(headers['authorization']);
   }
-
-  @UseGuards(AuthGuard('apple'))
-  @Get('/apple')
-  async appleLoginTrigger(): Promise<any> {
-    return HttpStatus.OK;
-  }
 }
