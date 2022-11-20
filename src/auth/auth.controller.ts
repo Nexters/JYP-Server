@@ -40,7 +40,9 @@ export class AuthController {
   @ApiOperation({ summary: '애플 로그인' })
   @ApiBearerAuth('애플 Access Token')
   @Get('/apple/login')
-  async appleLogin(@Headers() headers): Promise<AppleLoginResponseDTO | AppleSignUpResponseDTO> {
+  async appleLogin(
+    @Headers() headers,
+  ): Promise<AppleLoginResponseDTO | AppleSignUpResponseDTO> {
     return await this.authService.validateAppleUser(headers['authorization']);
   }
 }
