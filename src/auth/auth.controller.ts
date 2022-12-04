@@ -1,7 +1,12 @@
-import { Controller, Get, HttpStatus, UseGuards } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Headers } from '@nestjs/common';
-import { KakaoLoginResponseDTO, KakaoSignUpResponseDTO } from './dto/auth.dto';
+import {
+  AppleLoginResponseDTO,
+  AppleSignUpResponseDTO,
+  KakaoLoginResponseDTO,
+  KakaoSignUpResponseDTO,
+} from './dto/auth.dto';
 import {
   ApiBearerAuth,
   ApiInternalServerErrorResponse,
@@ -9,7 +14,6 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
 export class AuthController {
@@ -31,14 +35,14 @@ export class AuthController {
     return await this.authService.validateKakaoUser(headers['authorization']);
   }
 
+  @ApiOkResponse({ description: '성공', type: AppleSignUpResponseDTO })
+  @ApiInternalServerErrorResponse({ description: '서버 오류' })
+  @ApiOperation({ summary: '애플 로그인' })
+  @ApiBearerAuth('애플 Access Token')
   @Get('/apple/login')
-  async appleLogin(@Headers() headers): Promise<any> {
+  async appleLogin(
+    @Headers() headers,
+  ): Promise<AppleLoginResponseDTO | AppleSignUpResponseDTO> {
     return await this.authService.validateAppleUser(headers['authorization']);
-  }
-
-  @UseGuards(AuthGuard('apple'))
-  @Get('/apple')
-  async appleLoginTrigger(): Promise<any> {
-    return HttpStatus.OK;
   }
 }
