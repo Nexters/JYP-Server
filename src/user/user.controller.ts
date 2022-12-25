@@ -23,7 +23,7 @@ import { Option } from 'prelude-ts';
 import {
   AppleUserCreateRequestDTO,
   AppleUserResponseDTO,
-  UserCreateRequestDTO,
+  UserCreateRequestDTO, UserDeleteResponseDTO,
   UserResponseDTO,
   UserUpdateRequestDTO,
 } from './dtos/user.dto';
@@ -88,12 +88,12 @@ export class UserController {
     summary: '유저 정보 삭제',
     description: '유저 정보를 삭제한다.',
   })
-  @ApiOkResponse({ description: '성공', type: Boolean })
+  @ApiOkResponse({ description: '성공', type: UserDeleteResponseDTO })
   @ApiInternalServerErrorResponse({ description: '서버 오류' })
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
-  public async deleteUser(@Param('id') id: string): Promise<Boolean> {
+  public async deleteUser(@Param('id') id: string): Promise<UserDeleteResponseDTO> {
     return await this.userService.deleteUser(id);
   }
 }
