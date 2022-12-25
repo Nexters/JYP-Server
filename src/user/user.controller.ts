@@ -1,6 +1,6 @@
 import {
   Body,
-  Controller,
+  Controller, Delete,
   Get,
   NotFoundException,
   Param,
@@ -81,5 +81,19 @@ export class UserController {
     @Body() userUpdateDTO: UserUpdateRequestDTO,
   ): Promise<UserResponseDTO> {
     return await this.userService.updateUser(id, userUpdateDTO);
+  }
+
+  @ApiTags('User')
+  @ApiOperation({
+    summary: '유저 정보 삭제',
+    description: '유저 정보를 삭제한다.',
+  })
+  @ApiOkResponse({ description: '성공', type: Boolean })
+  @ApiInternalServerErrorResponse({ description: '서버 오류' })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Delete(':id')
+  public async deleteUser(@Param('id') id: string): Promise<Boolean> {
+    return await this.userService.deleteUser(id);
   }
 }

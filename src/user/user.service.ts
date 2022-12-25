@@ -46,4 +46,9 @@ export class UserService {
       ),
     );
   }
+
+  public async deleteUser(userId: string) {
+    return await this.userRepository.deleteOne(userId);
+  }
+
 }

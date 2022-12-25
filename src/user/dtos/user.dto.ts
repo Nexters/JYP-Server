@@ -134,3 +134,13 @@ export class UserUpdateRequestDTO implements UserUpdateRequest {
     this.profileImagePath = profileImagePath;
   }
 }
+
+export class UserDeleteResponseDTO {
+  readonly acknowledged: boolean
+  readonly deletedCount: number
+
+  constructor(acknowledged: boolean, deleteCount: number) {
+    this.acknowledged = acknowledged;
+    this.deletedCount = deleteCount;
+  }
+}
