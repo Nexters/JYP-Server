@@ -103,6 +103,24 @@ describe('Users controller', () => {
     });
   });
 
+
+  describe('DELETE /users/:id', () => {
+    it('DELETE /users/:id', async () => {
+      const user = new userModel(USER);
+      await user.save();
+
+      const response = await request(app.getHttpServer())
+        .delete(`/users/${ID}`)
+        .type('application/json');
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toEqual({
+        acknowledged: true,
+        deletedCount: 1
+      })
+    })
+  });
+
+
   describe('PATCH /users/:id', () => {
     it('PATCH /users/:id', async () => {
       const user = new userModel(USER);
