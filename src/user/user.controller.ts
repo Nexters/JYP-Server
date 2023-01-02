@@ -96,7 +96,7 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
   public async deleteUser(
-    @Param('id') id: string
+    @Param('id') id: string,
   ): Promise<UserDeleteResponseDTO> {
     return await this.userService.deleteUser(id);
   }
