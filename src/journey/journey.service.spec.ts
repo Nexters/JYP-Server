@@ -558,6 +558,53 @@ describe('JourneyService', () => {
       expect(result).toEqual(expectedResult);
     });
 
+    it('저니에 태그, 픽미, 피키가 없는 케이스.', async () => {
+      // given
+      const lightJourney = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER],
+        [],
+        [],
+        [],
+      ) as JourneyDocument;
+      lightJourney._id = new mongoose.Types.ObjectId(JOURNEY_ID);
+      journeyRepository.get = jest.fn().mockResolvedValue(lightJourney);
+
+      // when
+      const result = await journeyService.getJourney(JOURNEY_ID);
+
+      // then
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID, {
+        populateUsers: true,
+        populateTags: true,
+        populatePikmis: true,
+        populatePikis: true,
+      });
+      const expectedResult = new JourneyResponseDTO(
+        JOURNEY_ID,
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [
+          new UserResponseDTO(
+            USER._id,
+            USER.name,
+            USER.img,
+            PERSONALITY[USER.psn],
+          ),
+        ],
+        [],
+        [],
+        [],
+      );
+      expect(result).toEqual(expectedResult);
+    });
+
     it('해당하는 저니가 없으면 NotFoundException을 throw한다.', async () => {
       // given
       journeyRepository.get = jest.fn().mockResolvedValue(null);
