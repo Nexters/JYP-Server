@@ -53,6 +53,7 @@ import {
 } from './dtos/journey.dto';
 import { User } from '../user/schemas/user.schema';
 import {
+  AlreadyJoinedJourneyException,
   IndexOutOfRangeException,
   InvalidJwtPayloadException,
   JourneyNotExistException,
@@ -61,6 +62,7 @@ import {
   UnauthenticatedException,
 } from '../common/exceptions';
 import {
+  ALREADY_JOINED_JOURNEY_MSG,
   INDEX_OUT_OF_RANGE_MSG,
   INVALID_ID_IN_JWT_MSG,
   JOURNEY_EXCEEDED_MSG,
@@ -1175,6 +1177,32 @@ describe('JourneyService', () => {
       await expect(
         journeyService.addUserToJourney(JOURNEY_ID, USER2._id),
       ).rejects.toThrow(new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG));
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
+      expect(journeyRepository.update).toBeCalledTimes(0);
+    });
+
+    it('저니에 이미 유저가 추가되어 있을 경우 AlreadyJoinedJourneyException을 throw한다.', async () => {
+      // given
+      journey = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        END_DATE,
+        THEME_PATH,
+        [USER, USER2],
+        TAGS,
+        [],
+        [[], [], []],
+      ) as JourneyDocument;
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
+      journeyRepository.update = jest.fn().mockResolvedValue(journey);
+
+      // then
+      await expect(
+        journeyService.addUserToJourney(JOURNEY_ID, USER2._id),
+      ).rejects.toThrow(
+        new AlreadyJoinedJourneyException(ALREADY_JOINED_JOURNEY_MSG),
+      );
       expect(journeyRepository.get).toBeCalledTimes(1);
       expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
       expect(journeyRepository.update).toBeCalledTimes(0);

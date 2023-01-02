@@ -1186,6 +1186,21 @@ describe('Journeys controller', () => {
       expect(response.statusCode).toBe(400);
     });
 
+    it('저니에 유저가 이미 추가되어 있을 때 400 응답', async () => {
+      // given
+      journey.users.push(USER2);
+      await journey.save();
+
+      // when
+      const response = await request(app.getHttpServer())
+        .post(path)
+        .send(body)
+        .type(CONTENT_TYPE);
+
+      // then
+      expect(response.statusCode).toBe(400);
+    });
+
     it('저니에 정원이 찼을 때 400 응답', async () => {
       // given
       journey.users.push(USER3);

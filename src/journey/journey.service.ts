@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
+  ALREADY_JOINED_JOURNEY_MSG,
   INDEX_OUT_OF_RANGE_MSG,
   INVALID_ID_IN_JWT_MSG,
   JOURNEY_EXCEEDED_MSG,
@@ -18,6 +19,7 @@ import {
   LimitExceededException,
   PikmiNotExistException,
   UnauthenticatedException,
+  AlreadyJoinedJourneyException,
 } from '../common/exceptions';
 import { createEmptyNestedArray, getDayDiff } from '../common/util';
 import { UserRepository } from '../user/user.repository';
@@ -233,6 +235,9 @@ export class JourneyService {
     const user = await this.userRepository.findOne(userId);
     const journey = await this.journeyRepository.get(journeyId);
     JourneyService.preCheck(user, journey, false);
+    if (JourneyService.getUserIndex(user, journey.users) != -1) {
+      throw new AlreadyJoinedJourneyException(ALREADY_JOINED_JOURNEY_MSG);
+    }
     if (journey.users.length >= MAX_USER_PER_JOURNEY) {
       throw new LimitExceededException(USER_EXCEEDED_MSG);
     }

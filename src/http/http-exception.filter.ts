@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import {
+  AlreadyJoinedJourneyException,
   IndexOutOfRangeException,
   InvalidJwtPayloadException,
   JourneyNotExistException,
@@ -117,6 +118,18 @@ export class IndexOutOfRangeExceptionFilter implements ExceptionFilter {
     const status = exception.getStatus();
     response.status(status).json({
       code: String(status) + '04',
+      message: exception.message,
+    });
+  }
+}
+
+@Catch(AlreadyJoinedJourneyException)
+export class AlreadyJoinedJourneyExceptionFilter implements ExceptionFilter {
+  catch(exception: IndexOutOfRangeException, host: ArgumentsHost) {
+    const response = getResponse(host);
+    const status = exception.getStatus();
+    response.status(status).json({
+      code: String(status) + '05',
       message: exception.message,
     });
   }

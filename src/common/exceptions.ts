@@ -11,3 +11,5 @@ export class IndexOutOfRangeException extends BadRequestException {}
 export class UnauthenticatedException extends UnauthorizedException {}
 
 export class PikmiNotExistException extends BadRequestException {}
+
+export class AlreadyJoinedJourneyException extends BadRequestException {}

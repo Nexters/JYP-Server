@@ -64,4 +64,6 @@ export const USER_EXCEEDED_MSG = `최대 ${MAX_USER_PER_JOURNEY}명까지 입장
 
 export const PIKMI_NOT_EXIST_MSG = `해당 여행 후보 장소가 존재하지 않아요!`;
 
+export const ALREADY_JOINED_JOURNEY_MSG = `이미 참여 중인 플래너에요!`;
+
 export const DEFAULT_MSG = '잘못된 요청입니다.';
