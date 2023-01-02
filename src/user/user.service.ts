@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Option } from 'prelude-ts';
 import {
-  UserCreateRequestDTO, UserDeleteResponseDTO,
+  UserCreateRequestDTO,
+  UserDeleteResponseDTO,
   UserResponseDTO,
   UserUpdateRequestDTO,
 } from './dtos/user.dto';
@@ -50,5 +51,4 @@ export class UserService {
   public async deleteUser(userId: string): Promise<UserDeleteResponseDTO> {
     return await this.userRepository.deleteOne(userId);
   }
-
 }

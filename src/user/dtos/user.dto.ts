@@ -136,8 +136,8 @@ export class UserUpdateRequestDTO implements UserUpdateRequest {
 }
 
 export class UserDeleteResponseDTO {
-  readonly acknowledged: boolean
-  readonly deletedCount: number
+  readonly acknowledged: boolean;
+  readonly deletedCount: number;
 
   constructor(acknowledged: boolean, deleteCount: number) {
     this.acknowledged = acknowledged;

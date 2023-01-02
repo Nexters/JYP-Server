@@ -1,6 +1,7 @@
 import {
   Body,
-  Controller, Delete,
+  Controller,
+  Delete,
   Get,
   NotFoundException,
   Param,
@@ -23,7 +24,8 @@ import { Option } from 'prelude-ts';
 import {
   AppleUserCreateRequestDTO,
   AppleUserResponseDTO,
-  UserCreateRequestDTO, UserDeleteResponseDTO,
+  UserCreateRequestDTO,
+  UserDeleteResponseDTO,
   UserResponseDTO,
   UserUpdateRequestDTO,
 } from './dtos/user.dto';
@@ -93,7 +95,9 @@ export class UserController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
-  public async deleteUser(@Param('id') id: string): Promise<UserDeleteResponseDTO> {
+  public async deleteUser(
+    @Param('id') id: string
+  ): Promise<UserDeleteResponseDTO> {
     return await this.userService.deleteUser(id);
   }
 }
