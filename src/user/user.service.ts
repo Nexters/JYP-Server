@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Option } from 'prelude-ts';
-import {
-  NotFoundUserException
-} from '../common/exceptions';
+import { NotFoundUserException } from '../common/exceptions';
 import {
   UserCreateRequestDTO,
   UserDeleteResponseDTO,
@@ -54,7 +52,9 @@ export class UserService {
 
   public async deleteUser(userId: string): Promise<UserDeleteResponseDTO> {
     const result = await this.userRepository.deleteOne(userId);
-    if (!result.deletedCount) throw new NotFoundUserException(INVALID_ID_IN_JWT_MSG)
+    if (!result.deletedCount)
+      throw new NotFoundUserException(INVALID_ID_IN_JWT_MSG);
+
     return result;
   }
 }
