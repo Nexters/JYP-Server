@@ -9,6 +9,7 @@ import {
   Post,
   Request,
   UseGuards,
+  Headers,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
@@ -21,6 +22,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Option } from 'prelude-ts';
+import jwt from 'jsonwebtoken';
 import {
   UserCreateRequestDTO,
   UserDeleteResponseDTO,
@@ -28,6 +30,7 @@ import {
   UserUpdateRequestDTO,
 } from './dtos/user.dto';
 import { UserService } from './user.service';
+import { Environment } from '../common/environment';
 
 @Controller('users')
 export class UserController {
@@ -46,6 +49,29 @@ export class UserController {
   @Get(':id')
   public async getUser(@Param('id') id: string): Promise<UserResponseDTO> {
     const userDTO: Option<UserResponseDTO> = await this.userService.getUser(id);
+    return userDTO.getOrThrow(new NotFoundException());
+  }
+
+  @ApiTags('User')
+  @ApiOperation({
+    summary: '유저 정보 조회',
+    description: '클라이언트의 헤더로 유저 정보를 조회한다.',
+  })
+  @ApiOkResponse({ description: '성공', type: UserResponseDTO })
+  @ApiNotFoundResponse({ description: '유저를 찾을 수 없음' })
+  @ApiInternalServerErrorResponse({ description: '서버 오류' })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Get()
+  public async getUserByJwt(@Headers() headers): Promise<any> {
+    console.info(headers['authorization'].replace('Bearer ', ''));
+    console.info(process.env.ENV);
+    const token: string = headers['authorization'].replace('Bearer ', '');
+    const userDTO: Option<UserResponseDTO> = await this.userService.getUser(
+      process.env.ENV == Environment.PRODUCTION
+        ? jwt.verify(token, process.env.JWT_PRIVATE_KEY)['id']
+        : jwt.decode(token)['id'],
+    );
     return userDTO.getOrThrow(new NotFoundException());
   }
 
