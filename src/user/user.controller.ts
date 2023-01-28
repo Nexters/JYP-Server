@@ -35,6 +35,21 @@ export class UserController {
 
   @ApiTags('User')
   @ApiOperation({
+    summary: '유저 자기 자신의 정보 조회',
+    description: '유저 자기 자신의 정보를 조회한다.',
+  })
+  @ApiOkResponse({ description: '성공', type: UserResponseDTO })
+  @ApiNotFoundResponse({ description: '유저를 찾을 수 없음' })
+  @ApiInternalServerErrorResponse({ description: '서버 오류' })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Get('me')
+  public async getMyUser(@Request() req): Promise<UserResponseDTO> {
+    return await this.getUser(req.user.id);
+  }
+
+  @ApiTags('User')
+  @ApiOperation({
     summary: '유저 정보 조회',
     description: '유저 ID로 유저 정보를 조회한다.',
   })
