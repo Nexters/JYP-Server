@@ -155,7 +155,7 @@ export class TagResponseDTO implements TagResponse {
           left.set(key, leftVal.concat(rightVal));
         }
         return left;
-      });
+      }, new Map());
     const aggregated = [];
     for (const entry of grouped.entries()) {
       const [key, users] = entry;
