@@ -1,11 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { Option } from 'prelude-ts';
+import { NotFoundUserException } from '../common/exceptions';
 import {
   UserCreateRequestDTO,
+  UserDeleteResponseDTO,
   UserResponseDTO,
   UserUpdateRequestDTO,
 } from './dtos/user.dto';
 import { UserRepository } from './user.repository';
+import { INVALID_ID_IN_JWT_MSG } from '../common/validation/validation.messages';
 
 @Injectable()
 export class UserService {
@@ -45,5 +48,13 @@ export class UserService {
         userCreateDTO.personalityId,
       ),
     );
+  }
+
+  public async deleteUser(userId: string): Promise<UserDeleteResponseDTO> {
+    const result = await this.userRepository.deleteOne(userId);
+    if (!result.deletedCount)
+      throw new NotFoundUserException(INVALID_ID_IN_JWT_MSG);
+
+    return result;
   }
 }

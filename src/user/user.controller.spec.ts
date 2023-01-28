@@ -5,6 +5,7 @@ import { createMock } from 'ts-auto-mock';
 import { On, method } from 'ts-auto-mock/extension';
 import {
   UserCreateRequestDTO,
+  UserDeleteResponseDTO,
   UserResponseDTO,
   UserUpdateRequestDTO,
 } from './dtos/user.dto';
@@ -40,6 +41,22 @@ describe('UserController', () => {
 
   it('should be defined', () => {
     expect(userController).toBeDefined();
+  });
+
+  it('deleteUser는 UserService.deleteUser를 호출해 유저를 삭제한다', async () => {
+    // given
+    const userDeleteDTO = new UserDeleteResponseDTO(true, 1);
+    const deleteUser = On(userService)
+      .get(method(() => userService.deleteUser))
+      .mockResolvedValue(userDeleteDTO);
+
+    // when
+    const result = await userController.deleteUser(ID);
+
+    // then
+    expect(deleteUser).toBeCalledTimes(1);
+    expect(deleteUser).toBeCalledWith(ID);
+    expect(result).toEqual(userDeleteDTO);
   });
 
   it('getUser는 UserService.getUser를 호출해 데이터를 받아 리턴한다', async () => {

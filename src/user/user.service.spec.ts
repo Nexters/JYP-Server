@@ -3,7 +3,11 @@ import { Option } from 'prelude-ts';
 import { AuthVendor } from '../auth/authVendor';
 import { createMock } from 'ts-auto-mock';
 import { On, method } from 'ts-auto-mock/extension';
-import { UserCreateRequestDTO, UserUpdateRequestDTO } from './dtos/user.dto';
+import {
+  UserCreateRequestDTO,
+  UserUpdateRequestDTO,
+  UserDeleteResponseDTO,
+} from './dtos/user.dto';
 import { PERSONALITY } from './schemas/personality';
 import { User } from './schemas/user.schema';
 import { UserRepository } from './user.repository';
@@ -55,6 +59,23 @@ describe('UserService', () => {
     expect(optionContent.name).toBe(USER.name);
     expect(optionContent.profileImagePath).toBe(USER.img);
     expect(optionContent.personality).toBe(PERSONALITY[USER.psn]);
+  });
+
+  it('deleteUser는 인자로 ID를 받아 UserRepository.deleteOne을 호출해 데이터를 삭제한다', async () => {
+    // given
+    const userDeleteDTO = new UserDeleteResponseDTO(true, 1);
+    const deleteOne = On(userRepository)
+      .get(method(() => userRepository.deleteOne))
+      .mockResolvedValue(userDeleteDTO);
+
+    // when
+    const result = await userService.deleteUser(ID);
+
+    // then
+    expect(deleteOne).toBeCalledTimes(1);
+    expect(deleteOne).toBeCalledWith(ID);
+    expect(result.acknowledged).toBe(true);
+    expect(result.deletedCount).toBe(1);
   });
 
   it('UserRepository.findOne이 null을 리턴할 경우 getUser는 None을 리턴한다', async () => {

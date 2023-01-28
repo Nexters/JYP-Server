@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from './schemas/user.schema';
+import { UserDeleteResponseDTO } from './dtos/user.dto';
 
 @Injectable()
 export class UserRepository {
@@ -47,5 +48,9 @@ export class UserRepository {
       });
       return await user.save();
     }
+  }
+
+  public async deleteOne(id: string): Promise<UserDeleteResponseDTO> {
+    return await this.userModel.deleteOne({ _id: id }).exec();
   }
 }

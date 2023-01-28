@@ -1,7 +1,7 @@
 import { NestApplication } from '@nestjs/core';
 import { getModelToken, MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { User, UserDocument } from '../src/user/schemas/user.schema';
 import { UserModule } from '../src/user/user.module';
 import request from 'supertest';
@@ -100,6 +100,24 @@ describe('Users controller', () => {
       expect(user.name).toBe(NAME);
       expect(user.img).toBe(IMG);
       expect(user.psn).toBe(PSN_ID);
+    });
+  });
+
+  describe('DELETE /users/:id', () => {
+    it('DELETE /users/:id', async () => {
+      const user = new userModel(USER);
+      await user.save();
+
+      const response = await request(app.getHttpServer())
+        .delete(`/users/${ID}`)
+        .type('application/json');
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toEqual({
+        acknowledged: true,
+        deletedCount: 1,
+      });
+      const deletedUser = await userModel.findById(ID).exec();
+      expect(deletedUser).toBeNull();
     });
   });
 
