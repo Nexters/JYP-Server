@@ -1,7 +1,7 @@
 import { NestApplication } from '@nestjs/core';
 import { getModelToken, MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { User, UserDocument } from '../src/user/schemas/user.schema';
 import { UserModule } from '../src/user/user.module';
 import request from 'supertest';
@@ -116,6 +116,8 @@ describe('Users controller', () => {
         acknowledged: true,
         deletedCount: 1,
       });
+      const deletedUser = await userModel.findById(ID).exec();
+      expect(deletedUser).toBeNull();
     });
   });
 
