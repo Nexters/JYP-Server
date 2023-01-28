@@ -125,7 +125,7 @@ export class IndexOutOfRangeExceptionFilter implements ExceptionFilter {
 
 @Catch(AlreadyJoinedJourneyException)
 export class AlreadyJoinedJourneyExceptionFilter implements ExceptionFilter {
-  catch(exception: IndexOutOfRangeException, host: ArgumentsHost) {
+  catch(exception: AlreadyJoinedJourneyException, host: ArgumentsHost) {
     const response = getResponse(host);
     const status = exception.getStatus();
     response.status(status).json({
