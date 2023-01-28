@@ -53,6 +53,31 @@ describe('Users controller', () => {
     userModel = module.get<Model<UserDocument>>(getModelToken(User.name));
   });
 
+  describe('GET /users/me', () => {
+    it('success', async () => {
+      const user = new userModel(USER);
+      await user.save();
+
+      const response = await request(app.getHttpServer())
+        .get(`/users/me`)
+        .type('application/json');
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toEqual({
+        id: ID,
+        name: NAME,
+        profileImagePath: IMG,
+        personality: PERSONALITY[PSN_ID],
+      });
+    });
+
+    it('해당 유저가 존재하지 않아 404 응답', async () => {
+      const response = await request(app.getHttpServer())
+        .get(`/users/me`)
+        .type('application/json');
+      expect(response.statusCode).toBe(404);
+    });
+  });
+
   describe('GET /users/:id', () => {
     it('success', async () => {
       const user = new userModel(USER);

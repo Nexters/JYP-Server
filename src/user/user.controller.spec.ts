@@ -43,20 +43,19 @@ describe('UserController', () => {
     expect(userController).toBeDefined();
   });
 
-  it('deleteUser는 UserService.deleteUser를 호출해 유저를 삭제한다', async () => {
+  it('getUser는 JWT payload의 id를 UserService.getUser의 파라미터로 넣어 호출한다', async () => {
     // given
-    const userDeleteDTO = new UserDeleteResponseDTO(true, 1);
-    const deleteUser = On(userService)
-      .get(method(() => userService.deleteUser))
-      .mockResolvedValue(userDeleteDTO);
+    const getUser = On(userService)
+      .get(method(() => userService.getUser))
+      .mockResolvedValue(Option.of(userDTO));
 
     // when
-    const result = await userController.deleteUser(ID);
+    const result = await userController.getMyUser(REQ);
 
     // then
-    expect(deleteUser).toBeCalledTimes(1);
-    expect(deleteUser).toBeCalledWith(ID);
-    expect(result).toEqual(userDeleteDTO);
+    expect(getUser).toBeCalledTimes(1);
+    expect(getUser).toBeCalledWith(ID);
+    expect(result).toEqual(userDTO);
   });
 
   it('getUser는 UserService.getUser를 호출해 데이터를 받아 리턴한다', async () => {
@@ -114,5 +113,21 @@ describe('UserController', () => {
     expect(createUser).toBeCalledTimes(1);
     expect(createUser).toBeCalledWith(userCreateDTO, ID);
     expect(result).toEqual(userDTO);
+  });
+
+  it('deleteUser는 UserService.deleteUser를 호출해 유저를 삭제한다', async () => {
+    // given
+    const userDeleteDTO = new UserDeleteResponseDTO(true, 1);
+    const deleteUser = On(userService)
+      .get(method(() => userService.deleteUser))
+      .mockResolvedValue(userDeleteDTO);
+
+    // when
+    const result = await userController.deleteUser(ID);
+
+    // then
+    expect(deleteUser).toBeCalledTimes(1);
+    expect(deleteUser).toBeCalledWith(ID);
+    expect(result).toEqual(userDeleteDTO);
   });
 });
