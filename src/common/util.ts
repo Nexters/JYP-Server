@@ -7,6 +7,14 @@ export function generateId(authVendor: AuthVendor, authId: string) {
   return `${authVendor}-${authId}`;
 }
 
+export function daysToSeconds(days: number) {
+  return days * 24 * 60 * 60;
+}
+
+export function currentTimeInSeconds() {
+  return Math.floor(new Date().getTime() / 1000);
+}
+
 export function getDayDiff(startDate: number, endDate: number) {
   return Math.round((endDate - startDate) / (3600 * 24));
 }

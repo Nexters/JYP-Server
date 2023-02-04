@@ -65,6 +65,14 @@ jest.mock('../src/journey/tag/default.tags', () => ({
   DEFAULT_TAGS: [DEFAULT_TAG1, DEFAULT_TAG2, DEFAULT_TAG3],
 }));
 
+jest.mock('../src/common/util', () => {
+  const original = jest.requireActual('../src/common/util');
+  return {
+    ...original,
+    currentTimeInSeconds: jest.fn().mockReturnValue(1661472000),
+  };
+});
+
 const CONTENT_TYPE = 'application/json';
 const JOURNEY_NAME = 'name';
 const START_DATE = 1661299200;
@@ -1175,6 +1183,22 @@ describe('Journeys controller', () => {
     it('저니가 존재하지 않을 때 400 응답', async () => {
       // given
       await journeyModel.findByIdAndDelete(journeyId);
+
+      // when
+      const response = await request(app.getHttpServer())
+        .post(path)
+        .send(body)
+        .type(CONTENT_TYPE);
+
+      // then
+      expect(response.statusCode).toBe(400);
+    });
+
+    it('현재 날짜가 저니 종료일자를 초과했을 때 400 응답', async () => {
+      // given
+      const earlierEndDate = 1661385600;
+      journey.end = earlierEndDate;
+      await journey.save();
 
       // when
       const response = await request(app.getHttpServer())

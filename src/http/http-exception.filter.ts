@@ -10,6 +10,7 @@ import {
 import { Response } from 'express';
 import {
   AlreadyJoinedJourneyException,
+  ExpiredJourneyException,
   IndexOutOfRangeException,
   InvalidJwtPayloadException,
   JourneyNotExistException,
@@ -130,6 +131,18 @@ export class AlreadyJoinedJourneyExceptionFilter implements ExceptionFilter {
     const status = exception.getStatus();
     response.status(status).json({
       code: String(status) + '05',
+      message: exception.message,
+    });
+  }
+}
+
+@Catch(ExpiredJourneyException)
+export class ExpiredJourneyExceptionFilter implements ExceptionFilter {
+  catch(exception: ExpiredJourneyException, host: ArgumentsHost) {
+    const response = getResponse(host);
+    const status = exception.getStatus();
+    response.status(status).json({
+      code: String(status) + '06',
       message: exception.message,
     });
   }

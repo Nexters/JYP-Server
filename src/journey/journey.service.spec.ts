@@ -54,6 +54,7 @@ import {
 import { User } from '../user/schemas/user.schema';
 import {
   AlreadyJoinedJourneyException,
+  ExpiredJourneyException,
   IndexOutOfRangeException,
   InvalidJwtPayloadException,
   JourneyNotExistException,
@@ -66,6 +67,7 @@ import {
   INDEX_OUT_OF_RANGE_MSG,
   INVALID_ID_IN_JWT_MSG,
   JOURNEY_EXCEEDED_MSG,
+  JOURNEY_JOIN_UNAVAILABLE_MSG,
   JOURNEY_NOT_EXIST_MSG,
   PIKMI_EXCEEDED_MSG,
   PIKMI_NOT_EXIST_MSG,
@@ -78,6 +80,7 @@ import {
 } from '../common/validation/validation.constants';
 import { UserResponseDTO } from '../user/dtos/user.dto';
 import { PERSONALITY } from '../user/schemas/personality';
+import { currentTimeInSeconds } from '../common/util';
 import { NotFoundException } from '@nestjs/common';
 
 jest.mock('../common/validation/validation.constants', () => ({
@@ -89,6 +92,14 @@ jest.mock('../common/validation/validation.constants', () => ({
 jest.mock('./tag/default.tags', () => ({
   DEFAULT_TAGS: [DEFAULT_TAG1, DEFAULT_TAG2, DEFAULT_TAG3],
 }));
+
+jest.mock('../common/util', () => {
+  const original = jest.requireActual('../common/util');
+  return {
+    ...original,
+    currentTimeInSeconds: jest.fn().mockReturnValue(1661472000),
+  };
+});
 
 const JOURNEY_NAME = 'name';
 const START_DATE = 1661299200;
@@ -244,6 +255,7 @@ const USER3_RESPONSE_DTO = new UserResponseDTO(
   USER3.img,
   PERSONALITY[USER3.psn],
 );
+const CURRENT_TIME_IN_SECONDS = 1661472000;
 
 describe('JourneyService', () => {
   let journeyService: JourneyService;
@@ -1223,7 +1235,36 @@ describe('JourneyService', () => {
       // then
       await expect(
         journeyService.addUserToJourney(JOURNEY_ID, USER2._id),
-      ).rejects.toThrow(new JourneyNotExistException(JOURNEY_NOT_EXIST_MSG));
+      ).rejects.toThrow(
+        new JourneyNotExistException(JOURNEY_JOIN_UNAVAILABLE_MSG),
+      );
+      expect(journeyRepository.get).toBeCalledTimes(1);
+      expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
+      expect(journeyRepository.update).toBeCalledTimes(0);
+    });
+
+    it('현재 날짜가 저니 종료일자를 초과한 경우 ExpiredJourneyException을 throw한다.', async () => {
+      // given
+      journeyRepository.get = jest.fn().mockResolvedValue(null);
+      const earlierEndDate = 1661385600;
+      journey = new Journey(
+        JOURNEY_NAME,
+        START_DATE,
+        earlierEndDate,
+        THEME_PATH,
+        [USER],
+        TAGS,
+        [],
+        [[], [], []],
+      ) as JourneyDocument;
+      journeyRepository.get = jest.fn().mockResolvedValue(journey);
+
+      // then
+      await expect(
+        journeyService.addUserToJourney(JOURNEY_ID, USER2._id),
+      ).rejects.toThrow(
+        new ExpiredJourneyException(JOURNEY_JOIN_UNAVAILABLE_MSG),
+      );
       expect(journeyRepository.get).toBeCalledTimes(1);
       expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
       expect(journeyRepository.update).toBeCalledTimes(0);
@@ -1273,7 +1314,9 @@ describe('JourneyService', () => {
       // then
       await expect(
         journeyService.addUserToJourney(JOURNEY_ID, USER2._id),
-      ).rejects.toThrow(new LimitExceededException(USER_EXCEEDED_MSG));
+      ).rejects.toThrow(
+        new LimitExceededException(JOURNEY_JOIN_UNAVAILABLE_MSG),
+      );
       expect(journeyRepository.get).toBeCalledTimes(1);
       expect(journeyRepository.get).toBeCalledWith(JOURNEY_ID);
       expect(journeyRepository.update).toBeCalledTimes(0);

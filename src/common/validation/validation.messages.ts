@@ -42,7 +42,9 @@ export const IS_NOT_EMPTY_KIND_MSG = (field: string) =>
 
 export const INVALID_ID_IN_JWT_MSG = `존재하지 않는 회원 ID에요`;
 
-export const JOURNEY_NOT_EXIST_MSG = `아쉽지만 다음에 함께해요`;
+export const JOURNEY_NOT_EXIST_MSG = `해당 여행이 존재하지 않아요`;
+
+export const JOURNEY_JOIN_UNAVAILABLE_MSG = `아쉽지만 다음에 함께해요!`;
 
 export const PIKMI_EXCEEDED_MSG = `후보 장소는 최대 ${MAX_PIKMI_PER_JOURNEY}개까지 가능해요!`;
 
