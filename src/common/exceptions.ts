@@ -1,4 +1,8 @@
-import { BadRequestException, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from '@nestjs/common';
 
 export class LimitExceededException extends BadRequestException {}
 
@@ -13,3 +17,5 @@ export class UnauthenticatedException extends UnauthorizedException {}
 export class PikmiNotExistException extends BadRequestException {}
 
 export class NotFoundUserException extends BadRequestException {}
+
+export class UserDeletionFailedException extends InternalServerErrorException {}

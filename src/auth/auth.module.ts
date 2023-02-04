@@ -13,6 +13,10 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from '../user/schemas/user.schema';
 import { AuthKakaoService } from './auth.kakao.service';
 import { Environment } from '../common/environment';
+import { JourneyModule } from '../journey/journey.module';
+import { JourneyService } from '../journey/journey.service';
+import { JourneyRepository } from '../journey/journey.repository';
+import { Journey, JourneySchema } from '../journey/schemas/journey.schema';
 
 @Module({
   imports: [
@@ -36,7 +40,11 @@ import { Environment } from '../common/environment';
     }),
     PassportModule,
     UserModule,
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    JourneyModule,
+    MongooseModule.forFeature([
+      { name: Journey.name, schema: JourneySchema },
+      { name: User.name, schema: UserSchema },
+    ]),
   ],
   providers: [
     AuthService,
@@ -47,6 +55,8 @@ import { Environment } from '../common/environment';
     JwtStrategy,
     UserService,
     UserRepository,
+    JourneyService,
+    JourneyRepository,
     AuthKakaoService,
   ],
   exports: [JwtModule],
