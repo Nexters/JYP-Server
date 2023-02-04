@@ -1,8 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
 import { UserService } from '../user/user.service';
-import { createMock } from 'ts-auto-mock';
-import { method, On } from 'ts-auto-mock/extension';
 import { AuthKakaoService } from './auth.kakao.service';
 import { Option } from 'prelude-ts';
 import { AuthVendor } from './authVendor';
@@ -62,15 +60,22 @@ describe('AuthService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [AuthService, JwtService, UserService, AuthKakaoService],
-    })
-      .overrideProvider(UserService)
-      .useValue(createMock<UserService>())
-      .overrideProvider(AuthKakaoService)
-      .useValue(createMock<AuthKakaoService>())
-      .overrideProvider(JwtService)
-      .useValue(createMock<JwtService>())
-      .compile();
+      providers: [
+        AuthService,
+        {
+          provide: JwtService,
+          useValue: {},
+        },
+        {
+          provide: UserService,
+          useValue: {},
+        },
+        {
+          provide: AuthKakaoService,
+          useValue: {},
+        },
+      ],
+    }).compile();
 
     authService = module.get<AuthService>(AuthService);
     userService = module.get<UserService>(UserService);
@@ -84,74 +89,54 @@ describe('AuthService', () => {
 
   it('validateKakaoUser 는 유저가 최초 로그인이 아니라면 토큰을 리턴한다', async () => {
     // given
-    const getKakaoInfo = On(authKakaoService)
-      .get(method(() => authKakaoService.getKakaoInfo))
-      .mockResolvedValue(authSignUpDTO);
-
+    authKakaoService.getKakaoInfo = jest.fn().mockResolvedValue(authSignUpDTO);
     const id = generateId(AuthVendor.KAKAO, KAKAO_ID);
-
-    const getUser = On(userService)
-      .get(method(() => userService.getUser))
-      .mockResolvedValue(
-        Option.of(
-          UserResponseDTO.from({
-            _id: 'id',
-            name: 'name',
-            img: 'img',
-            psn: 'psn',
-          }),
-        ),
-      );
-
-    const sign = On(jwtService)
-      .get(method(() => jwtService.sign))
-      .mockResolvedValue(OK_TOKEN);
-
+    userService.getUser = jest.fn().mockResolvedValue(
+      Option.of(
+        UserResponseDTO.from({
+          _id: 'id',
+          name: 'name',
+          img: 'img',
+          psn: 'psn',
+        }),
+      ),
+    );
+    jwtService.sign = jest.fn().mockResolvedValue(OK_TOKEN);
     const payload = { id: id };
 
     // when
     const result = await authService.validateKakaoUser(ACCESS_TOKEN as any);
 
     // then
-    expect(getKakaoInfo).toBeCalledTimes(1);
-    expect(getKakaoInfo).toBeCalledWith(ACCESS_TOKEN);
-    expect(getUser).toBeCalledTimes(1);
-    expect(getUser).toBeCalledWith(id);
+    expect(authKakaoService.getKakaoInfo).toBeCalledTimes(1);
+    expect(authKakaoService.getKakaoInfo).toBeCalledWith(ACCESS_TOKEN);
+    expect(userService.getUser).toBeCalledTimes(1);
+    expect(userService.getUser).toBeCalledWith(id);
     expect(payload.id).toBe(GENERATED_ID);
-    expect(result).toEqual(new KakaoLoginResponseDTO(sign(payload)));
+    expect(result).toEqual(new KakaoLoginResponseDTO(jwtService.sign(payload)));
   });
 
   it('validateKakaoUser 는 유저가 최초 로그인이라면 카카오의 정보와 토큰을 리턴한다. ', async () => {
     // given
-    const getKakaoInfo = On(authKakaoService)
-      .get(method(() => authKakaoService.getKakaoInfo))
-      .mockResolvedValue(authSignUpDTO);
-
+    authKakaoService.getKakaoInfo = jest.fn().mockResolvedValue(authSignUpDTO);
     const id = generateId(AuthVendor.KAKAO, '123');
-
-    const getUser = On(userService)
-      .get(method(() => userService.getUser))
-      .mockResolvedValue(Option.none());
-
-    const sign = On(jwtService)
-      .get(method(() => jwtService.sign))
-      .mockResolvedValue(OK_TOKEN);
-
+    userService.getUser = jest.fn().mockResolvedValue(Option.none());
+    jwtService.sign = jest.fn().mockResolvedValue(OK_TOKEN);
     const payload = { id: id };
 
     // when
     const result = await authService.validateKakaoUser(ACCESS_TOKEN as any);
 
     // then
-    expect(getKakaoInfo).toBeCalledTimes(1);
-    expect(getKakaoInfo).toBeCalledWith(ACCESS_TOKEN);
-    expect(getUser).toBeCalledTimes(1);
-    expect(getUser).toBeCalledWith(GENERATED_ID);
+    expect(authKakaoService.getKakaoInfo).toBeCalledTimes(1);
+    expect(authKakaoService.getKakaoInfo).toBeCalledWith(ACCESS_TOKEN);
+    expect(userService.getUser).toBeCalledTimes(1);
+    expect(userService.getUser).toBeCalledWith(GENERATED_ID);
     expect(payload.id).toBe(GENERATED_ID);
     expect(result).toEqual(
       new KakaoSignUpResponseDTO(
-        await sign(payload),
-        toCamel(await getKakaoInfo()),
+        await jwtService.sign(payload),
+        toCamel(authSignUpDTO),
       ),
     );
   });

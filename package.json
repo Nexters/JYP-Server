@@ -65,11 +65,9 @@
     "eslint-plugin-prettier": "^4.0.0",
     "gts": "^4.0.0",
     "jest": "^28.1.2",
-    "jest-ts-auto-mock": "^2.1.0",
     "prettier": "^2.3.2",
     "source-map-support": "^0.5.20",
     "supertest": "^6.2.4",
-    "ts-auto-mock": "^3.6.2",
     "ts-jest": "^28.0.5",
     "ts-loader": "^9.2.3",
     "ts-node": "^10.0.0",
@@ -92,14 +90,6 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node",
-    "globals": {
-      "ts-jest": {
-        "compiler": "ttypescript"
-      }
-    },
-    "setupFiles": [
-      "<rootDir>config.ts"
-    ]
+    "testEnvironment": "node"
   }
 }

@@ -1,8 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { createMock } from 'ts-auto-mock';
-import { method, On } from 'ts-auto-mock/extension';
 import { KakaoSignUpResponseDTO } from './dto/auth.dto';
 
 const ACCESS_TOKEN = 'ACCESS_TOKEN';
@@ -48,12 +46,14 @@ describe('AuthController', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [AuthService],
+      providers: [
+        {
+          provide: AuthService,
+          useValue: {},
+        },
+      ],
       controllers: [AuthController],
-    })
-      .overrideProvider(AuthService)
-      .useValue(createMock<AuthService>())
-      .compile();
+    }).compile();
 
     authController = module.get<AuthController>(AuthController);
     authService = module.get<AuthService>(AuthService);
@@ -65,15 +65,13 @@ describe('AuthController', () => {
 
   it('kakaoLogin은 AuthService.validateKakaoUser를 호출해 토큰과 정보를 리턴한다', async () => {
     //given
-    const validateKakaoUser = On(authService)
-      .get(method(() => authService.validateKakaoUser))
-      .mockResolvedValue(authSignUpDTO);
+    authService.validateKakaoUser = jest.fn().mockResolvedValue(authSignUpDTO);
 
     //when
     const result = await authController.kakaoLogin(ACCESS_TOKEN);
 
     //then
-    expect(validateKakaoUser).toBeCalledTimes(1);
+    expect(authService.validateKakaoUser).toBeCalledTimes(1);
     expect(result).toEqual(authSignUpDTO);
   });
 });
