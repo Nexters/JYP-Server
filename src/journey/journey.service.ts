@@ -2,9 +2,11 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
+  ALREADY_JOINED_JOURNEY_MSG,
   INDEX_OUT_OF_RANGE_MSG,
   INVALID_ID_IN_JWT_MSG,
   JOURNEY_EXCEEDED_MSG,
+  JOURNEY_JOIN_UNAVAILABLE_MSG,
   JOURNEY_NOT_EXIST_MSG,
   PIKMI_EXCEEDED_MSG,
   PIKMI_NOT_EXIST_MSG,
@@ -18,8 +20,15 @@ import {
   LimitExceededException,
   PikmiNotExistException,
   UnauthenticatedException,
+  AlreadyJoinedJourneyException,
+  ExpiredJourneyException,
 } from '../common/exceptions';
-import { createEmptyNestedArray, getDayDiff } from '../common/util';
+import {
+  createEmptyNestedArray,
+  currentTimeInSeconds,
+  daysToSeconds,
+  getDayDiff,
+} from '../common/util';
 import { UserRepository } from '../user/user.repository';
 import {
   JourneyCreateRequestDTO,
@@ -231,10 +240,21 @@ export class JourneyService {
 
   public async addUserToJourney(journeyId: string, userId: string) {
     const user = await this.userRepository.findOne(userId);
+    if (user == null) {
+      throw new InvalidJwtPayloadException(INVALID_ID_IN_JWT_MSG);
+    }
     const journey = await this.journeyRepository.get(journeyId);
-    JourneyService.preCheck(user, journey, false);
+    if (journey == null) {
+      throw new JourneyNotExistException(JOURNEY_JOIN_UNAVAILABLE_MSG);
+    }
+    if (JourneyService.getUserIndex(user, journey.users) != -1) {
+      throw new AlreadyJoinedJourneyException(ALREADY_JOINED_JOURNEY_MSG);
+    }
+    if (journey.end + daysToSeconds(1) <= currentTimeInSeconds()) {
+      throw new ExpiredJourneyException(JOURNEY_JOIN_UNAVAILABLE_MSG);
+    }
     if (journey.users.length >= MAX_USER_PER_JOURNEY) {
-      throw new LimitExceededException(USER_EXCEEDED_MSG);
+      throw new LimitExceededException(JOURNEY_JOIN_UNAVAILABLE_MSG);
     }
     journey.users.push(user);
     return await this.journeyRepository.update(journey);
