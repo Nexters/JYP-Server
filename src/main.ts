@@ -17,6 +17,8 @@ import {
   UnauthorizedExceptionFilter,
   UnauthenticatedExceptionFilter,
   UserDeletionFailedExceptionFilter,
+  AlreadyJoinedJourneyExceptionFilter,
+  ExpiredJourneyExceptionFilter,
 } from './http/http-exception.filter';
 
 async function bootstrap() {
@@ -35,6 +37,8 @@ async function bootstrap() {
     new JourneyNotExistExceptionFliter(),
     new IndexOutOfRangeExceptionFilter(),
     new UserDeletionFailedExceptionFilter(),
+    new AlreadyJoinedJourneyExceptionFilter(),
+    new ExpiredJourneyExceptionFilter(),
   );
   app.useGlobalInterceptors(
     new TransformInterceptor(),
