@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from '../user/schemas/user.schema';
 import { UserModule } from '../user/user.module';
@@ -10,7 +10,7 @@ import { Journey, JourneySchema } from './schemas/journey.schema';
 
 @Module({
   imports: [
-    UserModule,
+    forwardRef(() => UserModule),
     MongooseModule.forFeature([
       { name: Journey.name, schema: JourneySchema },
       { name: User.name, schema: UserSchema },
@@ -18,5 +18,6 @@ import { Journey, JourneySchema } from './schemas/journey.schema';
   ],
   controllers: [JourneyController],
   providers: [JourneyService, JourneyRepository, UserRepository],
+  exports: [JourneyService, JourneyRepository],
 })
 export class JourneyModule {}

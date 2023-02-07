@@ -16,6 +16,7 @@ import {
   JourneyNotExistException,
   LimitExceededException,
   UnauthenticatedException,
+  UserDeletionFailedException,
 } from '../common/exceptions';
 import { DEFAULT_MSG } from '../common/validation/validation.messages';
 
@@ -143,6 +144,18 @@ export class ExpiredJourneyExceptionFilter implements ExceptionFilter {
     const status = exception.getStatus();
     response.status(status).json({
       code: String(status) + '06',
+      message: exception.message,
+    });
+  }
+}
+
+@Catch(UserDeletionFailedException)
+export class UserDeletionFailedExceptionFilter implements ExceptionFilter {
+  catch(exception: UserDeletionFailedException, host: ArgumentsHost) {
+    const response = getResponse(host);
+    const status = exception.getStatus();
+    response.status(status).json({
+      code: String(status) + '01',
       message: exception.message,
     });
   }

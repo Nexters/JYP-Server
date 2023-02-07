@@ -267,7 +267,6 @@ describe('JourneyService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         JourneyService,
-        UserRepository,
         {
           provide: JourneyRepository,
           useValue: {},

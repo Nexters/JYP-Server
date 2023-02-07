@@ -1,4 +1,8 @@
-import { BadRequestException, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from '@nestjs/common';
 
 export class LimitExceededException extends BadRequestException {}
 
@@ -17,3 +21,5 @@ export class AlreadyJoinedJourneyException extends BadRequestException {}
 export class ExpiredJourneyException extends BadRequestException {}
 
 export class NotFoundUserException extends BadRequestException {}
+
+export class UserDeletionFailedException extends InternalServerErrorException {}

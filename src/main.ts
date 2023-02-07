@@ -16,6 +16,7 @@ import {
   LimitExceededExceptionFilter,
   UnauthorizedExceptionFilter,
   UnauthenticatedExceptionFilter,
+  UserDeletionFailedExceptionFilter,
   AlreadyJoinedJourneyExceptionFilter,
   ExpiredJourneyExceptionFilter,
 } from './http/http-exception.filter';
@@ -35,6 +36,7 @@ async function bootstrap() {
     new LimitExceededExceptionFilter(),
     new JourneyNotExistExceptionFliter(),
     new IndexOutOfRangeExceptionFilter(),
+    new UserDeletionFailedExceptionFilter(),
     new AlreadyJoinedJourneyExceptionFilter(),
     new ExpiredJourneyExceptionFilter(),
   );
