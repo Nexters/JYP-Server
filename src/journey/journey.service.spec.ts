@@ -103,7 +103,7 @@ jest.mock('../common/util', () => {
 
 const JOURNEY_NAME = 'name';
 const START_DATE = 1661299200;
-const END_DATE = 1661558400; // 3일 차이
+const END_DATE = 1661472000; // 2일 차이
 const THEME_PATH = 'path';
 const FIRST_TOPIC = 'topic1';
 const FIRST_ORIENT = 'like';

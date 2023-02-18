@@ -16,7 +16,7 @@ export function currentTimeInSeconds() {
 }
 
 export function getDayDiff(startDate: number, endDate: number) {
-  return Math.round((endDate - startDate) / (3600 * 24));
+  return Math.floor((endDate - startDate) / (3600 * 24)) + 1;
 }
 
 export function createEmptyNestedArray(size: number) {
