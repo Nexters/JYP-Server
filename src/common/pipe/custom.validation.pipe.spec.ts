@@ -24,7 +24,7 @@ describe('TimeRangeValidationPipe', () => {
 
   it('startDate와 endDate 간격이 MAX_JOURNEY_DAYS를 초과하면 BadRequestException을 throw한다.', () => {
     const startDate = 1535587200;
-    const endDate = startDate + (MAX_JOURNEY_DAYS + 1) * 3600 * 24;
+    const endDate = startDate + MAX_JOURNEY_DAYS * 3600 * 24;
     const value = { startDate: startDate, endDate: endDate };
     expect(() => timeRangeValidationPipe.transform(value, null)).toThrowError(
       new BadRequestException(TIME_RANGE_INVALID_MSG),
@@ -33,7 +33,7 @@ describe('TimeRangeValidationPipe', () => {
 
   it('startDate와 endDate 간격이 MAX_JOURNEY_DAYS이내이면 value를 그대로 리턴한다.', () => {
     const startDate = 1535587200;
-    const endDate = startDate + MAX_JOURNEY_DAYS * 3600 * 24;
+    const endDate = startDate + (MAX_JOURNEY_DAYS - 1) * 3600 * 24;
     const value = { startDate: startDate, endDate: endDate };
     const result = timeRangeValidationPipe.transform(value, null);
     expect(result).toEqual(value);
