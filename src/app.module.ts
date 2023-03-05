@@ -7,6 +7,7 @@ import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { JourneyModule } from './journey/journey.module';
 import { AuthMiddleware } from './auth/security/auth.middleware';
+import { LoggingMiddleware } from './common/logging/logging.middleware';
 
 const MONGO_USER = process.env.MONGO_USER;
 const MONGO_PASSWORD = process.env.MONGO_PASSWORD;
@@ -31,5 +32,6 @@ const MONGO_DB = process.env.MONGO_DB;
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(AuthMiddleware).forRoutes('*');
+    consumer.apply(LoggingMiddleware).forRoutes('*');
   }
 }
