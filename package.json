@@ -37,6 +37,7 @@
     "mongodb-memory-server": "^8.8.0",
     "mongoose": "^6.5.1",
     "mongoose-long": "^0.5.1",
+    "morgan": "^1.10.0",
     "node-fetch": "^3.2.8",
     "passport": "^0.6.0",
     "passport-apple": "^2.0.1",
